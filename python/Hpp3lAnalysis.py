@@ -189,6 +189,16 @@ class Hpp3lAnalysis(AnalysisBase):
             # require deltaR seperation of 0.02
             for i,j in itertools.combinations(range(3),2):
                 if deltaR(etas[trio[i]],phis[trio[i]],etas[trio[j]],phis[trio[j]])<0.02: continue
+                if (p4s[trio[i]]+p4s[trio[j]]).M()<12.: continue
+            # require lead e/m pt > 20, if all taus, lead 2 pt>35
+            ems = [cand for cand in trio if cand[0] in ['electrons','muons']]
+            ts = [cand for cand in trio if cand[0] in ['taus']]
+            if len(ems)>0:
+                pts_ems = [pts[cand] for cand in ems]
+                if max(pts_ems)<20.: continue
+            else:
+                pts_ts = [pts[cand] for cand in ts]
+                if sorted(pts_ts)[-2]<35.: continue
             hppCands += [trio]
         if not hppCands: return candidate
         hppCand = hppCands[0][:2]

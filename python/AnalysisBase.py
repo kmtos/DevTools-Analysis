@@ -552,7 +552,7 @@ class AnalysisBase(object):
         self.tree.add(lambda rtrow,cands: self.getCompositeMetVariable(rtrow,var,met,cands[obj],**kwargs), '{0}_{1}'.format(label,varLabel), rootType)
 
     def addComposite(self,label,*objs):
-        '''Add variables realated to multi object variables'''
+        '''Add variables related to multi object variables'''
         self.addCompositeVar(label,objs,'mass','mass','F')
         self.addCompositeVar(label,objs,'pt','pt','F')
         self.addCompositeVar(label,objs,'eta','eta','F')

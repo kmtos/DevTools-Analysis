@@ -182,22 +182,41 @@ class Hpp4lAnalysis(AnalysisBase):
             # require ++--
             if charges[quad[0]]+charges[quad[1]]!=2: continue
             if charges[quad[2]]+charges[quad[3]]!=-2: continue
-            # require deltaR seperation of 0.02
+            # require deltaR seperation of 0.02 m(ll)>12
             for i,j in itertools.combinations(range(4),2):
                 if deltaR(etas[quad[i]],phis[quad[i]],etas[quad[j]],phis[quad[j]])<0.02: continue
+                if (p4s[quad[i]]+p4s[quad[j]]).M()<12.: continue
+            # require lead e/m pt > 20, if all taus, lead 2 pt>35
+            ems = [cand for cand in quad if cand[0] in ['electrons','muons']]
+            ts = [cand for cand in quad if cand[0] in ['taus']]
+            if len(ems)>0:
+                pts_ems = [pts[cand] for cand in ems]
+                if max(pts_ems)<20.: continue
+            else:
+                pts_ts = [pts[cand] for cand in ts]
+                if sorted(pts_ts)[-2]<35.: continue
             hppCands += [quad]
         if not hppCands: return candidate
 
         # sort by closest to same mass
-        bestMassDiff = 999999999
+        #bestMassDiff = 999999999
+        #bestCand = []
+        #for quad in hppCands:
+        #    hppMass = self.getCompositeVariable(rtrow,'mass',quad[0],quad[1])
+        #    hmmMass = self.getCompositeVariable(rtrow,'mass',quad[2],quad[3])
+        #    massdiff = abs(hppMass-hmmMass)
+        #    if massdiff<bestMassDiff:
+        #        bestCand = quad
+        #        bestMassDiff = massdiff
+
+        # sort by highest st
+        highestSt = 0
         bestCand = []
         for quad in hppCands:
-            hppMass = self.getCompositeVariable(rtrow,'mass',quad[0],quad[1])
-            hmmMass = self.getCompositeVariable(rtrow,'mass',quad[2],quad[3])
-            massdiff = abs(hppMass-hmmMass)
-            if massdiff<bestMassDiff:
+            st = sum([pts[cand] for cand in quad])
+            if st>highestSt:
                 bestCand = quad
-                bestMassDiff = massdiff
+                highestSt = st
 
         candidate['hpp1'] = bestCand[0] if pts[bestCand[0]]>pts[bestCand[1]] else bestCand[1]
         candidate['hpp2'] = bestCand[1] if pts[bestCand[0]]>pts[bestCand[1]] else bestCand[0]
