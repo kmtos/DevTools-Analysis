@@ -187,9 +187,13 @@ class Hpp3lAnalysis(AnalysisBase):
             # require ++-/--+
             if charges[trio[0]]!=charges[trio[1]]: continue
             # require deltaR seperation of 0.02
+            keep = True
             for i,j in itertools.combinations(range(3),2):
-                if deltaR(etas[trio[i]],phis[trio[i]],etas[trio[j]],phis[trio[j]])<0.02: continue
-                if (p4s[trio[i]]+p4s[trio[j]]).M()<12.: continue
+                dr = deltaR(etas[trio[i]],phis[trio[i]],etas[trio[j]],phis[trio[j]])
+                m = (p4s[trio[i]]+p4s[trio[j]]).M()
+                if dr<0.02: keep = False
+                if m<12.: keep = False
+            if not keep: continue
             # require lead e/m pt > 20, if all taus, lead 2 pt>35
             ems = [cand for cand in trio if cand[0] in ['electrons','muons']]
             ts = [cand for cand in trio if cand[0] in ['taus']]

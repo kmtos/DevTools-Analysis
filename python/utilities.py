@@ -35,7 +35,27 @@ def getTestFiles(type):
     elif type=='hpp':
         return ['/store/user/dntaylor/2016-04-22_DevTools_76X_v1/HPlusPlusHMinusMinusHTo4L_M-500_13TeV-pythia8/2016-04-22_DevTools_76X_v1/160422_113847/0000/miniTree_1.root']
     elif type=='dy':
-        return ['/store/user/dntaylor/2016-04-22_DevTools_76X_v1/DYJetsToLL_M-50_TuneCUETP8M1_13TeV-amcatnloFXFX-pythia8/2016-04-22_DevTools_76X_v1/160422_112025/0000/miniTree_1.root']
+        return [
+            '/store/user/dntaylor/2016-04-22_DevTools_76X_v1/DYJetsToLL_M-50_TuneCUETP8M1_13TeV-amcatnloFXFX-pythia8/2016-04-22_DevTools_76X_v1/160422_112025/0000/miniTree_1.root',
+            '/store/user/dntaylor/2016-04-22_DevTools_76X_v1/DYJetsToLL_M-50_TuneCUETP8M1_13TeV-amcatnloFXFX-pythia8/2016-04-22_DevTools_76X_v1/160422_112025/0000/miniTree_2.root',
+            '/store/user/dntaylor/2016-04-22_DevTools_76X_v1/DYJetsToLL_M-50_TuneCUETP8M1_13TeV-amcatnloFXFX-pythia8/2016-04-22_DevTools_76X_v1/160422_112025/0000/miniTree_3.root',
+            '/store/user/dntaylor/2016-04-22_DevTools_76X_v1/DYJetsToLL_M-50_TuneCUETP8M1_13TeV-amcatnloFXFX-pythia8/2016-04-22_DevTools_76X_v1/160422_112025/0000/miniTree_4.root',
+            '/store/user/dntaylor/2016-04-22_DevTools_76X_v1/DYJetsToLL_M-50_TuneCUETP8M1_13TeV-amcatnloFXFX-pythia8/2016-04-22_DevTools_76X_v1/160422_112025/0000/miniTree_5.root',
+            '/store/user/dntaylor/2016-04-22_DevTools_76X_v1/DYJetsToLL_M-50_TuneCUETP8M1_13TeV-amcatnloFXFX-pythia8/2016-04-22_DevTools_76X_v1/160422_112025/0000/miniTree_6.root',
+            '/store/user/dntaylor/2016-04-22_DevTools_76X_v1/DYJetsToLL_M-50_TuneCUETP8M1_13TeV-amcatnloFXFX-pythia8/2016-04-22_DevTools_76X_v1/160422_112025/0000/miniTree_7.root',
+            '/store/user/dntaylor/2016-04-22_DevTools_76X_v1/DYJetsToLL_M-50_TuneCUETP8M1_13TeV-amcatnloFXFX-pythia8/2016-04-22_DevTools_76X_v1/160422_112025/0000/miniTree_8.root',
+            '/store/user/dntaylor/2016-04-22_DevTools_76X_v1/DYJetsToLL_M-50_TuneCUETP8M1_13TeV-amcatnloFXFX-pythia8/2016-04-22_DevTools_76X_v1/160422_112025/0000/miniTree_9.root',
+            '/store/user/dntaylor/2016-04-22_DevTools_76X_v1/DYJetsToLL_M-50_TuneCUETP8M1_13TeV-amcatnloFXFX-pythia8/2016-04-22_DevTools_76X_v1/160422_112025/0000/miniTree_10.root',
+            '/store/user/dntaylor/2016-04-22_DevTools_76X_v1/DYJetsToLL_M-50_TuneCUETP8M1_13TeV-amcatnloFXFX-pythia8/2016-04-22_DevTools_76X_v1/160422_112025/0000/miniTree_11.root',
+            '/store/user/dntaylor/2016-04-22_DevTools_76X_v1/DYJetsToLL_M-50_TuneCUETP8M1_13TeV-amcatnloFXFX-pythia8/2016-04-22_DevTools_76X_v1/160422_112025/0000/miniTree_12.root',
+            '/store/user/dntaylor/2016-04-22_DevTools_76X_v1/DYJetsToLL_M-50_TuneCUETP8M1_13TeV-amcatnloFXFX-pythia8/2016-04-22_DevTools_76X_v1/160422_112025/0000/miniTree_13.root',
+            '/store/user/dntaylor/2016-04-22_DevTools_76X_v1/DYJetsToLL_M-50_TuneCUETP8M1_13TeV-amcatnloFXFX-pythia8/2016-04-22_DevTools_76X_v1/160422_112025/0000/miniTree_14.root',
+            '/store/user/dntaylor/2016-04-22_DevTools_76X_v1/DYJetsToLL_M-50_TuneCUETP8M1_13TeV-amcatnloFXFX-pythia8/2016-04-22_DevTools_76X_v1/160422_112025/0000/miniTree_15.root',
+            '/store/user/dntaylor/2016-04-22_DevTools_76X_v1/DYJetsToLL_M-50_TuneCUETP8M1_13TeV-amcatnloFXFX-pythia8/2016-04-22_DevTools_76X_v1/160422_112025/0000/miniTree_16.root',
+            '/store/user/dntaylor/2016-04-22_DevTools_76X_v1/DYJetsToLL_M-50_TuneCUETP8M1_13TeV-amcatnloFXFX-pythia8/2016-04-22_DevTools_76X_v1/160422_112025/0000/miniTree_17.root',
+            '/store/user/dntaylor/2016-04-22_DevTools_76X_v1/DYJetsToLL_M-50_TuneCUETP8M1_13TeV-amcatnloFXFX-pythia8/2016-04-22_DevTools_76X_v1/160422_112025/0000/miniTree_18.root',
+            '/store/user/dntaylor/2016-04-22_DevTools_76X_v1/DYJetsToLL_M-50_TuneCUETP8M1_13TeV-amcatnloFXFX-pythia8/2016-04-22_DevTools_76X_v1/160422_112025/0000/miniTree_19.root',
+        ]
     elif type=='long':
         return [
         ]

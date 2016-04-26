@@ -183,9 +183,13 @@ class Hpp4lAnalysis(AnalysisBase):
             if charges[quad[0]]+charges[quad[1]]!=2: continue
             if charges[quad[2]]+charges[quad[3]]!=-2: continue
             # require deltaR seperation of 0.02 m(ll)>12
+            keep = True
             for i,j in itertools.combinations(range(4),2):
-                if deltaR(etas[quad[i]],phis[quad[i]],etas[quad[j]],phis[quad[j]])<0.02: continue
-                if (p4s[quad[i]]+p4s[quad[j]]).M()<12.: continue
+                dr = deltaR(etas[quad[i]],phis[quad[i]],etas[quad[j]],phis[quad[j]])
+                m = (p4s[quad[i]]+p4s[quad[j]]).M()
+                if dr<0.02: keep = False
+                if m<12.: keep = False
+            if not keep: continue
             # require lead e/m pt > 20, if all taus, lead 2 pt>35
             ems = [cand for cand in quad if cand[0] in ['electrons','muons']]
             ts = [cand for cand in quad if cand[0] in ['taus']]
