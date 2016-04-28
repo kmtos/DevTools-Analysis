@@ -472,6 +472,7 @@ class AnalysisBase(object):
         self.addCandVar(label,'energy','energy','F')
         self.addCandVar(label,'charge','charge','I')
         self.addCandVar(label,'dz','dz','F')
+        self.addCandVar(label,'pdgId','pdgId','I')
         self.addFlavorDependentCandVar(label,'dxy',      {'electrons':'dB2D',          'muons':'dB2D', 'taus':'dxy',  '':''},'F')
         self.addFlavorDependentCandVar(label,'isolation',{'electrons':'relPFIsoRhoR03','muons':'relPFIsoDeltaBetaR04','':''},'F')
         self.addFlavorDependentCandVar(label,'genMatch',       {'electrons':'genMatch',       'muons':'genMatch',  'taus':'genJetMatch', '':''},'I')
