@@ -87,11 +87,12 @@ def passHppLoose(self,rtrow,cand):
         decayModeFinding = self.getObjectVariable(rtrow,cand,'decayModeFinding')
         againstMuonLoose3 = self.getObjectVariable(rtrow,cand,'againstMuonLoose3')
         againstElectronVLooseMVA6 = self.getObjectVariable(rtrow,cand,'againstElectronVLooseMVA6')
+        # remove iso
         byLooseIsolationMVArun2v1DBoldDMwLT = self.getObjectVariable(rtrow,cand,'byLooseIsolationMVArun2v1DBoldDMwLT')
         return (decayModeFinding>0.5
                 and againstMuonLoose3>0.5
-                and againstElectronVLooseMVA6>0.5
-                and byLooseIsolationMVArun2v1DBoldDMwLT>0.5)
+                and againstElectronVLooseMVA6>0.5)
+                #and byLooseIsolationMVArun2v1DBoldDMwLT>0.5)
     else:
         return False
 
@@ -103,7 +104,15 @@ def passHppMedium(self,rtrow,cand):
     elif cand[0]=='muons':
         return passWZMedium(self,rtrow,cand)
     elif cand[0]=='taus':
-        return passHppLoose(self,rtrow,cand)
+        #return passHppLoose(self,rtrow,cand)
+        decayModeFinding = self.getObjectVariable(rtrow,cand,'decayModeFinding')
+        againstMuonLoose3 = self.getObjectVariable(rtrow,cand,'againstMuonLoose3')
+        againstElectronVLooseMVA6 = self.getObjectVariable(rtrow,cand,'againstElectronVLooseMVA6')
+        byLooseIsolationMVArun2v1DBoldDMwLT = self.getObjectVariable(rtrow,cand,'byLooseIsolationMVArun2v1DBoldDMwLT')
+        return (decayModeFinding>0.5
+                and againstMuonLoose3>0.5
+                and againstElectronVLooseMVA6>0.5
+                and byLooseIsolationMVArun2v1DBoldDMwLT>0.5)
     else:
         return False
 
