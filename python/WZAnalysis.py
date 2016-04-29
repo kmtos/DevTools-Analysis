@@ -22,7 +22,7 @@ class WZAnalysis(AnalysisBase):
 
         # setup cut tree
         self.cutTree.add(self.threeLoose,'threeLooseLeptons')
-        self.cutTree.add(self.vetoFourth,'noFourthTightLepton')
+        self.cutTree.add(self.vetoFourth,'noFourthMediumLepton')
         self.cutTree.add(self.trigger,'trigger')
 
         # setup analysis tree
@@ -119,6 +119,8 @@ class WZAnalysis(AnalysisBase):
         # get leptons
         colls = ['electrons','muons']
         pts = {}
+        etas = {}
+        phis = {}
         p4s = {}
         charges = {}
         leps = []
@@ -127,16 +129,24 @@ class WZAnalysis(AnalysisBase):
 
         for cand in leps:
             pts[cand] = self.getObjectVariable(rtrow,cand,'pt')
+            etas[cand] = self.getObjectVariable(rtrow,cand,'eta')
+            phis[cand] = self.getObjectVariable(rtrow,cand,'phi')
             p4s[cand] = self.getObjectVariable(rtrow,cand,'p4')
             charges[cand] = self.getObjectVariable(rtrow,cand,'charge')
+
 
         # get invariant masses
         massDiffs = {}
         for zpair in itertools.combinations(pts.keys(),2):
             if zpair[0][0]!=zpair[1][0]: continue # SF
             if charges[zpair[0]]==charges[zpair[1]]: continue # OS
+            # require deltaR seperation of 0.02
+            dr = deltaR(etas[zpair[0]],phis[zpair[0]],etas[zpair[1]],phis[zpair[1]])
+            if dr<0.02: continue
             zp4 = p4s[zpair[0]] + p4s[zpair[1]]
             zmass = zp4.M()
+            # exclude mll<4 to remove stuff not included in generation of WZ
+            if zmass<4: continue
             massDiffs[zpair] = abs(zmass-ZMASS)
 
         if not massDiffs: return candidate # need a z candidate
@@ -144,13 +154,29 @@ class WZAnalysis(AnalysisBase):
         # sort by closest z
         bestZ = sorted(massDiffs.items(), key=operator.itemgetter(1))[0][0]
 
+        leps.remove(bestZ[0])
+        leps.remove(bestZ[1])
+        # exclude w cands within dr of 0.02 of a Z
+        wcands = leps
+        for w in wcands:
+            dr0 = deltaR(etas[bestZ[0]],phis[bestZ[0]],etas[w],phis[w])
+            dr1 = deltaR(etas[bestZ[1]],phis[bestZ[1]],etas[w],phis[w])
+            if dr0<0.02 or dr1<0.02:
+                leps.remove(w)
+
         # now get the highest pt w
-        zpts = {}
-        zpts[bestZ[0]] = pts.pop(bestZ[0])
-        zpts[bestZ[1]] = pts.pop(bestZ[1])
-        bestW = sorted(pts.items(), key=operator.itemgetter(1))[-1][0]
+        bestW = None
+        highestPt = 0.
+        for w in leps:
+            if pts[w]> highestPt:
+                bestW = w
+                highestPt = pts[w]
+        if not bestW: return candidate
 
         # and sort pt of Z
+        zpts = {}
+        zpts[bestZ[0]] = pts[bestZ[0]]
+        zpts[bestZ[1]] = pts[bestZ[1]]
         z = sorted(zpts.items(), key=operator.itemgetter(1))
         z1 = z[1][0]
         z2 = z[0][0]
