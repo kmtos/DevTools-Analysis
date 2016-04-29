@@ -46,11 +46,8 @@ class WTauFakeRateAnalysis(AnalysisBase):
         # mu tag
         self.addLeptonMet('wm','m',('pfmet',0))
         self.addLepton('m')
-        self.tree.add(lambda rtrow,cands: self.passMedium(rtrow,cands['m']), 'm_passMedium', 'I')
-        self.tree.add(lambda rtrow,cands: self.passTight(rtrow,cands['m']), 'm_passTight', 'I')
-        self.tree.add(lambda rtrow,cands: self.looseScale(rtrow,cands['m']), 'm_looseScale', 'F')
-        self.tree.add(lambda rtrow,cands: self.mediumScale(rtrow,cands['m']), 'm_mediumScale', 'F')
         self.tree.add(lambda rtrow,cands: self.tightScale(rtrow,cands['m']), 'm_tightScale', 'F')
+
         # tau probe
         self.addLeptonMet('wt','t',('pfmet',0))
         self.addLepton('t')
@@ -84,7 +81,7 @@ class WTauFakeRateAnalysis(AnalysisBase):
         if len(taus)<1: return candidate # need at least 1 tau 
 
         mupt = self.getObjectVariable(rtrow,muons[0],'pt')
-        if mupt<20: return candidate
+        if mupt<25: return candidate
 
         # select highest pt tau
         tauCand = None
@@ -96,6 +93,9 @@ class WTauFakeRateAnalysis(AnalysisBase):
                 tauCand = tau
 
         if not tauCand: return candidate
+
+        taupt = self.getObjectVariable(rtrow,tauCand,'pt')
+        if taupt<20: return candidate
 
         candidate['m'] = muons[0]
         candidate['t'] = tauCand
