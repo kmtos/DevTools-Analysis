@@ -1,5 +1,5 @@
 from AnalysisBase import AnalysisBase
-from leptonId import passWZLoose, passWZMedium, passWZTight
+from leptonId import passWZLoose, passWZMedium, passWZTight, passHppLoose, passHppMedium, passHppTight
 from utilities import ZMASS, deltaPhi, deltaR
 
 import sys
@@ -22,6 +22,8 @@ class DijetFakeRateAnalysis(AnalysisBase):
 
         # setup cut tree
         self.cutTree.add(self.vetoSecond,'vetoSecond')
+        self.cutTree.add(self.metVeto,'metVeto')
+        self.cutTree.add(self.mtVeto,'mtVeto')
         self.cutTree.add(self.trigger,'trigger')
 
         # setup analysis tree
@@ -103,19 +105,19 @@ class DijetFakeRateAnalysis(AnalysisBase):
     ### lepton IDs ###
     ##################
     def passLoose(self,rtrow,cand):
-        return passWZLoose(self,rtrow,cand)
+        return passHppLoose(self,rtrow,cand)
 
     def passMedium(self,rtrow,cand):
-        return passWZMedium(self,rtrow,cand)
+        return passHppMedium(self,rtrow,cand)
 
     def passTight(self,rtrow,cand):
-        return passWZTight(self,rtrow,cand)
+        return passHppTight(self,rtrow,cand)
 
     def looseScale(self,rtrow,cand):
         if cand[0]=='muons':
             return self.leptonScales.getScale(rtrow,'MediumIDLooseIso',cand)
         elif cand[0]=='electrons':
-            return self.leptonScales.getScale(rtrow,'CutbasedVeto',cand) # TODO, fix
+            return self.leptonScales.getScale(rtrow,'CutbasedVeto',cand)
         else:
             return 1.
 
@@ -174,6 +176,13 @@ class DijetFakeRateAnalysis(AnalysisBase):
     ###########################
     def vetoSecond(self,rtrow,cands):
         return len(self.getPassingCands(rtrow,'Loose'))==1
+
+    def metVeto(self,rtrow,cands):
+        return self.getObjectVariable(rtrow,('pfmet',0),'et')<25
+
+    def mtVeto(self,rtrow,cands):
+        if not cands['l1']: return False
+        return self.getCompositeMetVariable(rtrow,'mt',('pfmet',0),cands['l1'])<25
 
     def trigger(self,rtrow,cands):
         # accept MC, check trigger for data
