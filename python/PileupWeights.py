@@ -14,6 +14,7 @@ class PileupWeights(object):
         self.scale = {}
         self.scale_up = {}
         self.scale_down = {}
+        self.alt_scales = {}
         rootfile = ROOT.TFile(path)
         hist_scale = rootfile.Get('pileup_scale')
         for b in range(hist_scale.GetNbinsX()):
@@ -24,8 +25,22 @@ class PileupWeights(object):
         hist_scale = rootfile.Get('pileup_scale_down')
         for b in range(hist_scale.GetNbinsX()):
             self.scale_down[b] = hist_scale.GetBinContent(b+1)
+        for xsec in [65000,66000,67000,68000,69000,70000,71000,72000,73000,74000,75000,76000,77000,78000,79000,80000]:
+            self.alt_scales[xsec] = {}
+            hist_scale = rootfile.Get('pileup_scale_{0}'.format(xsec))
+            for b in range(hist_scale.GetNbinsX()):
+                self.alt_scales[xsec][b] = hist_scale.GetBinContent(b+1)
         rootfile.Close()
 
+    def alt_weight(self, rtrow,xsec):
+        if rtrow.nTrueVertices < 0:
+            return 1
+        else:
+            if xsec in self.alt_scales:
+                val = self.alt_scales[xsec][int(floor(rtrow.nTrueVertices))]
+            else:
+                val = 1
+            return val
 
     def weight(self, rtrow):
         if rtrow.nTrueVertices < 0:

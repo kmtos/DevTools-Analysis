@@ -3,7 +3,7 @@
 
 from AnalysisBase import AnalysisBase
 from utilities import ZMASS, deltaPhi, deltaR
-from leptonId import passWZLoose, passWZMedium, passWZTight
+from leptonId import passWZLoose, passWZMedium, passWZTight, passHppLoose, passHppMedium, passHppTight
 
 import itertools
 import operator
@@ -16,7 +16,7 @@ class DYAnalysis(AnalysisBase):
     '''
 
     def __init__(self,**kwargs):
-        outputFileName = kwargs.pop('outputFileName','wzTree.root')
+        outputFileName = kwargs.pop('outputFileName','dyTree.root')
         outputTreeName = kwargs.pop('outputTreeName','DYTree')
         super(DYAnalysis, self).__init__(outputFileName=outputFileName,outputTreeName=outputTreeName,**kwargs)
 
@@ -25,6 +25,24 @@ class DYAnalysis(AnalysisBase):
         self.cutTree.add(self.trigger,'trigger')
 
         # setup analysis tree
+
+        # alt pileupweights
+        self.tree.add(lambda rtrow,cands: self.pileupWeights.alt_weight(rtrow,65000), 'pileupWeight_65000', 'F')
+        self.tree.add(lambda rtrow,cands: self.pileupWeights.alt_weight(rtrow,66000), 'pileupWeight_66000', 'F')
+        self.tree.add(lambda rtrow,cands: self.pileupWeights.alt_weight(rtrow,67000), 'pileupWeight_67000', 'F')
+        self.tree.add(lambda rtrow,cands: self.pileupWeights.alt_weight(rtrow,68000), 'pileupWeight_68000', 'F')
+        self.tree.add(lambda rtrow,cands: self.pileupWeights.alt_weight(rtrow,69000), 'pileupWeight_69000', 'F')
+        self.tree.add(lambda rtrow,cands: self.pileupWeights.alt_weight(rtrow,70000), 'pileupWeight_70000', 'F')
+        self.tree.add(lambda rtrow,cands: self.pileupWeights.alt_weight(rtrow,71000), 'pileupWeight_71000', 'F')
+        self.tree.add(lambda rtrow,cands: self.pileupWeights.alt_weight(rtrow,72000), 'pileupWeight_72000', 'F')
+        self.tree.add(lambda rtrow,cands: self.pileupWeights.alt_weight(rtrow,73000), 'pileupWeight_73000', 'F')
+        self.tree.add(lambda rtrow,cands: self.pileupWeights.alt_weight(rtrow,74000), 'pileupWeight_74000', 'F')
+        self.tree.add(lambda rtrow,cands: self.pileupWeights.alt_weight(rtrow,75000), 'pileupWeight_75000', 'F')
+        self.tree.add(lambda rtrow,cands: self.pileupWeights.alt_weight(rtrow,76000), 'pileupWeight_76000', 'F')
+        self.tree.add(lambda rtrow,cands: self.pileupWeights.alt_weight(rtrow,77000), 'pileupWeight_77000', 'F')
+        self.tree.add(lambda rtrow,cands: self.pileupWeights.alt_weight(rtrow,78000), 'pileupWeight_78000', 'F')
+        self.tree.add(lambda rtrow,cands: self.pileupWeights.alt_weight(rtrow,79000), 'pileupWeight_79000', 'F')
+        self.tree.add(lambda rtrow,cands: self.pileupWeights.alt_weight(rtrow,80000), 'pileupWeight_80000', 'F')
 
         # chan string
         self.tree.add(self.getChannelString, 'channel', ['C',3])
@@ -148,19 +166,19 @@ class DYAnalysis(AnalysisBase):
     ### lepton id ###
     #################
     def passLoose(self,rtrow,cand):
-        return passWZLoose(self,rtrow,cand)
+        return passHppLoose(self,rtrow,cand)
 
     def passMedium(self,rtrow,cand):
-        return passWZMedium(self,rtrow,cand)
+        return passHppMedium(self,rtrow,cand)
 
     def passTight(self,rtrow,cand):
-        return passWZTight(self,rtrow,cand)
+        return passHppTight(self,rtrow,cand)
 
     def looseScale(self,rtrow,cand):
         if cand[0]=='muons':
             return self.leptonScales.getScale(rtrow,'MediumIDLooseIso',cand)
         elif cand[0]=='electrons':
-            return self.leptonScales.getScale(rtrow,'CutbasedVeto',cand) # TODO, fix
+            return self.leptonScales.getScale(rtrow,'CutbasedVeto',cand)
         else:
             return 1.
 
@@ -273,12 +291,16 @@ class DYAnalysis(AnalysisBase):
         # first dataset, any trigger passes
         # second dataset, if a trigger in the first dataset is found, reject event
         # so forth
-        datasets = [
-            'DoubleMuon', 
-            'DoubleEG', 
-            'SingleMuon',
-            'SingleElectron',
-        ]
+        if cands['z1'][0]=='electrons':
+            datasets = [
+                'DoubleEG', 
+                'SingleElectron',
+            ]
+        else:
+            datasets = [
+                'DoubleMuon', 
+                'SingleMuon',
+            ]
         # reject triggers if they are in another dataset
         # looks for the dataset name in the filename
         # for MC it accepts all
@@ -299,7 +321,10 @@ class DYAnalysis(AnalysisBase):
 
     def triggerEfficiency(self,rtrow,cands):
         candList = [cands[c] for c in ['z1','z2']]
-        triggerList = ['IsoMu20_OR_IsoTkMu20','Ele23_WPLoose','Mu17_Mu8','Ele17_Ele12']
+        if candList[0][0]=='electrons':
+            triggerList = ['Ele23_WPLoose','Ele17_Ele12']
+        else:
+            triggerList = ['IsoMu20_OR_IsoTkMu20','Mu17_Mu8']
         return self.triggerScales.getDataEfficiency(rtrow,triggerList,candList)
 
 

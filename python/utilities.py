@@ -37,6 +37,10 @@ def getTestFiles(type):
     elif type=='dy':
         return [
             '/store/user/dntaylor/2016-04-22_DevTools_76X_v1/DYJetsToLL_M-50_TuneCUETP8M1_13TeV-amcatnloFXFX-pythia8/2016-04-22_DevTools_76X_v1/160422_112025/0000/miniTree_1.root',
+        ]
+    elif type=='long':
+        return [
+            '/store/user/dntaylor/2016-04-22_DevTools_76X_v1/DYJetsToLL_M-50_TuneCUETP8M1_13TeV-amcatnloFXFX-pythia8/2016-04-22_DevTools_76X_v1/160422_112025/0000/miniTree_1.root',
             '/store/user/dntaylor/2016-04-22_DevTools_76X_v1/DYJetsToLL_M-50_TuneCUETP8M1_13TeV-amcatnloFXFX-pythia8/2016-04-22_DevTools_76X_v1/160422_112025/0000/miniTree_2.root',
             '/store/user/dntaylor/2016-04-22_DevTools_76X_v1/DYJetsToLL_M-50_TuneCUETP8M1_13TeV-amcatnloFXFX-pythia8/2016-04-22_DevTools_76X_v1/160422_112025/0000/miniTree_3.root',
             '/store/user/dntaylor/2016-04-22_DevTools_76X_v1/DYJetsToLL_M-50_TuneCUETP8M1_13TeV-amcatnloFXFX-pythia8/2016-04-22_DevTools_76X_v1/160422_112025/0000/miniTree_4.root',
@@ -55,9 +59,6 @@ def getTestFiles(type):
             '/store/user/dntaylor/2016-04-22_DevTools_76X_v1/DYJetsToLL_M-50_TuneCUETP8M1_13TeV-amcatnloFXFX-pythia8/2016-04-22_DevTools_76X_v1/160422_112025/0000/miniTree_17.root',
             '/store/user/dntaylor/2016-04-22_DevTools_76X_v1/DYJetsToLL_M-50_TuneCUETP8M1_13TeV-amcatnloFXFX-pythia8/2016-04-22_DevTools_76X_v1/160422_112025/0000/miniTree_18.root',
             '/store/user/dntaylor/2016-04-22_DevTools_76X_v1/DYJetsToLL_M-50_TuneCUETP8M1_13TeV-amcatnloFXFX-pythia8/2016-04-22_DevTools_76X_v1/160422_112025/0000/miniTree_19.root',
-        ]
-    elif type=='long':
-        return [
         ]
     else:
         return ['']

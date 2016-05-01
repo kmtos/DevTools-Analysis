@@ -80,7 +80,8 @@ def passHppLoose(self,rtrow,cand):
         #    if hcalRelIso>0.28:     passMVATrigPre = False
         #    if trackRelIso>0.18:    passMVATrigPre = False
         #return passMVATrigPre
-        return passWZLoose(self,rtrow,cand)
+        return self.getObjectVariable(rtrow,cand,'cutBasedVeto')>0.5
+        #return passWZLoose(self,rtrow,cand)
     elif cand[0]=='muons':
         return passWZLoose(self,rtrow,cand)
     elif cand[0]=='taus':
@@ -100,7 +101,8 @@ def passHppMedium(self,rtrow,cand):
     if not passHppLoose(self,rtrow,cand): return False
     if cand[0]=='electrons':
         #return self.getObjectVariable(rtrow,cand,'mvaTrigWP80') > 0.5
-        return passWZMedium(self,rtrow,cand)
+        return self.getObjectVariable(rtrow,cand,'cutBasedMedium')>0.5
+        #return passWZMedium(self,rtrow,cand)
     elif cand[0]=='muons':
         return passWZMedium(self,rtrow,cand)
     elif cand[0]=='taus':
@@ -120,7 +122,8 @@ def passHppTight(self,rtrow,cand):
     if not passHppLoose(self,rtrow,cand): return False
     if cand[0]=='electrons':
         #return self.getObjectVariable(rtrow,cand,'mvaTrigWP80') > 0.5
-        return passWZTight(self,rtrow,cand)
+        return self.getObjectVariable(rtrow,cand,'cutBasedTight')>0.5
+        #return passWZTight(self,rtrow,cand)
     elif cand[0]=='muons':
         return passWZMedium(self,rtrow,cand)
     elif cand[0]=='taus':
