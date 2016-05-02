@@ -294,6 +294,7 @@ class DYAnalysis(AnalysisBase):
         # first dataset, any trigger passes
         # second dataset, if a trigger in the first dataset is found, reject event
         # so forth
+        if not cands['z1']: return False
         if cands['z1'][0]=='electrons':
             datasets = [
                 'DoubleEG', 

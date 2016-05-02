@@ -28,9 +28,9 @@ def getNtupleDirectory(analysis):
         return os.path.join(baseDir,latestNtuples[analysis])
 
 def getTestFiles(type):
-    if type=='MC':
+    if type=='wz':
         return ['/store/user/dntaylor/2016-04-22_DevTools_76X_v1/WZTo3LNu_TuneCUETP8M1_13TeV-powheg-pythia8/2016-04-22_DevTools_76X_v1/160422_113101/0000/miniTree_1.root']
-    elif type=='Data':
+    elif type=='data':
         return ['/store/user/dntaylor/2016-04-22_DevTools_76X_v1/MuonEG/2016-04-22_DevTools_76X_v1/160422_113532/0000/miniTree_1.root']
     elif type=='hpp':
         return ['/store/user/dntaylor/2016-04-22_DevTools_76X_v1/HPlusPlusHMinusMinusHTo4L_M-500_13TeV-pythia8/2016-04-22_DevTools_76X_v1/160422_113847/0000/miniTree_1.root']
