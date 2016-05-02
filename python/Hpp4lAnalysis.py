@@ -19,6 +19,7 @@ class Hpp4lAnalysis(AnalysisBase):
     def __init__(self,**kwargs):
         outputFileName = kwargs.pop('outputFileName','hpp4lTree.root')
         outputTreeName = kwargs.pop('outputTreeName','Hpp4lTree')
+        self.preselection = 'muons_count+electrons_count+taus_count>3'
         super(Hpp4lAnalysis, self).__init__(outputFileName=outputFileName,outputTreeName=outputTreeName,**kwargs)
 
         # setup cut tree
@@ -62,12 +63,14 @@ class Hpp4lAnalysis(AnalysisBase):
         self.tree.add(lambda rtrow,cands: self.numCentralJets(rtrow,cands,'isLoose',30), 'dijet_numCentralJetsLoose30', 'I')
         self.tree.add(lambda rtrow,cands: self.numCentralJets(rtrow,cands,'isTight',30), 'dijet_numCentralJetsTight30', 'I')
 
-        # 3 lepton
+        # 4 lepton
         self.addComposite('4l','hpp1','hpp2','hmm1', 'hmm2')
+        self.addCompositeMet('4lmet',('pfmet',0),'hpp1','hpp2','hmm1', 'hmm2')
         self.tree.add(lambda rtrow,cands: self.zeppenfeld(rtrow,cands,cands['hpp1'],cands['hpp2'],cands['hmm1'],cands['hmm2']), '4l_zeppenfeld','F')
 
         # hpp leptons
         self.addDiLepton('hpp','hpp1','hpp2')
+        self.addCompositeMet('hppmet',('pfmet',0),'hpp1','hpp2')
         self.tree.add(lambda rtrow,cands: self.zeppenfeld(rtrow,cands,cands['hpp1'],cands['hpp2']), 'hpp_zeppenfeld','F')
         self.addLepton('hpp1')
         self.tree.add(lambda rtrow,cands: self.passMedium(rtrow,cands['hpp1']), 'hpp1_passMedium', 'I')
@@ -90,6 +93,7 @@ class Hpp4lAnalysis(AnalysisBase):
 
         # hmm leptons
         self.addDiLepton('hmm','hmm1','hmm2')
+        self.addCompositeMet('hmmmet',('pfmet',0),'hmm1','hmm2')
         self.tree.add(lambda rtrow,cands: self.zeppenfeld(rtrow,cands,cands['hmm1'],cands['hmm2']), 'hmm_zeppenfeld','F')
         self.addLepton('hmm1')
         self.tree.add(lambda rtrow,cands: self.passMedium(rtrow,cands['hmm1']), 'hmm1_passMedium', 'I')

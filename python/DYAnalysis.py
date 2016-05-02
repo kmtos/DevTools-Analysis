@@ -18,7 +18,10 @@ class DYAnalysis(AnalysisBase):
     def __init__(self,**kwargs):
         outputFileName = kwargs.pop('outputFileName','dyTree.root')
         outputTreeName = kwargs.pop('outputTreeName','DYTree')
+        # setup a preselection
+        self.preselection = '(electrons_count>1 || muons_count>1)'
         super(DYAnalysis, self).__init__(outputFileName=outputFileName,outputTreeName=outputTreeName,**kwargs)
+
 
         # setup cut tree
         self.cutTree.add(self.twoLoose,'twoLooseLeptons')

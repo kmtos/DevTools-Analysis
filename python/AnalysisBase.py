@@ -42,6 +42,8 @@ class AnalysisBase(object):
         outputTreeName = kwargs.pop('outputTreeName','AnalysisTree')
         if hasProgress:
             self.pbar = kwargs.pop('progressbar',ProgressBar(widgets=['{0}: '.format(outputTreeName),' ',SimpleProgress(),' events ',Percentage(),' ',Bar(),' ',ETA()]))
+        # preselection
+        if not hasattr(self,'preselection'): self.preselection = '1'
         # input files
         self.fileNames = []
         if isinstance(inputFileNames, basestring): # inputFiles is a file name
@@ -61,11 +63,17 @@ class AnalysisBase(object):
         tchainLumi = ROOT.TChain('{0}/{1}'.format(inputTreeDirectory,inputLumiName))
         self.totalEntries = 0
         logging.info('Getting Lumi information')
-        for fName in self.fileNames:
+        self.skims = {}
+        for f,fName in enumerate(self.fileNames):
             if fName.startswith('/store'): fName = 'root://cmsxrootd.hep.wisc.edu//{0}'.format(fName)
             tfile = ROOT.TFile.Open(fName)
             tree = tfile.Get(self.treename)
-            self.totalEntries += tree.GetEntries()
+            skimName = 'skim{0}'.format(f)
+            tree.Draw('>>{0}'.format(skimName),self.preselection,'entrylist')
+            skimlist = ROOT.gDirectory.Get(skimName)
+            listEvents = skimlist.GetN()
+            self.skims[f] = skimlist
+            self.totalEntries += listEvents
             tfile.Close('R')
             tchainLumi.Add(fName)
         # get the lumi info
@@ -135,6 +143,7 @@ class AnalysisBase(object):
         self.finish()
 
     def finish(self):
+        print ''
         logging.info('Finishing')
         logging.info('Writing {0} events'.format(self.eventsStored))
         self.outfile.cd()
@@ -167,11 +176,20 @@ class AnalysisBase(object):
                 if fName.startswith('/store'): fName = 'root://cmsxrootd.hep.wisc.edu//{0}'.format(fName)
                 tfile = ROOT.TFile.Open(fName,'READ')
                 tree = tfile.Get(self.treename)
-                treeEvents = tree.GetEntries()
+                skimName = 'skim{0}'.format(f)
+                tree.Draw('>>{0}'.format(skimName),self.preselection,'entrylist')
+                skimlist = ROOT.gDirectory.Get(skimName)
+                listEvents = skimlist.GetN()
+                #skimlist = self.skims[f]
+                #tree.SetEntryList(skimlist)
+                #treeEvents = tree.GetEntries()
+                #listEvents = skimlist.GetN()
                 rtrow = tree
-                for r in xrange(treeEvents):
+                #for r in xrange(treeEvents):
+                for r in xrange(listEvents):
                     total += 1
-                    rtrow.GetEntry(r)
+                    #rtrow.GetEntry(r)
+                    rtrow.GetEntry(skimlist.Next())
                     self.pbar.update(total)
                     self.perRowAction(rtrow)
                 tfile.Close('R')
@@ -182,12 +200,21 @@ class AnalysisBase(object):
                 logging.info('Processing file {0} of {1}'.format(f+1, len(self.fileNames)))
                 tfile = ROOT.TFile.Open(fName,'READ')
                 tree = tfile.Get(self.treename)
-                treeEvents = tree.GetEntries()
+                skimName = 'skim{0}'.format(f)
+                tree.Draw('>>{0}'.format(skimName),self.preselection,'entrylist')
+                skimlist = ROOT.gDirectory.Get(skimName)
+                listEvents = skimlist.GetN()
+                #skimlist = self.skims[f]
+                #tree.SetEntryList(skimlist)
+                #treeEvents = tree.GetEntries()
+                #listEvents = skimlist.GetN()
                 rtrow = tree
-                for r in xrange(treeEvents):
+                #for r in xrange(treeEvents):
+                for r in xrange(listEvents):
                     total += 1
                     if total==2: start = time.time() # just ignore first event for timing
-                    rtrow.GetEntry(r)
+                    #rtrow.GetEntry(r)
+                    rtrow.GetEntry(skimlist.Next())
                     if total % 1000 == 1:
                         cur = time.time()
                         elapsed = cur-start
@@ -563,4 +590,15 @@ class AnalysisBase(object):
     def addCompositeVar(self,label,objs,varLabel,var,rootType,**kwargs):
         '''Add single variable for multiple objects'''
         self.tree.add(lambda rtrow,cands: self.getCompositeVariable(rtrow,var,*[cands[obj] for obj in objs],**kwargs), '{0}_{1}'.format(label,varLabel), rootType)
+
+    def addCompositeMet(self,label,met,*objs):
+        '''Add variables related to multi object variables'''
+        self.addCompositeMetVar(label,objs,met,'mass','mass','F')
+        self.addCompositeMetVar(label,objs,met,'pt','pt','F')
+        self.addCompositeMetVar(label,objs,met,'eta','eta','F')
+        self.addCompositeMetVar(label,objs,met,'mt','mt','F')
+
+    def addCompositeMetVar(self,label,objs,met,varLabel,var,rootType,**kwargs):
+        '''Add single variable for multiple objects'''
+        self.tree.add(lambda rtrow,cands: self.getCompositeMetVariable(rtrow,var,met,*[cands[obj] for obj in objs],**kwargs), '{0}_{1}'.format(label,varLabel), rootType)
 

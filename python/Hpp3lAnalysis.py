@@ -19,6 +19,7 @@ class Hpp3lAnalysis(AnalysisBase):
     def __init__(self,**kwargs):
         outputFileName = kwargs.pop('outputFileName','hpp3lTree.root')
         outputTreeName = kwargs.pop('outputTreeName','Hpp3lTree')
+        self.preselection = 'electrons_count+muons_count+taus_count>2'
         super(Hpp3lAnalysis, self).__init__(outputFileName=outputFileName,outputTreeName=outputTreeName,**kwargs)
 
         # setup cut tree
@@ -62,10 +63,12 @@ class Hpp3lAnalysis(AnalysisBase):
 
         # 3 lepton
         self.addComposite('3l','hpp1','hpp2','hm1')
+        self.addCompositeMet('3lmet',('pfmet',0),'hpp1','hpp2','hm1')
         self.tree.add(lambda rtrow,cands: self.zeppenfeld(rtrow,cands,cands['hpp1'],cands['hpp2'],cands['hm1']), '3l_zeppenfeld','F')
 
         # hpp leptons
         self.addDiLepton('hpp','hpp1','hpp2')
+        self.addCompositeMet('hppmet',('pfmet',0),'hpp1','hpp2')
         self.tree.add(lambda rtrow,cands: self.zeppenfeld(rtrow,cands,cands['hpp1'],cands['hpp2']), 'hpp_zeppenfeld','F')
         self.addLepton('hpp1')
         self.tree.add(lambda rtrow,cands: self.passMedium(rtrow,cands['hpp1']), 'hpp1_passMedium', 'I')
