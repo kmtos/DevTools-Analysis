@@ -21,15 +21,22 @@ class FakeRates(object):
         self.fakehists['electrons'][self.fakekey.format(num='WZTight',denom='WZLoose')] = self.fake_rootfile.Get('e/tight/fakeratePtEta')
         self.fakehists['muons'][self.fakekey.format(num='WZMedium',denom='WZLoose')] = self.fake_rootfile.Get('m/medium/fakeratePtEta')
         self.fakehists['muons'][self.fakekey.format(num='WZTight',denom='WZLoose')] = self.fake_rootfile.Get('m/tight/fakeratePtEta')
+        # H++ fakerates
+        fake_path = '{0}/src/DevTools/Analyzer/data/fakerates_dijet_hpp_13TeV_Run2015D.root'.format(os.environ['CMSSW_BASE'])
+        self.fake_hpp_rootfile = ROOT.TFile(fake_path)
+        self.fakehists['electrons'][self.fakekey.format(num='HppMedium',denom='HppLoose')] = self.fake_hpp_rootfile.Get('e/medium/fakeratePtEta')
+        self.fakehists['electrons'][self.fakekey.format(num='HppTight',denom='HppLoose')] = self.fake_hpp_rootfile.Get('e/tight/fakeratePtEta')
+        self.fakehists['muons'][self.fakekey.format(num='HppMedium',denom='HppLoose')] = self.fake_hpp_rootfile.Get('m/medium/fakeratePtEta')
+        self.fakehists['muons'][self.fakekey.format(num='HppTight',denom='HppLoose')] = self.fake_hpp_rootfile.Get('m/tight/fakeratePtEta')
         # tau fakerates
         fake_path = '{0}/src/DevTools/Analyzer/data/fakerates_w_tau_13TeV_Run2015D.root'.format(os.environ['CMSSW_BASE'])
         self.fake_tau_rootfile = ROOT.TFile(fake_path)
-        self.fakehists['taus'][self.fakekey.format(num='HppMedium',denom='HppLoose')] = self.fake_rootfile.Get('medium_loose/fakeratePtEta')
-        self.fakehists['taus'][self.fakekey.format(num='HppTight',denom='HppLoose')] = self.fake_rootfile.Get('tight_loose/fakeratePtEta')
-        self.fakehists['taus'][self.fakekey.format(num='HppTight',denom='HppMedium')] = self.fake_rootfile.Get('tight_medium/fakeratePtEta')
-        self.fakehists_mc['taus'][self.fakekey.format(num='HppMedium',denom='HppLoose')] = self.fake_rootfile.Get('medium_loose/fakeratePtEta_fromMC')
-        self.fakehists_mc['taus'][self.fakekey.format(num='HppTight',denom='HppLoose')] = self.fake_rootfile.Get('tight_loose/fakeratePtEta_fromMC')
-        self.fakehists_mc['taus'][self.fakekey.format(num='HppTight',denom='HppMedium')] = self.fake_rootfile.Get('tight_medium/fakeratePtEta_fromMC')
+        self.fakehists['taus'][self.fakekey.format(num='HppMedium',denom='HppLoose')] = self.fake_tau_rootfile.Get('medium_loose/fakeratePtEta')
+        self.fakehists['taus'][self.fakekey.format(num='HppTight',denom='HppLoose')] = self.fake_tau_rootfile.Get('tight_loose/fakeratePtEta')
+        self.fakehists['taus'][self.fakekey.format(num='HppTight',denom='HppMedium')] = self.fake_tau_rootfile.Get('tight_medium/fakeratePtEta')
+        self.fakehists_mc['taus'][self.fakekey.format(num='HppMedium',denom='HppLoose')] = self.fake_tau_rootfile.Get('medium_loose/fakeratePtEta_fromMC')
+        self.fakehists_mc['taus'][self.fakekey.format(num='HppTight',denom='HppLoose')] = self.fake_tau_rootfile.Get('tight_loose/fakeratePtEta_fromMC')
+        self.fakehists_mc['taus'][self.fakekey.format(num='HppTight',denom='HppMedium')] = self.fake_tau_rootfile.Get('tight_medium/fakeratePtEta_fromMC')
 
     def __exit__(self, type, value, traceback):
         self.__finish()
@@ -39,6 +46,7 @@ class FakeRates(object):
 
     def __finish(self):
         self.fake_rootfile.Close()
+        self.fake_hpp_rootfile.Close()
         self.fake_tau_rootfile.Close()
 
     def __get_fakerate(self,cand,pt,eta,num,denom):

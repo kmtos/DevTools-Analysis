@@ -278,7 +278,7 @@ class Hpp3lAnalysis(AnalysisBase):
         if cand[0]=='muons':
             return self.leptonScales.getScale(rtrow,'MediumIDLooseIso',cand)
         elif cand[0]=='electrons':
-            return self.leptonScales.getScale(rtrow,'CutbasedVeto',cand) # TODO, fix
+            return self.leptonScales.getScale(rtrow,'CutbasedVeto',cand)
         else:
             return 1.
 
@@ -299,10 +299,10 @@ class Hpp3lAnalysis(AnalysisBase):
             return 1.
 
     def mediumFakeRate(self,rtrow,cand):
-        return self.fakeRates.getFakeRate(rtrow,cand,'WZMedium','WZLoose')
+        return self.fakeRates.getFakeRate(rtrow,cand,'HppMedium','HppLoose')
 
     def tightFakeRate(self,rtrow,cand):
-        return self.fakeRates.getFakeRate(rtrow,cand,'WZTight','WZLoose')
+        return self.fakeRates.getFakeRate(rtrow,cand,'HppTight','HppLoose')
 
     def getPassingCands(self,rtrow,mode):
         if mode=='Loose':
