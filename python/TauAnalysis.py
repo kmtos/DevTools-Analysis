@@ -44,11 +44,11 @@ class TauAnalysis(AnalysisBase):
 
         self.eventsStored += 1
 
-    #########################
+    #################
     ### detailed  ###
-    #########################
+    #################
     def addDetailedTau(self,label):
-        '''Add detailed  variables'''
+        '''Add detailed variables'''
         self.addCandVar(label,'againstMuonLoose3','againstMuonLoose3','I')
         self.addCandVar(label,'againstMuonTight3','againstMuonTight3','I')
         self.addCandVar(label,'againstElectronVLooseMVA6','againstElectronVLooseMVA6','I')
@@ -61,3 +61,8 @@ class TauAnalysis(AnalysisBase):
         self.addCandVar(label,'byMediumIsolationMVArun2v1DBoldDMwLT','byMediumIsolationMVArun2v1DBoldDMwLT','I')
         self.addCandVar(label,'byTightIsolationMVArun2v1DBoldDMwLT','byTightIsolationMVArun2v1DBoldDMwLT','I')
         self.addCandVar(label,'byVTightIsolationMVArun2v1DBoldDMwLT','byVTightIsolationMVArun2v1DBoldDMwLT','I')
+        self.addCandVar(label,'decayModeFindingNewDMs','decayModeFindingNewDMs','I')
+        self.addCandVar(label,'byLooseIsolationMVArun2v1DBnewDMwLT','byLooseIsolationMVArun2v1DBnewDMwLT','I')
+        self.addCandVar(label,'byMediumIsolationMVArun2v1DBnewDMwLT','byMediumIsolationMVArun2v1DBnewDMwLT','I')
+        self.addCandVar(label,'byTightIsolationMVArun2v1DBnewDMwLT','byTightIsolationMVArun2v1DBnewDMwLT','I')
+        self.addCandVar(label,'byVTightIsolationMVArun2v1DBnewDMwLT','byVTightIsolationMVArun2v1DBnewDMwLT','I')
