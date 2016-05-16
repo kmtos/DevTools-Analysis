@@ -203,6 +203,12 @@ class Hpp4lAnalysis(AnalysisBase):
             else:
                 pts_ts = [pts[cand] for cand in ts]
                 if sorted(pts_ts)[-2]<35.: continue
+            # allow at most 2 fake taus (Z)
+            numFake = 0
+            for t in ts:
+                if t in leps and t not in medLeps: numFake += 1
+            if numFake>2: continue
+            # its a good candidate
             hppCands += [quad]
         if not hppCands: return candidate
 
@@ -386,7 +392,7 @@ class Hpp4lAnalysis(AnalysisBase):
             15: 't',
         }
         if 'HPlusPlusHMinusMinusHTo4L' in self.fileNames[0]: # h++h-- signal sample
-            for s in [1,-1]:
+            for s in [-1,1]:
                 h = -1*s*9900041                     # h++ in pythia8
                 for l1 in [s*11, s*13, s*15]:        # lepton 1
                     for l2 in [s*11, s*13, s*15]:    # lepton 2

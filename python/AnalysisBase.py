@@ -40,6 +40,7 @@ class AnalysisBase(object):
         inputLumiName = kwargs.pop('inputTreeName','LumiTree')
         outputFileName = kwargs.pop('outputFileName','analysisTree.root')
         outputTreeName = kwargs.pop('outputTreeName','AnalysisTree')
+        self.outputTreeName = outputTreeName
         if hasProgress:
             self.pbar = kwargs.pop('progressbar',ProgressBar(widgets=['{0}: '.format(outputTreeName),' ',SimpleProgress(),' events ',Percentage(),' ',Bar(),' ',ETA()]))
         # preselection
@@ -221,7 +222,7 @@ class AnalysisBase(object):
                         remaining = float(elapsed)/total * float(self.totalEntries) - float(elapsed)
                         mins, secs = divmod(int(remaining),60)
                         hours, mins = divmod(mins,60)
-                        logging.info('Processing event {0}/{1} - {2}:{3:02d}:{4:02d} remaining'.format(total,self.totalEntries,hours,mins,secs))
+                        logging.info('{0}: Processing event {1}/{2} - {3}:{4:02d}:{5:02d} remaining'.format(self.outputTreeName,total,self.totalEntries,hours,mins,secs))
                         self.flush()
                     self.perRowAction(rtrow)
                 tfile.Close('R')
