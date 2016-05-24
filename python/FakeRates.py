@@ -10,7 +10,8 @@ import operator
 class FakeRates(object):
     '''Class to access the fakerates for a given lepton ID.'''
 
-    def __init__(self):
+    def __init__(self,version):
+        self.version = version
         self.fakehists = {'electrons':{},'muons':{},'taus':{}}
         self.fakehists_mc = {'electrons':{},'muons':{},'taus':{}}
         self.fakekey = '{num}_{denom}'

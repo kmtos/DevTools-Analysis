@@ -7,7 +7,8 @@ import ROOT
 class LeptonScales(object):
     '''Class to access the lepton scales for a given ID.'''
 
-    def __init__(self):
+    def __init__(self,version):
+        self.version = version
         # EGamma POG
         self.egamma_pog_scales = {}
         self.egamma_pog_rootfiles = {}

@@ -14,7 +14,8 @@ def product(iterable):
 class TriggerScales(object):
     '''Class to access the trigger scales for a given trigger configuration.'''
 
-    def __init__(self):
+    def __init__(self,version):
+        self.version = version
         ####################
         ### POG APPROVED ###
         ####################

@@ -10,7 +10,8 @@ import operator
 class TriggerPrescales(object):
     '''Class to access the trigger prescales for a given trigger.'''
 
-    def __init__(self):
+    def __init__(self,version):
+        self.version = version
         self.prescales = {}
         self.prescales['2015D'] = {
             # HLT_Ele12_CaloIdL_TrackIdL_IsoVL_v*

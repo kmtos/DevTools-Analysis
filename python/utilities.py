@@ -5,7 +5,7 @@ import glob
 
 import ROOT
 
-from DevTools.Utilities.utilities import ZMASS, getCMSSWMajorVersion, getCMSSWMinorVersion
+from DevTools.Utilities.utilities import ZMASS, getCMSSWVersion
 
 def deltaPhi(phi0,phi1):
     result = phi0-phi1
@@ -27,7 +27,7 @@ latestNtuples = {
 
 def getNtupleDirectory():
     baseDir = '/hdfs/store/user/dntaylor'
-    version = ''.join([getCMSSWMajorVersion(),getCMSSWMinorVersion(),'X'])
+    version = getCMSSWVersion()
     if version in latestNtuples:
         return os.path.join(baseDir,latestNtuples[version])
 
@@ -35,7 +35,7 @@ def getTestFiles(sample,n=1):
 
     sampleMap = {
         'wz'  : 'WZTo3LNu_TuneCUETP8M1_13TeV-powheg-pythia8',
-        'data': 'MuonEG',
+        'data': 'DoubleMuon',
         'hpp' : 'HPlusPlusHMinusMinusHTo4L_M-500_13TeV-pythia8',
         'dy'  : 'DYJetsToLL_M-50_TuneCUETP8M1_13TeV-amcatnloFXFX-pythia8',
     }

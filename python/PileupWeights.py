@@ -9,7 +9,8 @@ import ROOT
 
 class PileupWeights(object):
 
-    def __init__(self):
+    def __init__(self,version):
+        self.version = version
         path = '{0}/src/DevTools/Analyzer/data/pileup_RunIIFall15MiniAODv2-PU25nsData2015v1_76X_mcRun2_asymptotic_v12.root'.format(os.environ['CMSSW_BASE'])
         self.scale = {}
         self.scale_up = {}

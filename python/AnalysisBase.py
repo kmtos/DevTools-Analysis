@@ -21,6 +21,7 @@ from TriggerScales import TriggerScales
 from TriggerPrescales import TriggerPrescales
 
 from utilities import deltaR, deltaPhi
+from DevTools.Utilities.utilities import getCMSSWVersion
 
 try:
     from progressbar import ProgressBar, ETA, Percentage, Bar, SimpleProgress
@@ -40,6 +41,7 @@ class AnalysisBase(object):
         inputLumiName = kwargs.pop('inputTreeName','LumiTree')
         outputFileName = kwargs.pop('outputFileName','analysisTree.root')
         outputTreeName = kwargs.pop('outputTreeName','AnalysisTree')
+        self.version = getCMSSWVersion()
         self.outputTreeName = outputTreeName
         if hasProgress:
             self.pbar = kwargs.pop('progressbar',ProgressBar(widgets=['{0}: '.format(outputTreeName),' ',SimpleProgress(),' events ',Percentage(),' ',Bar(),' ',ETA()]))
@@ -88,11 +90,11 @@ class AnalysisBase(object):
         logging.info("Will process {0} lumi sections with {1} events ({2}).".format(self.numLumis,self.numEvents,self.summedWeights))
         self.flush()
         # other input files
-        self.pileupWeights = PileupWeights()
-        self.fakeRates = FakeRates()
-        self.leptonScales = LeptonScales()
-        self.triggerScales = TriggerScales()
-        self.triggerPrescales = TriggerPrescales()
+        self.pileupWeights = PileupWeights(self.version)
+        self.fakeRates = FakeRates(self.version)
+        self.leptonScales = LeptonScales(self.version)
+        self.triggerScales = TriggerScales(self.version)
+        self.triggerPrescales = TriggerPrescales(self.version)
         # tfile
         self.outfile = ROOT.TFile(outputFileName,"recreate")
         # cut tree
