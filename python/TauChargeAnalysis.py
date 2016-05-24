@@ -44,12 +44,8 @@ class TauChargeAnalysis(AnalysisBase):
         #self.tree.add(lambda rtrow,cands: len(self.getCands(rtrow,'taus',self.passTight)), 'numTightTaus', 'I')
 
         # trigger
-        #self.tree.add(lambda rtrow,cands: self.getTreeVariable(rtrow,'Mu17_TrkIsoVVL_Mu8_TrkIsoVVL_DZPass'), 'pass_Mu17_TrkIsoVVL_Mu8_TrkIsoVVL_DZ', 'I')
-        #self.tree.add(lambda rtrow,cands: self.getTreeVariable(rtrow,'Mu17_TrkIsoVVL_TkMu8_TrkIsoVVL_DZPass'), 'pass_Mu17_TrkIsoVVL_TkMu8_TrkIsoVVL_DZ', 'I')
-        #self.tree.add(lambda rtrow,cands: self.getTreeVariable(rtrow,'Ele17_Ele12_CaloIdL_TrackIdL_IsoVL_DZPass'), 'pass_Ele17_Ele12_CaloIdL_TrackIdL_IsoVL_DZ', 'I')
         self.tree.add(lambda rtrow,cands: self.getTreeVariable(rtrow,'IsoMu20Pass'), 'pass_IsoMu20', 'I')
         self.tree.add(lambda rtrow,cands: self.getTreeVariable(rtrow,'IsoTkMu20Pass'), 'pass_IsoTkMu20', 'I')
-        #self.tree.add(lambda rtrow,cands: self.getTreeVariable(rtrow,'Ele23_WPLoose_GsfPass'), 'pass_Ele23_WPLoose_Gsf', 'I')
         self.tree.add(self.triggerEfficiency, 'triggerEfficiency', 'F')
 
         # z leptons
@@ -211,35 +207,17 @@ class TauChargeAnalysis(AnalysisBase):
         # accept MC, check trigger for data
         if rtrow.isData<0.5: return True
         triggerNames = {
-            #'DoubleMuon'     : [
-            #    'Mu17_TrkIsoVVL_Mu8_TrkIsoVVL_DZ',
-            #    'Mu17_TrkIsoVVL_TkMu8_TrkIsoVVL_DZ',
-            #],
-            #'DoubleEG'       : [
-            #    'Ele17_Ele12_CaloIdL_TrackIdL_IsoVL_DZ',
-            #],
-            #'MuonEG'         : [
-            #    'Mu8_TrkIsoVVL_Ele17_CaloIdL_TrackIdL_IsoVL',
-            #    'Mu17_TrkIsoVVL_Ele12_CaloIdL_TrackIdL_IsoVL',
-            #],
             'SingleMuon'     : [
                 'IsoMu20',
                 'IsoTkMu20',
             ],
-            #'SingleElectron' : [
-            #    'Ele23_WPLoose_Gsf',
-            #],
         }
         # the order here defines the heirarchy
         # first dataset, any trigger passes
         # second dataset, if a trigger in the first dataset is found, reject event
         # so forth
         datasets = [
-            #'DoubleMuon', 
-            #'DoubleEG', 
-            #'MuonEG',
             'SingleMuon',
-            #'SingleElectron',
         ]
         # reject triggers if they are in another dataset
         # looks for the dataset name in the filename

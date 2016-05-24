@@ -44,9 +44,14 @@ class ChargeAnalysis(AnalysisBase):
         #self.tree.add(lambda rtrow,cands: len(self.getCands(rtrow,'taus',self.passTight)), 'numTightTaus', 'I')
 
         # trigger
-        self.tree.add(lambda rtrow,cands: self.getTreeVariable(rtrow,'Mu17_TrkIsoVVL_Mu8_TrkIsoVVL_DZPass'), 'pass_Mu17_TrkIsoVVL_Mu8_TrkIsoVVL_DZ', 'I')
-        self.tree.add(lambda rtrow,cands: self.getTreeVariable(rtrow,'Mu17_TrkIsoVVL_TkMu8_TrkIsoVVL_DZPass'), 'pass_Mu17_TrkIsoVVL_TkMu8_TrkIsoVVL_DZ', 'I')
-        self.tree.add(lambda rtrow,cands: self.getTreeVariable(rtrow,'Ele17_Ele12_CaloIdL_TrackIdL_IsoVL_DZPass'), 'pass_Ele17_Ele12_CaloIdL_TrackIdL_IsoVL_DZ', 'I')
+        if self.version=='76X':
+            self.tree.add(lambda rtrow,cands: self.getTreeVariable(rtrow,'Mu17_TrkIsoVVL_Mu8_TrkIsoVVL_DZPass'), 'pass_Mu17_TrkIsoVVL_Mu8_TrkIsoVVL_DZ', 'I')
+            self.tree.add(lambda rtrow,cands: self.getTreeVariable(rtrow,'Mu17_TrkIsoVVL_TkMu8_TrkIsoVVL_DZPass'), 'pass_Mu17_TrkIsoVVL_TkMu8_TrkIsoVVL_DZ', 'I')
+            self.tree.add(lambda rtrow,cands: self.getTreeVariable(rtrow,'Ele17_Ele12_CaloIdL_TrackIdL_IsoVL_DZPass'), 'pass_Ele17_Ele12_CaloIdL_TrackIdL_IsoVL_DZ', 'I')
+        else:
+            self.tree.add(lambda rtrow,cands: self.getTreeVariable(rtrow,'Mu17_TrkIsoVVL_Mu8_TrkIsoVVLPass'), 'pass_Mu17_TrkIsoVVL_Mu8_TrkIsoVVL', 'I')
+            self.tree.add(lambda rtrow,cands: self.getTreeVariable(rtrow,'Mu17_TrkIsoVVL_TkMu8_TrkIsoVVLPass'), 'pass_Mu17_TrkIsoVVL_TkMu8_TrkIsoVVL', 'I')
+            self.tree.add(lambda rtrow,cands: self.getTreeVariable(rtrow,'Ele17_Ele12_CaloIdL_TrackIdL_IsoVLPass'), 'pass_Ele17_Ele12_CaloIdL_TrackIdL_IsoVL', 'I')
         self.tree.add(lambda rtrow,cands: self.getTreeVariable(rtrow,'IsoMu20Pass'), 'pass_IsoMu20', 'I')
         self.tree.add(lambda rtrow,cands: self.getTreeVariable(rtrow,'IsoTkMu20Pass'), 'pass_IsoTkMu20', 'I')
         self.tree.add(lambda rtrow,cands: self.getTreeVariable(rtrow,'Ele23_WPLoose_GsfPass'), 'pass_Ele23_WPLoose_Gsf', 'I')
@@ -209,26 +214,48 @@ class ChargeAnalysis(AnalysisBase):
     def trigger(self,rtrow,cands):
         # accept MC, check trigger for data
         if rtrow.isData<0.5: return True
-        triggerNames = {
-            'DoubleMuon'     : [
-                'Mu17_TrkIsoVVL_Mu8_TrkIsoVVL_DZ',
-                'Mu17_TrkIsoVVL_TkMu8_TrkIsoVVL_DZ',
-            ],
-            'DoubleEG'       : [
-                'Ele17_Ele12_CaloIdL_TrackIdL_IsoVL_DZ',
-            ],
-            'MuonEG'         : [
-                'Mu8_TrkIsoVVL_Ele17_CaloIdL_TrackIdL_IsoVL',
-                'Mu17_TrkIsoVVL_Ele12_CaloIdL_TrackIdL_IsoVL',
-            ],
-            'SingleMuon'     : [
-                'IsoMu20',
-                'IsoTkMu20',
-            ],
-            'SingleElectron' : [
-                'Ele23_WPLoose_Gsf',
-            ],
-        }
+        if self.version=='76X':
+            triggerNames = {
+                'DoubleMuon'     : [
+                    'Mu17_TrkIsoVVL_Mu8_TrkIsoVVL_DZ',
+                    'Mu17_TrkIsoVVL_TkMu8_TrkIsoVVL_DZ',
+                ],
+                'DoubleEG'       : [
+                    'Ele17_Ele12_CaloIdL_TrackIdL_IsoVL_DZ',
+                ],
+                'MuonEG'         : [
+                    'Mu8_TrkIsoVVL_Ele17_CaloIdL_TrackIdL_IsoVL',
+                    'Mu17_TrkIsoVVL_Ele12_CaloIdL_TrackIdL_IsoVL',
+                ],
+                'SingleMuon'     : [
+                    'IsoMu20',
+                    'IsoTkMu20',
+                ],
+                'SingleElectron' : [
+                    'Ele23_WPLoose_Gsf',
+                ],
+            }
+        else:
+            triggerNames = {
+                'DoubleMuon'     : [
+                    'Mu17_TrkIsoVVL_Mu8_TrkIsoVVL',
+                    'Mu17_TrkIsoVVL_TkMu8_TrkIsoVVL',
+                ],
+                'DoubleEG'       : [
+                    'Ele17_Ele12_CaloIdL_TrackIdL_IsoVL',
+                ],
+                'MuonEG'         : [
+                    'Mu8_TrkIsoVVL_Ele17_CaloIdL_TrackIdL_IsoVL',
+                    'Mu17_TrkIsoVVL_Ele12_CaloIdL_TrackIdL_IsoVL',
+                ],
+                'SingleMuon'     : [
+                    'IsoMu20',
+                    'IsoTkMu20',
+                ],
+                'SingleElectron' : [
+                    'Ele23_WPLoose_Gsf',
+                ],
+            }
         # the order here defines the heirarchy
         # first dataset, any trigger passes
         # second dataset, if a trigger in the first dataset is found, reject event
