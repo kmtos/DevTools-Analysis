@@ -22,6 +22,7 @@ from TriggerPrescales import TriggerPrescales
 
 from utilities import deltaR, deltaPhi
 from DevTools.Utilities.utilities import getCMSSWVersion
+from Candidates import *
 
 try:
     from progressbar import ProgressBar, ETA, Percentage, Bar, SimpleProgress
@@ -183,17 +184,19 @@ class AnalysisBase(object):
                 tree.Draw('>>{0}'.format(skimName),self.preselection,'entrylist')
                 skimlist = ROOT.gDirectory.Get(skimName)
                 listEvents = skimlist.GetN()
-                #skimlist = self.skims[f]
-                #tree.SetEntryList(skimlist)
-                #treeEvents = tree.GetEntries()
-                #listEvents = skimlist.GetN()
                 rtrow = tree
-                #for r in xrange(treeEvents):
                 for r in xrange(listEvents):
                     total += 1
-                    #rtrow.GetEntry(r)
                     rtrow.GetEntry(skimlist.Next())
                     self.pbar.update(total)
+                    # load objects
+                    self.electrons = [Electron(rtrow,i) for i in range(rtrow.electrons_count)]
+                    self.muons     = [Muon(rtrow,i) for i in range(rtrow.muons_count)]
+                    self.taus      = [Tau(rtrow,i) for i in range(rtrow.taus_count)]
+                    self.photons   = [Photon(rtrow,i) for i in range(rtrow.photons_count)]
+                    self.jets      = [Jet(rtrow,i) for i in range(rtrow.jets_count)]
+                    self.pfmet     = Met(rtrow)
+                    # call per row action
                     self.perRowAction(rtrow)
                 tfile.Close('R')
         else:
@@ -207,16 +210,10 @@ class AnalysisBase(object):
                 tree.Draw('>>{0}'.format(skimName),self.preselection,'entrylist')
                 skimlist = ROOT.gDirectory.Get(skimName)
                 listEvents = skimlist.GetN()
-                #skimlist = self.skims[f]
-                #tree.SetEntryList(skimlist)
-                #treeEvents = tree.GetEntries()
-                #listEvents = skimlist.GetN()
                 rtrow = tree
-                #for r in xrange(treeEvents):
                 for r in xrange(listEvents):
                     total += 1
                     if total==2: start = time.time() # just ignore first event for timing
-                    #rtrow.GetEntry(r)
                     rtrow.GetEntry(skimlist.Next())
                     if total % 1000 == 1:
                         cur = time.time()
@@ -226,6 +223,14 @@ class AnalysisBase(object):
                         hours, mins = divmod(mins,60)
                         logging.info('{0}: Processing event {1}/{2} - {3}:{4:02d}:{5:02d} remaining'.format(self.outputTreeName,total,self.totalEntries,hours,mins,secs))
                         self.flush()
+                    # load objects
+                    self.electrons = [Electron(rtrow,i) for i in range(rtrow.electrons_count)]
+                    self.muons     = [Muon(rtrow,i) for i in range(rtrow.muons_count)]
+                    self.taus      = [Tau(rtrow,i) for i in range(rtrow.taus_count)]
+                    self.photons   = [Photon(rtrow,i) for i in range(rtrow.photons_count)]
+                    self.jets      = [Jet(rtrow,i) for i in range(rtrow.jets_count)]
+                    self.pfmet     = Met(rtrow)
+                    # call per row action
                     self.perRowAction(rtrow)
                 tfile.Close('R')
 
