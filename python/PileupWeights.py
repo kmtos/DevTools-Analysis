@@ -34,6 +34,7 @@ class PileupWeights(object):
         rootfile.Close()
 
     def alt_weight(self,event,xsec):
+        if self.version=='80X': return 1
         vert = event.nTrueVertices()
         if vert < 0:
             return 1
@@ -45,6 +46,7 @@ class PileupWeights(object):
             return val
 
     def weight(self, event):
+        if self.version=='80X': return [1.,1.,1.]
         vert = event.nTrueVertices()
         if vert < 0:
             return [1,1,1]

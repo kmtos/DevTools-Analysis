@@ -81,6 +81,7 @@ class LeptonScales(object):
 
     def getScale(self,leptonId,cand):
         '''Get the scale to apply to MC (eff_data/eff_mc)'''
+        if self.version=='80X': return 1.
         if cand.collName=='electrons':
             val = self.__getElectronScale(leptonId,cand)
         elif cand.collName=='muons':

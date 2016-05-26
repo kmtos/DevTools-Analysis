@@ -341,14 +341,17 @@ class TriggerScales(object):
 
     def getMCEfficiency(self,triggers,cands):
         '''Get the efficiency for a set of triggers for a list of candidates in MC'''
+        if self.version=='80X': return 1
         return self.__getTriggerEfficiency(triggers,cands,'MC')
 
     def getDataEfficiency(self,triggers,cands):
         '''Get the efficiency for a set of triggers for a list of candidates in DATA'''
+        if self.version=='80X': return 1
         return self.__getTriggerEfficiency(triggers,cands,'DATA')
 
     def getRatio(self,triggers,cands):
         '''Get the scale to apply to MC (eff_data/eff_mc)'''
+        if self.version=='80X': return 1
         eff_data = self.getDataEfficiency(triggers,cands)
         eff_mc = self.getMCEfficiency(triggers,cands)
         if eff_mc: return eff_data/eff_mc
