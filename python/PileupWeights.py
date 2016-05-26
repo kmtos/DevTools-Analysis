@@ -33,21 +33,23 @@ class PileupWeights(object):
                 self.alt_scales[xsec][b] = hist_scale.GetBinContent(b+1)
         rootfile.Close()
 
-    def alt_weight(self, rtrow,xsec):
-        if rtrow.nTrueVertices < 0:
+    def alt_weight(self,event,xsec):
+        vert = event.nTrueVertices()
+        if vert < 0:
             return 1
         else:
             if xsec in self.alt_scales:
-                val = self.alt_scales[xsec][int(floor(rtrow.nTrueVertices))]
+                val = self.alt_scales[xsec][int(floor(vert))]
             else:
                 val = 1
             return val
 
-    def weight(self, rtrow):
-        if rtrow.nTrueVertices < 0:
+    def weight(self, event):
+        vert = event.nTrueVertices()
+        if vert < 0:
             return [1,1,1]
         else:
-            val = self.scale[int(floor(rtrow.nTrueVertices))]
-            up = self.scale_up[int(floor(rtrow.nTrueVertices))]
-            down = self.scale_down[int(floor(rtrow.nTrueVertices))]
+            val = self.scale[int(floor(vert))]
+            up = self.scale_up[int(floor(vert))]
+            down = self.scale_down[int(floor(vert))]
             return [val,up,down]

@@ -3,6 +3,7 @@ import logging
 import time
 from AnalysisBase import AnalysisBase
 from utilities import ZMASS, deltaPhi, deltaR
+from Candidates import *
 
 import itertools
 import operator
@@ -22,31 +23,33 @@ class MuonAnalysis(AnalysisBase):
         # setup analysis tree
 
         # w lepton
-        self.addLeptonMet('w','m',('pfmet',0))
+        self.addLeptonMet('w')
         self.addLepton('m')
         self.addDetailedMuon('m')
 
         # met
-        self.addMet('met',('pfmet',0))
+        self.addMet('met')
 
     ####################################################
     ### override analyze to store after every lepton ###
     ####################################################
-    def perRowAction(self,rtrow):
+    def perRowAction(self):
         '''Per row action, can be overridden'''
-        self.cache = {} # cache variables so you dont read from tree as much
-        muons = self.getCands(rtrow,'muons',lambda rtrow,cands: True)
-        for muon in muons:
-            cands = {'m':muon}
-            pt = self.getObjectVariable(rtrow,cands['m'],'pt')
-            if pt<10: continue
-            self.tree.fill(rtrow,cands,allowDuplicates=True)
+        for muon in self.muons:
+            cands = {
+                'm': muon,
+                'w': MetCompositeCandidate(self.pfmet,muon),
+                'met': self.pfmet,
+                'event': self.event
+            }
+            if muon.pt()<10: continue
+            self.tree.fill(cands,allowDuplicates=True)
 
         self.eventsStored += 1
 
-    #########################
-    ### detailed  ###
-    #########################
+    #####################
+    ### detailed muon ###
+    #####################
     def addDetailedMuon(self,label):
         '''Add detailed  variables'''
         self.addCandVar(label,'isLooseMuon','isLooseMuon','I')
@@ -66,9 +69,9 @@ class MuonAnalysis(AnalysisBase):
         self.addCandVar(label,'validPixelHits','validPixelHits','I')
         self.addCandVar(label,'trackerLayers','trackerLayers','I')
         self.addCandVar(label,'pixelLayers','pixelLayers','I')
-        self.addCandVar(label,'validTrackerFractionl','validTrackerFractionl','F')
+        self.addCandVar(label,'validTrackerFraction','validTrackerFraction','F')
         self.addCandVar(label,'bestTrackPtError','bestTrackPtError','F')
         self.addCandVar(label,'bestTrackPt','bestTrackPt','F')
-        self.addCandVar(label,'trackerStandalone','trackerStandalone','F')
+        self.addCandVar(label,'trackerStandaloneMatch','trackerStandaloneMatch','F')
         self.addCandVar(label,'trackKink','trackKink','F')
-        self.tree.add(lambda rtrow,cands: self.getObjectVariable(rtrow,cands[label],'trackIso')/self.getObjectVariable(rtrow,cands[label],'pt'), '{0}_trackRelIso'.format(label), 'F')
+        self.tree.add(lambda cands: cands[label].trackIso()/cands[label].pt(), '{0}_trackRelIso'.format(label), 'F')

@@ -5,6 +5,8 @@ from AnalysisBase import AnalysisBase
 from utilities import ZMASS, deltaPhi, deltaR
 from leptonId import passWZLoose, passWZMedium, passWZTight, passHppLoose, passHppMedium, passHppTight
 
+from Candidates import *
+
 import sys
 import itertools
 import operator
@@ -34,174 +36,173 @@ class Hpp4lAnalysis(AnalysisBase):
         self.tree.add(self.getZChannelString, 'zChannel', ['C',3])
 
         # event counts
-        self.tree.add(lambda rtrow,cands: self.numJets(rtrow,'isLoose',30), 'numJetsLoose30', 'I')
-        self.tree.add(lambda rtrow,cands: self.numJets(rtrow,'isTight',30), 'numJetsTight30', 'I')
-        self.tree.add(lambda rtrow,cands: self.numJets(rtrow,'passCSVv2T',30), 'numBjetsTight30', 'I')
-        self.tree.add(lambda rtrow,cands: len(self.getCands(rtrow,'electrons',self.passLoose)), 'numLooseElectrons', 'I')
-        self.tree.add(lambda rtrow,cands: len(self.getCands(rtrow,'electrons',self.passTight)), 'numTightElectrons', 'I')
-        self.tree.add(lambda rtrow,cands: len(self.getCands(rtrow,'muons',self.passLoose)), 'numLooseMuons', 'I')
-        self.tree.add(lambda rtrow,cands: len(self.getCands(rtrow,'muons',self.passTight)), 'numTightMuons', 'I')
-        self.tree.add(lambda rtrow,cands: len(self.getCands(rtrow,'taus',self.passLoose)), 'numLooseTaus', 'I')
-        self.tree.add(lambda rtrow,cands: len(self.getCands(rtrow,'taus',self.passTight)), 'numTightTaus', 'I')
+        self.tree.add(lambda cands: self.numJets('isLoose',30), 'numJetsLoose30', 'I')
+        self.tree.add(lambda cands: self.numJets('isTight',30), 'numJetsTight30', 'I')
+        self.tree.add(lambda cands: self.numJets('passCSVv2T',30), 'numBjetsTight30', 'I')
+        self.tree.add(lambda cands: len(self.getCands(self.electrons,self.passLoose)), 'numLooseElectrons', 'I')
+        self.tree.add(lambda cands: len(self.getCands(self.electrons,self.passTight)), 'numTightElectrons', 'I')
+        self.tree.add(lambda cands: len(self.getCands(self.muons,self.passLoose)), 'numLooseMuons', 'I')
+        self.tree.add(lambda cands: len(self.getCands(self.muons,self.passTight)), 'numTightMuons', 'I')
+        self.tree.add(lambda cands: len(self.getCands(self.taus,self.passLoose)), 'numLooseTaus', 'I')
+        self.tree.add(lambda cands: len(self.getCands(self.taus,self.passTight)), 'numTightTaus', 'I')
 
         # trigger
-        self.tree.add(lambda rtrow,cands: self.getTreeVariable(rtrow,'Mu17_TrkIsoVVL_Mu8_TrkIsoVVL_DZPass'), 'pass_Mu17_TrkIsoVVL_Mu8_TrkIsoVVL_DZ', 'I')
-        self.tree.add(lambda rtrow,cands: self.getTreeVariable(rtrow,'Mu17_TrkIsoVVL_TkMu8_TrkIsoVVL_DZPass'), 'pass_Mu17_TrkIsoVVL_TkMu8_TrkIsoVVL_DZ', 'I')
-        self.tree.add(lambda rtrow,cands: self.getTreeVariable(rtrow,'Ele17_Ele12_CaloIdL_TrackIdL_IsoVL_DZPass'), 'pass_Ele17_Ele12_CaloIdL_TrackIdL_IsoVL_DZ', 'I')
-        self.tree.add(lambda rtrow,cands: self.getTreeVariable(rtrow,'Mu8_TrkIsoVVL_Ele17_CaloIdL_TrackIdL_IsoVLPass'), 'pass_Mu8_TrkIsoVVL_Ele17_CaloIdL_TrackIdL_IsoVL', 'I')
-        self.tree.add(lambda rtrow,cands: self.getTreeVariable(rtrow,'Mu17_TrkIsoVVL_Ele12_CaloIdL_TrackIdL_IsoVLPass'), 'pass_Mu17_TrkIsoVVL_Ele12_CaloIdL_TrackIdL_IsoVL', 'I')
-        self.tree.add(lambda rtrow,cands: self.getTreeVariable(rtrow,'IsoMu20Pass'), 'pass_IsoMu20', 'I')
-        self.tree.add(lambda rtrow,cands: self.getTreeVariable(rtrow,'IsoTkMu20Pass'), 'pass_IsoTkMu20', 'I')
-        self.tree.add(lambda rtrow,cands: self.getTreeVariable(rtrow,'Ele23_WPLoose_GsfPass'), 'pass_Ele23_WPLoose_Gsf', 'I')
-        self.tree.add(lambda rtrow,cands: self.getTreeVariable(rtrow,'DoubleMediumIsoPFTau35_Trk1_eta2p1_RegPass'), 'pass_DoubleMediumIsoPFTau35_Trk1_eta2p1_Reg', 'I')
+        self.tree.add(lambda cands: self.event.Mu17_TrkIsoVVL_Mu8_TrkIsoVVL_DZPass(), 'pass_Mu17_TrkIsoVVL_Mu8_TrkIsoVVL_DZ', 'I')
+        self.tree.add(lambda cands: self.event.Mu17_TrkIsoVVL_TkMu8_TrkIsoVVL_DZPass(), 'pass_Mu17_TrkIsoVVL_TkMu8_TrkIsoVVL_DZ', 'I')
+        self.tree.add(lambda cands: self.event.Ele17_Ele12_CaloIdL_TrackIdL_IsoVL_DZPass(), 'pass_Ele17_Ele12_CaloIdL_TrackIdL_IsoVL_DZ', 'I')
+        self.tree.add(lambda cands: self.event.Mu8_TrkIsoVVL_Ele17_CaloIdL_TrackIdL_IsoVLPass(), 'pass_Mu8_TrkIsoVVL_Ele17_CaloIdL_TrackIdL_IsoVL', 'I')
+        self.tree.add(lambda cands: self.event.Mu17_TrkIsoVVL_Ele12_CaloIdL_TrackIdL_IsoVLPass(), 'pass_Mu17_TrkIsoVVL_Ele12_CaloIdL_TrackIdL_IsoVL', 'I')
+        self.tree.add(lambda cands: self.event.IsoMu20Pass(), 'pass_IsoMu20', 'I')
+        self.tree.add(lambda cands: self.event.IsoTkMu20Pass(), 'pass_IsoTkMu20', 'I')
+        self.tree.add(lambda cands: self.event.Ele23_WPLoose_GsfPass(), 'pass_Ele23_WPLoose_Gsf', 'I')
+        self.tree.add(lambda cands: self.event.DoubleMediumIsoPFTau35_Trk1_eta2p1_RegPass(), 'pass_DoubleMediumIsoPFTau35_Trk1_eta2p1_Reg', 'I')
         self.tree.add(self.triggerEfficiency, 'triggerEfficiency', 'F')
 
-        # vbf
-        self.addJet('leadJet')
-        self.addJet('subleadJet')
-        self.addDiJet('dijet','leadJet','subleadJet')
-        self.tree.add(lambda rtrow,cands: self.numCentralJets(rtrow,cands,'isLoose',30), 'dijet_numCentralJetsLoose30', 'I')
-        self.tree.add(lambda rtrow,cands: self.numCentralJets(rtrow,cands,'isTight',30), 'dijet_numCentralJetsTight30', 'I')
+        ## vbf
+        #self.addJet('leadJet')
+        #self.addJet('subleadJet')
+        #self.addDiJet('dijet','leadJet','subleadJet')
+        #self.tree.add(lambda cands: self.numCentralJets(cands,'isLoose',30), 'dijet_numCentralJetsLoose30', 'I')
+        #self.tree.add(lambda cands: self.numCentralJets(cands,'isTight',30), 'dijet_numCentralJetsTight30', 'I')
 
         # 4 lepton
-        self.addComposite('4l','hpp1','hpp2','hmm1', 'hmm2')
-        self.addCompositeMet('4lmet',('pfmet',0),'hpp1','hpp2','hmm1', 'hmm2')
-        self.tree.add(lambda rtrow,cands: self.zeppenfeld(rtrow,cands,cands['hpp1'],cands['hpp2'],cands['hmm1'],cands['hmm2']), '4l_zeppenfeld','F')
+        self.addComposite('4l')
+        self.addCompositeMet('4lmet')
+        #self.tree.add(lambda cands: self.zeppenfeld(cands,cands['hpp1'],cands['hpp2'],cands['hmm1'],cands['hmm2']), '4l_zeppenfeld','F')
 
         # hpp leptons
-        self.addDiLepton('hpp','hpp1','hpp2')
-        self.addCompositeMet('hppmet',('pfmet',0),'hpp1','hpp2')
-        self.tree.add(lambda rtrow,cands: self.zeppenfeld(rtrow,cands,cands['hpp1'],cands['hpp2']), 'hpp_zeppenfeld','F')
+        self.addDiLepton('hpp')
+        self.addCompositeMet('hppmet')
+        #self.tree.add(lambda cands: self.zeppenfeld(cands,cands['hpp1'],cands['hpp2']), 'hpp_zeppenfeld','F')
         self.addLepton('hpp1')
-        self.tree.add(lambda rtrow,cands: self.passMedium(rtrow,cands['hpp1']), 'hpp1_passMedium', 'I')
-        self.tree.add(lambda rtrow,cands: self.passTight(rtrow,cands['hpp1']), 'hpp1_passTight', 'I')
-        self.tree.add(lambda rtrow,cands: self.looseScale(rtrow,cands['hpp1']), 'hpp1_looseScale', 'F')
-        self.tree.add(lambda rtrow,cands: self.mediumScale(rtrow,cands['hpp1']), 'hpp1_mediumScale', 'F')
-        self.tree.add(lambda rtrow,cands: self.tightScale(rtrow,cands['hpp1']), 'hpp1_tightScale', 'F')
-        self.tree.add(lambda rtrow,cands: self.mediumFakeRate(rtrow,cands['hpp1']), 'hpp1_mediumFakeRate', 'F')
-        self.tree.add(lambda rtrow,cands: self.tightFakeRate(rtrow,cands['hpp1']), 'hpp1_tightFakeRate', 'F')
-        self.tree.add(lambda rtrow,cands: self.zeppenfeld(rtrow,cands,cands['hpp1']), 'hpp1_zeppenfeld','F')
+        self.tree.add(lambda cands: self.passMedium(cands['hpp1']), 'hpp1_passMedium', 'I')
+        self.tree.add(lambda cands: self.passTight(cands['hpp1']), 'hpp1_passTight', 'I')
+        self.tree.add(lambda cands: self.looseScale(cands['hpp1']), 'hpp1_looseScale', 'F')
+        self.tree.add(lambda cands: self.mediumScale(cands['hpp1']), 'hpp1_mediumScale', 'F')
+        self.tree.add(lambda cands: self.tightScale(cands['hpp1']), 'hpp1_tightScale', 'F')
+        self.tree.add(lambda cands: self.mediumFakeRate(cands['hpp1']), 'hpp1_mediumFakeRate', 'F')
+        self.tree.add(lambda cands: self.tightFakeRate(cands['hpp1']), 'hpp1_tightFakeRate', 'F')
+        #self.tree.add(lambda cands: self.zeppenfeld(cands,cands['hpp1']), 'hpp1_zeppenfeld','F')
         self.addLepton('hpp2')
-        self.tree.add(lambda rtrow,cands: self.passMedium(rtrow,cands['hpp2']), 'hpp2_passMedium', 'I')
-        self.tree.add(lambda rtrow,cands: self.passTight(rtrow,cands['hpp2']), 'hpp2_passTight', 'I')
-        self.tree.add(lambda rtrow,cands: self.looseScale(rtrow,cands['hpp2']), 'hpp2_looseScale', 'F')
-        self.tree.add(lambda rtrow,cands: self.mediumScale(rtrow,cands['hpp2']), 'hpp2_mediumScale', 'F')
-        self.tree.add(lambda rtrow,cands: self.tightScale(rtrow,cands['hpp2']), 'hpp2_tightScale', 'F')
-        self.tree.add(lambda rtrow,cands: self.mediumFakeRate(rtrow,cands['hpp2']), 'hpp2_mediumFakeRate', 'F')
-        self.tree.add(lambda rtrow,cands: self.tightFakeRate(rtrow,cands['hpp2']), 'hpp2_tightFakeRate', 'F')
-        self.tree.add(lambda rtrow,cands: self.zeppenfeld(rtrow,cands,cands['hpp2']), 'hpp2_zeppenfeld','F')
+        self.tree.add(lambda cands: self.passMedium(cands['hpp2']), 'hpp2_passMedium', 'I')
+        self.tree.add(lambda cands: self.passTight(cands['hpp2']), 'hpp2_passTight', 'I')
+        self.tree.add(lambda cands: self.looseScale(cands['hpp2']), 'hpp2_looseScale', 'F')
+        self.tree.add(lambda cands: self.mediumScale(cands['hpp2']), 'hpp2_mediumScale', 'F')
+        self.tree.add(lambda cands: self.tightScale(cands['hpp2']), 'hpp2_tightScale', 'F')
+        self.tree.add(lambda cands: self.mediumFakeRate(cands['hpp2']), 'hpp2_mediumFakeRate', 'F')
+        self.tree.add(lambda cands: self.tightFakeRate(cands['hpp2']), 'hpp2_tightFakeRate', 'F')
+        #self.tree.add(lambda cands: self.zeppenfeld(cands,cands['hpp2']), 'hpp2_zeppenfeld','F')
 
         # hmm leptons
-        self.addDiLepton('hmm','hmm1','hmm2')
-        self.addCompositeMet('hmmmet',('pfmet',0),'hmm1','hmm2')
-        self.tree.add(lambda rtrow,cands: self.zeppenfeld(rtrow,cands,cands['hmm1'],cands['hmm2']), 'hmm_zeppenfeld','F')
+        self.addDiLepton('hmm')
+        self.addCompositeMet('hmmmet')
+        #self.tree.add(lambda cands: self.zeppenfeld(cands,cands['hmm1'],cands['hmm2']), 'hmm_zeppenfeld','F')
         self.addLepton('hmm1')
-        self.tree.add(lambda rtrow,cands: self.passMedium(rtrow,cands['hmm1']), 'hmm1_passMedium', 'I')
-        self.tree.add(lambda rtrow,cands: self.passTight(rtrow,cands['hmm1']), 'hmm1_passTight', 'I')
-        self.tree.add(lambda rtrow,cands: self.looseScale(rtrow,cands['hmm1']), 'hmm1_looseScale', 'F')
-        self.tree.add(lambda rtrow,cands: self.mediumScale(rtrow,cands['hmm1']), 'hmm1_mediumScale', 'F')
-        self.tree.add(lambda rtrow,cands: self.tightScale(rtrow,cands['hmm1']), 'hmm1_tightScale', 'F')
-        self.tree.add(lambda rtrow,cands: self.zeppenfeld(rtrow,cands,cands['hmm1']), 'hmm1_zeppenfeld','F')
-        self.tree.add(lambda rtrow,cands: self.mediumFakeRate(rtrow,cands['hmm1']), 'hmm1_mediumFakeRate', 'F')
-        self.tree.add(lambda rtrow,cands: self.tightFakeRate(rtrow,cands['hmm1']), 'hmm1_tightFakeRate', 'F')
+        self.tree.add(lambda cands: self.passMedium(cands['hmm1']), 'hmm1_passMedium', 'I')
+        self.tree.add(lambda cands: self.passTight(cands['hmm1']), 'hmm1_passTight', 'I')
+        self.tree.add(lambda cands: self.looseScale(cands['hmm1']), 'hmm1_looseScale', 'F')
+        self.tree.add(lambda cands: self.mediumScale(cands['hmm1']), 'hmm1_mediumScale', 'F')
+        self.tree.add(lambda cands: self.tightScale(cands['hmm1']), 'hmm1_tightScale', 'F')
+        self.tree.add(lambda cands: self.mediumFakeRate(cands['hmm1']), 'hmm1_mediumFakeRate', 'F')
+        self.tree.add(lambda cands: self.tightFakeRate(cands['hmm1']), 'hmm1_tightFakeRate', 'F')
+        #self.tree.add(lambda cands: self.zeppenfeld(cands,cands['hmm1']), 'hmm1_zeppenfeld','F')
         self.addLepton('hmm2')
-        self.tree.add(lambda rtrow,cands: self.passMedium(rtrow,cands['hmm2']), 'hmm2_passMedium', 'I')
-        self.tree.add(lambda rtrow,cands: self.passTight(rtrow,cands['hmm2']), 'hmm2_passTight', 'I')
-        self.tree.add(lambda rtrow,cands: self.looseScale(rtrow,cands['hmm2']), 'hmm2_looseScale', 'F')
-        self.tree.add(lambda rtrow,cands: self.mediumScale(rtrow,cands['hmm2']), 'hmm2_mediumScale', 'F')
-        self.tree.add(lambda rtrow,cands: self.tightScale(rtrow,cands['hmm2']), 'hmm2_tightScale', 'F')
-        self.tree.add(lambda rtrow,cands: self.zeppenfeld(rtrow,cands,cands['hmm2']), 'hmm2_zeppenfeld','F')
-        self.tree.add(lambda rtrow,cands: self.mediumFakeRate(rtrow,cands['hmm2']), 'hmm2_mediumFakeRate', 'F')
-        self.tree.add(lambda rtrow,cands: self.tightFakeRate(rtrow,cands['hmm2']), 'hmm2_tightFakeRate', 'F')
+        self.tree.add(lambda cands: self.passMedium(cands['hmm2']), 'hmm2_passMedium', 'I')
+        self.tree.add(lambda cands: self.passTight(cands['hmm2']), 'hmm2_passTight', 'I')
+        self.tree.add(lambda cands: self.looseScale(cands['hmm2']), 'hmm2_looseScale', 'F')
+        self.tree.add(lambda cands: self.mediumScale(cands['hmm2']), 'hmm2_mediumScale', 'F')
+        self.tree.add(lambda cands: self.tightScale(cands['hmm2']), 'hmm2_tightScale', 'F')
+        self.tree.add(lambda cands: self.mediumFakeRate(cands['hmm2']), 'hmm2_mediumFakeRate', 'F')
+        self.tree.add(lambda cands: self.tightFakeRate(cands['hmm2']), 'hmm2_tightFakeRate', 'F')
+        #self.tree.add(lambda cands: self.zeppenfeld(cands,cands['hmm2']), 'hmm2_zeppenfeld','F')
 
         # wrong combination
-        self.addDiLepton('hmm1_hpp1','hmm1','hpp1')
-        self.addDiLepton('hmm1_hpp2','hmm1','hpp2')
-        self.addDiLepton('hmm2_hpp1','hmm2','hpp1')
-        self.addDiLepton('hmm2_hpp2','hmm2','hpp2')
+        self.addDiLepton('hmm1_hpp1')
+        self.addDiLepton('hmm1_hpp2')
+        self.addDiLepton('hmm2_hpp1')
+        self.addDiLepton('hmm2_hpp2')
 
         # z leptons
-        self.addDiLepton('z','z1','z2')
-        self.tree.add(lambda rtrow,cands: self.zeppenfeld(rtrow,cands,cands['z1'],cands['z2']), 'z_zeppenfeld','F')
+        self.addDiLepton('z')
+        #self.tree.add(lambda cands: self.zeppenfeld(cands,cands['z1'],cands['z2']), 'z_zeppenfeld','F')
         self.addLepton('z1')
-        self.tree.add(lambda rtrow,cands: self.passMedium(rtrow,cands['z1']), 'z1_passMedium', 'I')
-        self.tree.add(lambda rtrow,cands: self.passTight(rtrow,cands['z1']), 'z1_passTight', 'I')
-        self.tree.add(lambda rtrow,cands: self.looseScale(rtrow,cands['z1']), 'z1_looseScale', 'F')
-        self.tree.add(lambda rtrow,cands: self.mediumScale(rtrow,cands['z1']), 'z1_mediumScale', 'F')
-        self.tree.add(lambda rtrow,cands: self.tightScale(rtrow,cands['z1']), 'z1_tightScale', 'F')
-        self.tree.add(lambda rtrow,cands: self.mediumFakeRate(rtrow,cands['z1']), 'z1_mediumFakeRate', 'F')
-        self.tree.add(lambda rtrow,cands: self.tightFakeRate(rtrow,cands['z1']), 'z1_tightFakeRate', 'F')
-        self.tree.add(lambda rtrow,cands: self.zeppenfeld(rtrow,cands,cands['z1']), 'z1_zeppenfeld','F')
+        self.tree.add(lambda cands: self.passMedium(cands['z1']), 'z1_passMedium', 'I')
+        self.tree.add(lambda cands: self.passTight(cands['z1']), 'z1_passTight', 'I')
+        self.tree.add(lambda cands: self.looseScale(cands['z1']), 'z1_looseScale', 'F')
+        self.tree.add(lambda cands: self.mediumScale(cands['z1']), 'z1_mediumScale', 'F')
+        self.tree.add(lambda cands: self.tightScale(cands['z1']), 'z1_tightScale', 'F')
+        self.tree.add(lambda cands: self.mediumFakeRate(cands['z1']), 'z1_mediumFakeRate', 'F')
+        self.tree.add(lambda cands: self.tightFakeRate(cands['z1']), 'z1_tightFakeRate', 'F')
+        #self.tree.add(lambda cands: self.zeppenfeld(cands,cands['z1']), 'z1_zeppenfeld','F')
         self.addLepton('z2')
-        self.tree.add(lambda rtrow,cands: self.passMedium(rtrow,cands['z2']), 'z2_passMedium', 'I')
-        self.tree.add(lambda rtrow,cands: self.passTight(rtrow,cands['z2']), 'z2_passTight', 'I')
-        self.tree.add(lambda rtrow,cands: self.looseScale(rtrow,cands['z2']), 'z2_looseScale', 'F')
-        self.tree.add(lambda rtrow,cands: self.mediumScale(rtrow,cands['z2']), 'z2_mediumScale', 'F')
-        self.tree.add(lambda rtrow,cands: self.tightScale(rtrow,cands['z2']), 'z2_tightScale', 'F')
-        self.tree.add(lambda rtrow,cands: self.mediumFakeRate(rtrow,cands['z2']), 'z2_mediumFakeRate', 'F')
-        self.tree.add(lambda rtrow,cands: self.tightFakeRate(rtrow,cands['z2']), 'z2_tightFakeRate', 'F')
-        self.tree.add(lambda rtrow,cands: self.zeppenfeld(rtrow,cands,cands['z2']), 'z2_zeppenfeld','F')
+        self.tree.add(lambda cands: self.passMedium(cands['z2']), 'z2_passMedium', 'I')
+        self.tree.add(lambda cands: self.passTight(cands['z2']), 'z2_passTight', 'I')
+        self.tree.add(lambda cands: self.looseScale(cands['z2']), 'z2_looseScale', 'F')
+        self.tree.add(lambda cands: self.mediumScale(cands['z2']), 'z2_mediumScale', 'F')
+        self.tree.add(lambda cands: self.tightScale(cands['z2']), 'z2_tightScale', 'F')
+        self.tree.add(lambda cands: self.mediumFakeRate(cands['z2']), 'z2_mediumFakeRate', 'F')
+        self.tree.add(lambda cands: self.tightFakeRate(cands['z2']), 'z2_tightFakeRate', 'F')
+        #self.tree.add(lambda cands: self.zeppenfeld(cands,cands['z2']), 'z2_zeppenfeld','F')
 
         # met
-        self.addMet('met',('pfmet',0))
+        self.addMet('met')
 
     ############################
     ### select 4l candidates ###
     ############################
-    def selectCandidates(self,rtrow):
+    def selectCandidates(self):
         candidate = {
-            'hpp1' : (),
-            'hpp2' : (),
-            'hmm1' : (),
-            'hmm2' : (),
-            'z1' : (),
-            'z2' : (),
-            'leadJet' : (),
-            'subleadJet' : (),
+            'hpp1' : None,
+            'hpp2' : None,
+            'hmm1' : None,
+            'hmm2' : None,
+            'hpp' : None,
+            'hppmet' : None,
+            'hmm' : None,
+            'hmmmet' : None,
+            '4l' : None,
+            '4lmet' : None,
+            'hmm1_hpp1' : None,
+            'hmm1_hpp2' : None,
+            'hmm2_hpp1' : None,
+            'hmm2_hpp2' : None,
+            'z1' : Candidate(),
+            'z2' : Candidate(),
+            'z' : DiCandidate(Candidate(),Candidate()),
+            #'leadJet' : (),
+            #'subleadJet' : (),
+            'met': self.pfmet,
         }
 
         # get leptons
-        colls = ['electrons','muons','taus']
-        pts = {}
-        etas = {}
-        phis = {}
-        p4s = {}
-        charges = {}
-        leps = []
-        leps = self.getPassingCands(rtrow,'Loose')
-        medLeps = self.getPassingCands(rtrow,'Medium')
+        leps = self.getPassingCands('Loose')
+        medLeps = self.getPassingCands('Medium')
         if len(leps)<4: return candidate # need at least 4 leptons
 
-
-        for cand in leps:
-            pts[cand] = self.getObjectVariable(rtrow,cand,'pt')
-            etas[cand] = self.getObjectVariable(rtrow,cand,'eta')
-            phis[cand] = self.getObjectVariable(rtrow,cand,'phi')
-            p4s[cand] = self.getObjectVariable(rtrow,cand,'p4')
-            charges[cand] = self.getObjectVariable(rtrow,cand,'charge')
 
         # get the candidates
         hppCands = []
         for quad in itertools.permutations(leps,4):
             # require ++--
-            if charges[quad[0]]+charges[quad[1]]!=2: continue
-            if charges[quad[2]]+charges[quad[3]]!=-2: continue
+            if quad[0].charge()+quad[1].charge()!=2: continue
+            if quad[2].charge()+quad[3].charge()!=-2: continue
             # require deltaR seperation of 0.02 m(ll)>12
             keep = True
             for i,j in itertools.combinations(range(4),2):
-                dr = deltaR(etas[quad[i]],phis[quad[i]],etas[quad[j]],phis[quad[j]])
-                m = (p4s[quad[i]]+p4s[quad[j]]).M()
+                dicand = DiCandidate(quad[i],quad[j])
+                dr = dicand.deltaR()
+                m = dicand.M()
                 if dr<0.02: keep = False
                 if m<12.: keep = False
             if not keep: continue
             # require lead e/m pt > 20, if all taus, lead 2 pt>35
-            ems = [cand for cand in quad if cand[0] in ['electrons','muons']]
-            ts = [cand for cand in quad if cand[0] in ['taus']]
+            ems = [cand for cand in quad if cand.collName in ['electrons','muons']]
+            ts = [cand for cand in quad if cand.collName in ['taus']]
             if len(ems)>0:
-                pts_ems = [pts[cand] for cand in ems]
+                pts_ems = [cand.pt() for cand in ems]
                 if max(pts_ems)<20.: continue
             else:
-                pts_ts = [pts[cand] for cand in ts]
+                pts_ts = [cand.pt() for cand in ts]
                 if sorted(pts_ts)[-2]<35.: continue
             # allow at most 2 fake taus (Z)
             numFake = 0
@@ -212,114 +213,100 @@ class Hpp4lAnalysis(AnalysisBase):
             hppCands += [quad]
         if not hppCands: return candidate
 
-        # sort by closest to same mass
-        #bestMassDiff = 999999999
-        #bestCand = []
-        #for quad in hppCands:
-        #    hppMass = self.getCompositeVariable(rtrow,'mass',quad[0],quad[1])
-        #    hmmMass = self.getCompositeVariable(rtrow,'mass',quad[2],quad[3])
-        #    massdiff = abs(hppMass-hmmMass)
-        #    if massdiff<bestMassDiff:
-        #        bestCand = quad
-        #        bestMassDiff = massdiff
-
         # sort by highest st
         highestSt = 0
         bestCand = []
         for quad in hppCands:
-            st = sum([pts[cand] for cand in quad])
+            st = sum([cand.pt() for cand in quad])
             if st>highestSt:
                 bestCand = quad
                 highestSt = st
 
-        candidate['hpp1'] = bestCand[0] if pts[bestCand[0]]>pts[bestCand[1]] else bestCand[1]
-        candidate['hpp2'] = bestCand[1] if pts[bestCand[0]]>pts[bestCand[1]] else bestCand[0]
-        candidate['hmm1'] = bestCand[2] if pts[bestCand[2]]>pts[bestCand[3]] else bestCand[3]
-        candidate['hmm2'] = bestCand[3] if pts[bestCand[2]]>pts[bestCand[3]] else bestCand[2]
+        hpp1 = bestCand[0] if bestCand[0].pt()>bestCand[1].pt() else bestCand[1]
+        hpp2 = bestCand[1] if bestCand[0].pt()>bestCand[1].pt() else bestCand[0]
+        hmm1 = bestCand[2] if bestCand[2].pt()>bestCand[3].pt() else bestCand[3]
+        hmm2 = bestCand[3] if bestCand[2].pt()>bestCand[3].pt() else bestCand[2]
 
-        # add jet
-        jets = self.getCands(rtrow, 'jets', lambda rtrow,cand: self.getObjectVariable(rtrow,cand,'isLoose')>0.5)
-        if len(jets)==1:
-            candidate['leadJet'] = jets[0]
-            candidate['subleadJet'] = ('jets',-1)
-        if len(jets)>1:
-            candidate['leadJet'] = jets[0]
-            candidate['subleadJet'] = jets[1]
-        else:
-            candidate['leadJet'] = ('jets',-1)
-            candidate['subleadJet'] = ('jets',-1)
+        candidate['hpp1'] = hpp1
+        candidate['hpp2'] = hpp2
+        candidate['hmm1'] = hmm1
+        candidate['hmm2'] = hmm2
+        candidate['hpp'] = DiCandidate(hpp1,hpp2)
+        candidate['hppmet'] = MetCompositeCandidate(self.pfmet,hpp1,hpp2)
+        candidate['hmm'] = DiCandidate(hmm1,hmm2)
+        candidate['hmmmet'] = MetCompositeCandidate(self.pfmet,hmm1,hmm2)
+        candidate['4l'] = CompositeCandidate(hpp1,hpp2,hmm1,hmm2)
+        candidate['4lmet'] = MetCompositeCandidate(self.pfmet,hpp1,hpp2,hmm1,hmm2)
+        candidate['hmm1_hpp1'] = DiCandidate(hmm1,hpp1)
+        candidate['hmm1_hpp2'] = DiCandidate(hmm1,hpp2)
+        candidate['hmm2_hpp1'] = DiCandidate(hmm2,hpp1)
+        candidate['hmm2_hpp2'] = DiCandidate(hmm2,hpp2)
 
-        # do the z alternative combination
-        massDiffs = {}
-        for zpair in itertools.combinations(pts.keys(),2):
-            if zpair[0][0]!=zpair[1][0]: continue # SF
-            if charges[zpair[0]]==charges[zpair[1]]: continue # OS
-            zp4 = p4s[zpair[0]] + p4s[zpair[1]]
-            zmass = zp4.M()
-            massDiffs[zpair] = abs(zmass-ZMASS)
+        # get invariant masses
+        bestZ = ()
+        bestMassdiff = 99999
+        for zpair in itertools.combinations(leps,2):
+            if zpair[0].collName!=zpair[1].collName: continue # SF
+            if zpair[0].charge()==zpair[1].charge(): continue # OS
+            z = DiCandidate(*zpair)
+            massdiff = abs(z.M()-ZMASS)
+            if massdiff<bestMassdiff:
+                bestZ = zpair
+                bestMassdiff = massdiff
 
-        if not massDiffs:
-            candidate['z1'] = ('',-1)
-            candidate['z2'] = ('',-1)
-            return candidate
+        if not bestZ: return candidate # need a z candidate
 
-        # sort by closest z
-        bestZ = sorted(massDiffs.items(), key=operator.itemgetter(1))[0][0]
-
-        z1 = bestZ[0] if pts[bestZ[0]] > pts[bestZ[1]] else bestZ[1]
-        z2 = bestZ[1] if pts[bestZ[0]] > pts[bestZ[1]] else bestZ[0]
-
-        candidate['z1'] = z1
-        candidate['z2'] = z2
+        # and sort pt of Z
+        z = [bestZ[0],bestZ[1]] if bestZ[0].pt()>bestZ[1].pt() else [bestZ[1],bestZ[0]]
+        candidate['z1'] = z[0]
+        candidate['z2'] = z[1]
+        candidate['z'] = DiCandidate(z[0],z[1])
 
         return candidate
 
     ##################
     ### lepton IDs ###
     ##################
-    def passLoose(self,rtrow,cand):
-        #return passWZLoose(self,rtrow,cand)
-        return passHppLoose(self,rtrow,cand)
+    def passLoose(self,cand):
+        return passHppLoose(cand)
 
-    def passMedium(self,rtrow,cand):
-        #return passWZMedium(self,rtrow,cand)
-        return passHppMedium(self,rtrow,cand)
+    def passMedium(self,cand):
+        return passHppMedium(cand)
 
-    def passTight(self,rtrow,cand):
-        #return passWZTight(self,rtrow,cand)
-        return passHppTight(self,rtrow,cand)
+    def passTight(self,cand):
+        return passHppTight(cand)
 
-    def looseScale(self,rtrow,cand):
-        if cand[0]=='muons':
-            return self.leptonScales.getScale(rtrow,'MediumIDLooseIso',cand)
-        elif cand[0]=='electrons':
-            return self.leptonScales.getScale(rtrow,'CutbasedVeto',cand)
+    def looseScale(self,cand):
+        if cand.collName=='muons':
+            return self.leptonScales.getScale('MediumIDLooseIso',cand)
+        elif cand.collName=='electrons':
+            return self.leptonScales.getScale('CutbasedVeto',cand)
         else:
             return 1.
 
-    def mediumScale(self,rtrow,cand):
-        if cand[0]=='muons':
-            return self.leptonScales.getScale(rtrow,'MediumIDTightIso',cand)
-        elif cand[0]=='electrons':
-            return self.leptonScales.getScale(rtrow,'CutbasedMedium',cand)
+    def mediumScale(self,cand):
+        if cand.collName=='muons':
+            return self.leptonScales.getScale('MediumIDTightIso',cand)
+        elif cand.collName=='electrons':
+            return self.leptonScales.getScale('CutbasedMedium',cand)
         else:
             return 1.
 
-    def tightScale(self,rtrow,cand):
-        if cand[0]=='muons':
-            return self.leptonScales.getScale(rtrow,'MediumIDTightIso',cand)
-        elif cand[0]=='electrons':
-            return self.leptonScales.getScale(rtrow,'CutbasedTight',cand)
+    def tightScale(self,cand):
+        if cand.collName=='muons':
+            return self.leptonScales.getScale('MediumIDTightIso',cand)
+        elif cand.collName=='electrons':
+            return self.leptonScales.getScale('CutbasedTight',cand)
         else:
             return 1.
 
-    def mediumFakeRate(self,rtrow,cand):
-        return self.fakeRates.getFakeRate(rtrow,cand,'HppMedium','HppLoose')
+    def mediumFakeRate(self,cand):
+        return self.fakeRates.getFakeRate(cand,'HppMedium','HppLoose')
 
-    def tightFakeRate(self,rtrow,cand):
-        return self.fakeRates.getFakeRate(rtrow,cand,'HppTight','HppLoose')
+    def tightFakeRate(self,cand):
+        return self.fakeRates.getFakeRate(cand,'HppTight','HppLoose')
 
-    def getPassingCands(self,rtrow,mode):
+    def getPassingCands(self,mode):
         if mode=='Loose':
             passMode = self.passLoose
         elif mode=='Medium':
@@ -329,61 +316,56 @@ class Hpp4lAnalysis(AnalysisBase):
         else:
             return []
         cands = []
-        for coll in ['electrons','muons','taus']:
-            cands += self.getCands(rtrow,coll,passMode)
+        for coll in [self.electrons,self.muons,self.taus]:
+            cands += self.getCands(coll,passMode)
         return cands
 
-    def numJets(self,rtrow,mode,pt):
+    def numJets(self,mode,pt):
         return len(
             self.getCands(
-                rtrow,
-                'jets',
-                lambda rtrow,cand: self.getObjectVariable(rtrow,cand,mode)>0.5 
-                                   and self.getObjectVariable(rtrow,cand,'pt')>pt
+                self.jets,
+                lambda cand: getattr(cand,mode)()>0.5 and cand.pt()>pt
             )
         )
 
-    def numCentralJets(self,rtrow,cands,mode,pt):
-        if cands['leadJet'][1]<0: return -1
-        if cands['subleadJet'][1]<0: return -1
-        eta1 = self.getObjectVariable(rtrow,cands['leadJet'],'eta')
-        eta2 = self.getObjectVariable(rtrow,cands['subleadJet'],'eta')
+    def numCentralJets(self,cands,mode,pt):
+        if not cands['leadJet']: return -1
+        if not cands['subleadJet']: return -1
+        eta1 = cands['leadJet'].eta()
+        eta2 = cands['subleadJet'].eta()
         mineta = min(eta1,eta2)
         maxeta = max(eta1,eta2)
         return len(
             self.getCands(
-                rtrow,
-                'jets',
-                lambda rtrow,cand: self.getObjectVariable(rtrow,cand,mode)>0.5
-                                   and self.getObjectVariable(rtrow,cand,'pt')>pt
-                                   and self.getObjectVariable(rtrow,cand,'eta')>mineta
-                                   and self.getObjectVariable(rtrow,cand,'eta')<maxeta
+                self.jets,
+                lambda cand: getattr(cand,mode)()>0.5
+                             and cand.pt()>pt
+                             and cand.eta()>mineta
+                             and cand.eta()<maxeta
             )
         )
-    
-    def zeppenfeld(self,rtrow,cands,*probeCands):
-        if cands['leadJet'][1]<0: return -10.
-        if cands['subleadJet'][1]<0: return -10.
-        eta1 = self.getObjectVariable(rtrow,cands['leadJet'],'eta')
-        eta2 = self.getObjectVariable(rtrow,cands['subleadJet'],'eta')
+
+    def zeppenfeld(self,cands,*probeCands):
+        if not cands['leadJet']: return -10.
+        if not cands['subleadJet']: return -10.
+        eta1 = cands['leadJet'].eta()
+        eta2 = cands['subleadJet'].eta()
         meaneta = (eta1+eta2)/2
-        if len(probeCands)>1:
-            eta = self.getCompositeVariable(rtrow,'eta',*probeCands)
-        else:
-            eta = self.getObjectVariable(rtrow,probeCands[0],'eta')
+        composite = CompositeCandidate(*probeCands)
+        eta = composite.eta()
         return eta-meaneta
 
     ######################
     ### channel string ###
     ######################
-    def getChannelString(self,rtrow,cands):
+    def getChannelString(self,cands):
         '''Get the channel string'''
         chanString = ''
         for c in ['hpp1','hpp2','hmm1','hmm2']:
             chanString += self.getCollectionString(cands[c])
         return chanString
 
-    def getGenChannelString(self,rtrow,cands):
+    def getGenChannelString(self,cands):
         '''Get the gen h++ channel'''
         chanString = ''
         pdgMap = {
@@ -397,7 +379,7 @@ class Hpp4lAnalysis(AnalysisBase):
                 for l1 in [s*11, s*13, s*15]:        # lepton 1
                     for l2 in [s*11, s*13, s*15]:    # lepton 2
                         if abs(l2)<abs(l1): continue # skip double counting
-                        hasDecay = self.findDecay(rtrow,h,l1,l2)
+                        hasDecay = self.findDecay(h,l1,l2)
                         if hasDecay:
                             chanString += pdgMap[abs(l1)]
                             chanString += pdgMap[abs(l2)]
@@ -405,23 +387,23 @@ class Hpp4lAnalysis(AnalysisBase):
             chanString = 'a'
         return chanString
 
-    def getZChannelString(self,rtrow,cands):
+    def getZChannelString(self,cands):
         '''Get the channel string'''
         chanString = ''
         for c in ['z1','z2']:
-            if cands[c][1]<0: return 'aa'
+            if not cands[c]: return 'aa'
             chanString += self.getCollectionString(cands[c])
         return chanString
 
     ###########################
     ### analysis selections ###
     ###########################
-    def fourLoose(self,rtrow,cands):
-        return len(self.getPassingCands(rtrow,'Loose'))>=4
+    def fourLoose(self,cands):
+        return len(self.getPassingCands('Loose'))>=4
 
-    def trigger(self,rtrow,cands):
+    def trigger(self,cands):
         # accept MC, check trigger for data
-        if rtrow.isData<0.5: return True
+        if self.event.isData()<0.5: return True
         triggerNames = {
             'DoubleMuon'     : [
                 'Mu17_TrkIsoVVL_Mu8_TrkIsoVVL_DZ',
@@ -460,13 +442,13 @@ class Hpp4lAnalysis(AnalysisBase):
         # reject triggers if they are in another dataset
         # looks for the dataset name in the filename
         # for MC it accepts all
-        reject = True if rtrow.isData>0.5 else False
+        reject = True if self.event.isData()>0.5 else False
         for dataset in datasets:
             # if we match to the dataset, start accepting triggers
             if dataset in self.fileNames[0]: reject = False
             for trigger in triggerNames[dataset]:
                 var = '{0}Pass'.format(trigger)
-                passTrigger = self.getTreeVariable(rtrow,var)
+                passTrigger = getattr(self.event,var)()
                 if passTrigger>0.5:
                     # it passed the trigger
                     # in data: reject if it corresponds to a higher dataset
@@ -475,9 +457,9 @@ class Hpp4lAnalysis(AnalysisBase):
             if dataset in self.fileNames[0]: break
         return False
 
-    def triggerEfficiency(self,rtrow,cands):
+    def triggerEfficiency(self,cands):
         candList = [cands[c] for c in ['hpp1','hpp2','hmm1','hmm2']]
-        numTaus = [c[0] for c in candList].count('taus')
+        numTaus = [c.collName for c in candList].count('taus')
         if numTaus<2:
             triggerList = ['IsoMu20_OR_IsoTkMu20','Ele23_WPLoose','Mu17_Mu8','Ele17_Ele12']
         elif numTaus==2:
@@ -486,7 +468,7 @@ class Hpp4lAnalysis(AnalysisBase):
             triggerList = ['IsoMu20_OR_IsoTkMu20','Ele23_WPLoose','DoublePFTau35']
         else:
             triggerList = ['DoublePFTau35']
-        return self.triggerScales.getDataEfficiency(rtrow,triggerList,candList)
+        return self.triggerScales.getDataEfficiency(triggerList,candList)
 
 
 

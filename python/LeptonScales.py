@@ -49,9 +49,9 @@ class LeptonScales(object):
         self.muon_pog_id_rootfile.Close()
         self.muon_pog_iso_rootfile.Close()
 
-    def __getElectronScale(self,rtrow,leptonId,cand):
-        pt  = getattr(rtrow,'{0}_pt'.format(cand[0]))[cand[1]]
-        eta = getattr(rtrow,'{0}_superClusterEta'.format(cand[0]))[cand[1]]
+    def __getElectronScale(self,leptonId,cand):
+        pt  = cand.pt()
+        eta = cand.eta()
         if leptonId in self.egamma_pog_scales:
             if pt>200: pt = 199.
             if pt<10: pt = 11.
@@ -62,9 +62,9 @@ class LeptonScales(object):
             val = 1.
         return val
 
-    def __getMuonScale(self,rtrow,leptonId,cand):
-        pt  = getattr(rtrow,'{0}_pt'.format(cand[0]))[cand[1]]
-        eta = getattr(rtrow,'{0}_eta'.format(cand[0]))[cand[1]]
+    def __getMuonScale(self,leptonId,cand):
+        pt  = cand.pt()
+        eta = cand.eta()
         if leptonId in self.muon_pog_scales:
             if pt>120: pt = 119.
             if pt<20: pt = 21.
@@ -74,16 +74,16 @@ class LeptonScales(object):
             val = 1.
         return val
 
-    def __getTauScale(self,rtrow,leptonId,cand):
-        #pt  = getattr(rtrow,'{0}_pt'.format(cand[0]))[cand[1]]
-        #eta = getattr(rtrow,'{0}_eta'.format(cand[0]))[cand[1]]
+    def __getTauScale(self,leptonId,cand):
+        #pt  = cand.pt()
+        #eta = cand.eta()
         return 1. # simple recommendation, 6% error
 
-    def getScale(self,rtrow,leptonId,cand):
+    def getScale(self,leptonId,cand):
         '''Get the scale to apply to MC (eff_data/eff_mc)'''
-        if cand[0]=='electrons':
-            val = self.__getElectronScale(rtrow,leptonId,cand)
-        elif cand[0]=='muons':
+        if cand.collName=='electrons':
+            val = self.__getElectronScale(leptonId,cand)
+        elif cand.collName=='muons':
             if leptonId == 'TightIDTightIso':
                 idname, isoname = 'TightID', 'TightRelIsoTightID'
             elif leptonId == 'MediumIDTightIso':
@@ -93,13 +93,13 @@ class LeptonScales(object):
             else:
                 idname, isoname = '', ''
             if idname and isoname:
-                idval = self.__getMuonScale(rtrow,idname,cand)
-                isoval = self.__getMuonScale(rtrow,isoname,cand)
+                idval = self.__getMuonScale(idname,cand)
+                isoval = self.__getMuonScale(isoname,cand)
             else:
                 idval, isoval = 1., 1.
             val = idval*isoval
-        elif cand[0]=='taus':
-            val = self.__getTauScale(rtrow,leptonId,cand)
+        elif cand.collName=='taus':
+            val = self.__getTauScale(leptonId,cand)
         else:
             val = 1.
         return val

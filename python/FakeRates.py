@@ -50,31 +50,31 @@ class FakeRates(object):
         self.fake_hpp_rootfile.Close()
         self.fake_tau_rootfile.Close()
 
-    def __get_fakerate(self,cand,pt,eta,num,denom):
-        if cand[0] not in self.fakehists: return 0.
+    def __get_fakerate(self,cand,num,denom):
+        if cand.collName not in self.fakehists: return 0.
         key = self.fakekey.format(num=num,denom=denom)
-        if key not in self.fakehists[cand[0]]: return 0.
-        hist = self.fakehists[cand[0]][key]
+        if key not in self.fakehists[cand.collName]: return 0.
+        hist = self.fakehists[cand.collName][key]
+        pt = cand.pt()
+        eta = cand.eta()
         if pt > 100.: pt = 99.
         return hist.GetBinContent(hist.FindBin(pt,abs(eta)))
 
-    def __get_fakerate_mc(self,cand,pt,eta,num,denom):
-        if cand[0] not in self.fakehists_mc: return 0.
+    def __get_fakerate_mc(self,cand,num,denom):
+        if cand.collName not in self.fakehists_mc: return 0.
         key = self.fakekey.format(num=num,denom=denom)
-        if key not in self.fakehists_mc[cand[0]]: return 0.
-        hist = self.fakehists_mc[cand[0]][key]
+        if key not in self.fakehists_mc[cand.collName]: return 0.
+        hist = self.fakehists_mc[cand.collName][key]
+        pt = cand.pt()
+        eta = cand.eta()
         if pt > 100.: pt = 99.
         return hist.GetBinContent(hist.FindBin(pt,abs(eta)))
 
-    def getFakeRate(self,rtrow,cand,num,denom):
-        if cand[1]<0: return 0 # not defined
-        pt  = getattr(rtrow,'{0}_rochesterPt'.format(cand[0]))[cand[1]] if cand[0]=='muons' else getattr(rtrow,'{0}_pt'.format(cand[0]))[cand[1]]
-        eta = getattr(rtrow,'{0}_rochesterEta'.format(cand[0]))[cand[1]] if cand[0]=='muons' else getattr(rtrow,'{0}_eta'.format(cand[0]))[cand[1]]
-        return self.__get_fakerate(cand,pt,eta,num,denom)
+    def getFakeRate(self,cand,num,denom):
+        if not cand: return 0 # not defined
+        return self.__get_fakerate(cand,num,denom)
 
-    def getFakeRateMC(self,rtrow,cand,num,denom):
-        if cand[1]<0: return 0 # not defined
-        pt  = getattr(rtrow,'{0}_rochesterPt'.format(cand[0]))[cand[1]] if cand[0]=='muons' else getattr(rtrow,'{0}_pt'.format(cand[0]))[cand[1]]
-        eta = getattr(rtrow,'{0}_rochesterEta'.format(cand[0]))[cand[1]] if cand[0]=='muons' else getattr(rtrow,'{0}_eta'.format(cand[0]))[cand[1]]
-        return self.__get_fakerate_mc(cand,pt,eta,num,denom)
+    def getFakeRateMC(self,cand,num,denom):
+        if not cand: return 0 # not defined
+        return self.__get_fakerate_mc(cand,num,denom)
 

@@ -53,29 +53,33 @@ class AnalysisTree(object):
             logging.error("{0} already in AnalysisTree.".format(label))
             raise ValueError("{0} already in AnalysisTree.".format(label))
 
-    def __evaluate(self,label,rtrow,cands):
+    def __evaluate(self,label,cands):
         pyType = typeMap[self.branches[label]['rootType']]
         if isinstance(self.branches[label]['function'], basestring): # its just a branch in the tree
-            self.branches[label]['var'][0] = pyType(getattr(rtrow,self.branches[label]['function']))
+            self.branches[label]['var'][0] = pyType(getattr(cands['event'],self.branches[label]['function'])())
         else:
             if self.branches[label]['rootType']=='C': # special handling of string
                 strSize = self.branches[label]['size']
-                funcVal = pyType(self.branches[label]['function'](rtrow,cands))
+                funcVal = pyType(self.branches[label]['function'](cands))
                 #if len(funcVal)==strSize-1:
                 if len(funcVal)<strSize:
                     self.branches[label]['var'][:strSize] = funcVal
                 else:
                     logging.error('Size mismatch function with label {0}.'.format(label))
             else:
-                self.branches[label]['var'][0] = pyType(self.branches[label]['function'](rtrow,cands))
+                self.branches[label]['var'][0] = pyType(self.branches[label]['function'](cands))
 
-    def fill(self,rtrow,cands,**kwargs):
+    def fill(self,cands,**kwargs):
         allowDuplicates = kwargs.pop('allowDuplicates',False)
-        eventkey = '{0}:{1}:{2}'.format(rtrow.run, rtrow.lumi, rtrow.event)
+        eventkey = '{0}:{1}:{2}'.format(cands['event'].run(), cands['event'].lumi(), cands['event'].event())
         if eventkey in self.filled and not allowDuplicates:
             logging.warning("Event {0} already filled.".format(eventkey))
         else:
             for label in self.branches:
-                self.__evaluate(label,rtrow,cands)
+                try:
+                    self.__evaluate(label,cands)
+                except:
+                    logging.error('Error processing branch {0}'.format(label))
+                    raise
             self.tree.Fill()
             self.filled.add(eventkey)

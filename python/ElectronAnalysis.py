@@ -3,6 +3,7 @@ import logging
 import time
 from AnalysisBase import AnalysisBase
 from utilities import ZMASS, deltaPhi, deltaR
+from Candidates import *
 
 import itertools
 import operator
@@ -22,25 +23,27 @@ class ElectronAnalysis(AnalysisBase):
         # setup analysis tree
 
         # w lepton
-        self.addLeptonMet('w','e',('pfmet',0))
+        self.addLeptonMet('w')
         self.addLepton('e')
         self.addDetailedElectron('e')
 
         # met
-        self.addMet('met',('pfmet',0))
+        self.addMet('met')
 
     ####################################################
     ### override analyze to store after every lepton ###
     ####################################################
-    def perRowAction(self,rtrow):
+    def perRowAction(self):
         '''Per row action, can be overridden'''
-        self.cache = {} # cache variables so you dont read from tree as much
-        electrons = self.getCands(rtrow,'electrons',lambda rtrow,cands: True)
-        for elec in electrons:
-            cands = {'e':elec}
-            pt = self.getObjectVariable(rtrow,cands['e'],'pt')
-            if pt<10: continue
-            self.tree.fill(rtrow,cands,allowDuplicates=True)
+        for elec in self.electrons:
+            cands = {
+                'e': elec,
+                'met': self.pfmet,
+                'w': MetCompositeCandidate(self.pfmet,elec),
+                'event':self.event,
+            }
+            if elec.pt()<10: continue
+            self.tree.fill(cands,allowDuplicates=True)
 
         self.eventsStored += 1
 
@@ -64,11 +67,11 @@ class ElectronAnalysis(AnalysisBase):
         self.addCandVar(label,'mvaTrigCategories','mvaTrigCategories','I')
         self.addCandVar(label,'mvaTrigWP80','mvaTrigWP80','I')
         self.addCandVar(label,'mvaTrigWP90','mvaTrigWP90','I')
-        self.tree.add(lambda rtrow,cands: self.passMVATrigPre(rtrow,cands[label]), '{0}_mvaTrigPre'.format(label), 'I')
-        self.tree.add(lambda rtrow,cands: self.getObjectVariable(rtrow,cands[label],'dr03EcalRecHitSumEt')/self.getObjectVariable(rtrow,cands[label],'pt'), '{0}_ecalRelIso'.format(label), 'F')
-        self.tree.add(lambda rtrow,cands: self.getObjectVariable(rtrow,cands[label],'dr03HcalTowerSumEt')/self.getObjectVariable(rtrow,cands[label],'pt'), '{0}_hcalRelIso'.format(label), 'F')
-        self.tree.add(lambda rtrow,cands: self.getObjectVariable(rtrow,cands[label],'dr03TkSumPt')/self.getObjectVariable(rtrow,cands[label],'pt'), '{0}_trackRelIso'.format(label), 'F')
-        self.addCandVar(label,'superClusterEta','superCluserEta','F')
+        self.tree.add(lambda cands: self.passMVATrigPre(cands[label]), '{0}_mvaTrigPre'.format(label), 'I')
+        self.tree.add(lambda cands: cands[label].dr03EcalRecHitSumEt()/cands[label].pt(), '{0}_ecalRelIso'.format(label), 'F')
+        self.tree.add(lambda cands: cands[label].dr03HcalTowerSumEt()/cands[label].pt(), '{0}_hcalRelIso'.format(label), 'F')
+        self.tree.add(lambda cands: cands[label].dr03TkSumPt()/cands[label].pt(), '{0}_trackRelIso'.format(label), 'F')
+        self.addCandVar(label,'superClusterEta','superClusterEta','F')
         self.addCandVar(label,'sigmaIetaIeta','sigmaIetaIeta','F')
         self.addCandVar(label,'hcalOverEcal','hcalOverEcal','F')
         self.addCandVar(label,'deltaEtaSuperClusterTrackAtVtx','deltaEtaSuperClusterTrackAtVtx','F')
@@ -77,25 +80,25 @@ class ElectronAnalysis(AnalysisBase):
         self.addCandVar(label,'missingHits','missingHits','I')
         self.addCandVar(label,'ecalEnergy','ecalEnergy','F')
         self.addCandVar(label,'eSuperClusterOverP','eSuperClusterOverP','F')
-        self.tree.add(lambda rtrow,cands: abs(1.-self.getObjectVariable(rtrow,cands[label],'eSuperClusterOverP'))*1./self.getObjectVariable(rtrow,cands[label],'ecalEnergy'), '{0}_oneOverEMinusOneOverP'.format(label), 'F')
+        self.tree.add(lambda cands: abs(1.-cands[label].eSuperClusterOverP())*1./cands[label].ecalEnergy(), '{0}_oneOverEMinusOneOverP'.format(label), 'F')
 
 
-    def passMVATrigPre(self,rtrow,cand):
-        pt = self.getObjectVariable(rtrow,cand,'pt')
-        sceta = self.getObjectVariable(rtrow,cand,'superClusterEta')
-        sigmaIEtaIEta = self.getObjectVariable(rtrow,cand,'sigmaIetaIeta')
-        hcalOverEcal = self.getObjectVariable(rtrow,cand,'hcalOverEcal')
-        ecalRelIso = self.getObjectVariable(rtrow,cand,'dr03EcalRecHitSumEt')/pt
-        hcalRelIso = self.getObjectVariable(rtrow,cand,'dr03HcalTowerSumEt')/pt
-        trackRelIso = self.getObjectVariable(rtrow,cand,'dr03TkSumPt')/pt
-        dEtaSC = self.getObjectVariable(rtrow,cand,'deltaEtaSuperClusterTrackAtVtx')
-        dPhiSC = self.getObjectVariable(rtrow,cand,'deltaPhiSuperClusterTrackAtVtx')
-        relIsoRho = self.getObjectVariable(rtrow,cand,'relPFIsoRhoR03')
-        passConversion = self.getObjectVariable(rtrow,cand,'passConversionVeto')
-        dxy = self.getObjectVariable(rtrow,cand,'dB2D')
-        dz = self.getObjectVariable(rtrow,cand,'dz')
-        ecalEnergy = self.getObjectVariable(rtrow,cand,'ecalEnergy')
-        eSuperClusterOverP = self.getObjectVariable(rtrow,cand,'eSuperClusterOverP')
+    def passMVATrigPre(self,cand):
+        pt = cand.pt()
+        sceta = cand.superClusterEta()
+        sigmaIEtaIEta = cand.sigmaIetaIeta()
+        hcalOverEcal = cand.hcalOverEcal()
+        ecalRelIso = cand.dr03EcalRecHitSumEt()/pt
+        hcalRelIso = cand.dr03HcalTowerSumEt()/pt
+        trackRelIso = cand.dr03TkSumPt()/pt
+        dEtaSC = cand.deltaEtaSuperClusterTrackAtVtx()
+        dPhiSC = cand.deltaPhiSuperClusterTrackAtVtx()
+        relIsoRho = cand.relPFIsoRhoR03()
+        passConversion = cand.passConversionVeto()
+        dxy = cand.dB2D()
+        dz = cand.dz()
+        ecalEnergy = cand.ecalEnergy()
+        eSuperClusterOverP = cand.eSuperClusterOverP()
         ooEmooP = abs((1.-eSuperClusterOverP)*1./ecalEnergy)
         passMVATrigPre = True
         if pt<15: passMVATrigPre = False

@@ -3,6 +3,7 @@ import logging
 import time
 from AnalysisBase import AnalysisBase
 from utilities import ZMASS, deltaPhi, deltaR
+from Candidates import *
 
 import itertools
 import operator
@@ -22,25 +23,27 @@ class TauAnalysis(AnalysisBase):
         # setup analysis tree
 
         # w lepton
-        self.addLeptonMet('w','t',('pfmet',0))
+        self.addLeptonMet('w')
         self.addLepton('t')
         self.addDetailedTau('t')
 
         # met
-        self.addMet('met',('pfmet',0))
+        self.addMet('met')
 
     ####################################################
     ### override analyze to store after every lepton ###
     ####################################################
-    def perRowAction(self,rtrow):
+    def perRowAction(self):
         '''Per row action, can be overridden'''
-        self.cache = {} # cache variables so you dont read from tree as much
-        taus = self.getCands(rtrow,'taus',lambda rtrow,cands: True)
-        for tau in taus:
-            cands = {'t':tau}
-            pt = self.getObjectVariable(rtrow,cands['t'],'pt')
-            if pt<20: continue
-            self.tree.fill(rtrow,cands,allowDuplicates=True)
+        for tau in self.taus:
+            cands = {
+                't': tau,
+                'w': MetCompositeCandidate(self.pfmet,tau),
+                'met': self.pfmet,
+                'event': self.event,
+            }
+            if tau.pt()<20: continue
+            self.tree.fill(cands,allowDuplicates=True)
 
         self.eventsStored += 1
 

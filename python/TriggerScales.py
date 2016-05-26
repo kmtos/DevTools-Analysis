@@ -150,8 +150,10 @@ class TriggerScales(object):
         logging.warning('Unmatched triggers: {0}'.format(' '.join(triggers)))
         return 0.
 
-    def __getEfficiency(self,rtrow,rootName,mode,cand,pt,eta):
-        if cand[0]=='muons':
+    def __getEfficiency(self,rootName,mode,cand):
+        pt = cand.pt()
+        eta = cand.eta()
+        if cand.collName=='muons':
             # Muon POG
             # ignore Run2015C, reweight isomu via hlt trigger
             if rootName == 'IsoMu20_OR_IsoTkMu20':
@@ -184,7 +186,7 @@ class TriggerScales(object):
                        and pt>=row['ptmin']
                        and pt<=row['ptmax']):
                        return row['eff']
-        elif cand[0]=='electrons':
+        elif cand.collName=='electrons':
             # HWW
             if rootName=='Ele23_WPLoose':
                 if pt>100: pt = 99
@@ -210,57 +212,57 @@ class TriggerScales(object):
                        and pt>=row['ptmin']
                        and pt<=row['ptmax']):
                        return row['eff']
-        elif cand[0]=='taus':
+        elif cand.collName=='taus':
             if rootName=='PFTau35':
                 return self.__doubleTau35_fit(pt,mode)
         return 0.
 
-    def __getLeadEfficiency(self,rtrow,rootNames,mode,cand,pt,eta):
-        if cand[0]=='electrons':
+    def __getLeadEfficiency(self,rootNames,mode,cand):
+        if cand.collName=='electrons':
             if 'Ele17_Ele12' in rootNames:
-                return self.__getEfficiency(rtrow,'Ele17_Ele12Leg1',mode,cand,pt,eta)
-        elif cand[0]=='muons':
+                return self.__getEfficiency('Ele17_Ele12Leg1',mode,cand)
+        elif cand.collName=='muons':
             if 'Mu17_Mu8' in rootNames:
-                return self.__getEfficiency(rtrow,'Mu17_Mu8Leg1',mode,cand,pt,eta)
-        elif cand[0]=='taus':
+                return self.__getEfficiency('Mu17_Mu8Leg1',mode,cand)
+        elif cand.collName=='taus':
             if 'DoublePFTau35' in rootNames:
-                return self.__getEfficiency(rtrow,'PFTau35',mode,cand,pt,eta)
+                return self.__getEfficiency('PFTau35',mode,cand)
         return 0.
 
-    def __getTrailEfficiency(self,rtrow,rootNames,mode,cand,pt,eta):
-        if cand[0]=='electrons':
+    def __getTrailEfficiency(self,rootNames,mode,cand):
+        if cand.collName=='electrons':
             if 'Ele17_Ele12' in rootNames:
-                return self.__getEfficiency(rtrow,'Ele17_Ele12Leg2',mode,cand,pt,eta)
-        elif cand[0]=='muons':
+                return self.__getEfficiency('Ele17_Ele12Leg2',mode,cand)
+        elif cand.collName=='muons':
             if 'Mu17_Mu8' in rootNames:
-                return self.__getEfficiency(rtrow,'Mu17_Mu8Leg2',mode,cand,pt,eta)
-        elif cand[0]=='taus':
+                return self.__getEfficiency('Mu17_Mu8Leg2',mode,cand)
+        elif cand.collName=='taus':
             if 'DoublePFTau35' in rootNames:
-                return self.__getEfficiency(rtrow,'PFTau35',mode,cand,pt,eta)
+                return self.__getEfficiency('PFTau35',mode,cand)
         return 0.
 
-    def __getSingleEfficiency(self,rtrow,rootNames,mode,cand,pt,eta):
-        if cand[0]=='electrons':
+    def __getSingleEfficiency(self,rootNames,mode,cand):
+        if cand.collName=='electrons':
             if 'Ele23_WPLoose' in rootNames:
-                return self.__getEfficiency(rtrow,'Ele23_WPLoose',mode,cand,pt,eta)
+                return self.__getEfficiency('Ele23_WPLoose',mode,cand)
             elif 'Ele17_Ele12Leg1' in rootNames:
-                return self.__getEfficiency(rtrow,'Ele17_Ele12Leg1',mode,cand,pt,eta)
+                return self.__getEfficiency('Ele17_Ele12Leg1',mode,cand)
             elif 'Ele17_Ele12Leg2' in rootNames:
-                return self.__getEfficiency(rtrow,'Ele17_Ele12Leg2',mode,cand,pt,eta)
-        elif cand[0]=='muons':
+                return self.__getEfficiency('Ele17_Ele12Leg2',mode,cand)
+        elif cand.collName=='muons':
             if 'IsoMu20_OR_IsoTkMu20' in rootNames:
-                return self.__getEfficiency(rtrow,'IsoMu20_OR_IsoTkMu20',mode,cand,pt,eta)
+                return self.__getEfficiency('IsoMu20_OR_IsoTkMu20',mode,cand)
             elif 'Mu45_eta2p1' in rootNames:
-                return self.__getEfficiency(rtrow,'Mu45_eta2p1',mode,cand,pt,eta)
+                return self.__getEfficiency('Mu45_eta2p1',mode,cand)
             elif 'Mu50' in rootNames:
-                return self.__getEfficiency(rtrow,'Mu50',mode,cand,pt,eta)
+                return self.__getEfficiency('Mu50',mode,cand)
             elif 'Mu17_Mu8Leg1' in rootNames:
-                return self.__getEfficiency(rtrow,'Mu17_Mu8Leg1',mode,cand,pt,eta)
+                return self.__getEfficiency('Mu17_Mu8Leg1',mode,cand)
             elif 'Mu17_Mu8Leg2' in rootNames:
-                return self.__getEfficiency(rtrow,'Mu17_Mu8Leg2',mode,cand,pt,eta)
-        elif cand[0]=='taus':
+                return self.__getEfficiency('Mu17_Mu8Leg2',mode,cand)
+        elif cand.collName=='taus':
             if 'PFTau35' in rootNames:
-                return self.__getEfficiency(rtrow,'PFTau35',mode,cand,pt,eta)
+                return self.__getEfficiency('PFTau35',mode,cand)
         return 0.
 
     def __hasSingle(self,triggers,triggerType):
@@ -274,21 +276,15 @@ class TriggerScales(object):
         return False
 
 
-    def __getTriggerEfficiency(self,rtrow,triggers,cands,mode):
+    def __getTriggerEfficiency(self,triggers,cands,mode):
         '''Get an efficiency'''
-
-        pts = {}
-        etas = {}
-        for cand in cands:
-            pts[cand]  = getattr(rtrow,'{0}_rochesterPt'.format(cand[0]))[cand[1]] if cand[0]=='muons' else getattr(rtrow,'{0}_pt'.format(cand[0]))[cand[1]]
-            etas[cand] = getattr(rtrow,'{0}_rochesterEta'.format(cand[0]))[cand[1]] if cand[0]=='muons' else getattr(rtrow,'{0}_eta'.format(cand[0]))[cand[1]]
 
         #######################
         ### Single triggers ###
         #######################
         if ((len(triggers)==1 and (self.__hasSingle(triggers,'electrons') or self.__hasSingle(triggers,'muons'))) or
             (len(triggers)==2 and (self.__hasSingle(triggers,'electrons') and self.__hasSingle(triggers,'muons')))):
-            val = 1-product([1-self.__getSingleEfficiency(rtrow,triggers,mode,cand,pts[cand],etas[cand]) for cand in cands])
+            val = 1-product([1-self.__getSingleEfficiency(triggers,mode,cand) for cand in cands])
         
 
         #######################
@@ -299,10 +295,10 @@ class TriggerScales(object):
               (len(triggers)==2 and (self.__hasDouble(triggers,'electrons') and self.__hasDouble(triggers,'muons')))): # ee/mm
             val = 1-(
                 # none pass lead
-                product([1-self.__getLeadEfficiency(rtrow,triggers,mode,cand,pts[cand],etas[cand]) for cand in cands])
+                product([1-self.__getLeadEfficiency(triggers,mode,cand) for cand in cands])
                 # one pass lead, none pass trail
-                +sum([self.__getLeadEfficiency(rtrow,triggers,mode,lead,pts[lead],etas[lead])
-                      *product([1-self.__getTrailEfficiency(rtrow,triggers,mode,trail,pts[trail],etas[trail]) if trail!=lead else 1. for trail in cands if trail[0]==lead[0]]) for lead in cands])
+                +sum([self.__getLeadEfficiency(triggers,mode,lead)
+                      *product([1-self.__getTrailEfficiency(triggers,mode,trail) if trail!=lead else 1. for trail in cands if trail.collName==lead.collName]) for lead in cands])
                 # TODO: DZ not included ???
                 # one pass lead, one pass trail, fail dz
                 # one pass lead, two pass trail, both fail dz
@@ -322,15 +318,15 @@ class TriggerScales(object):
                                      self.__hasDouble(triggers,'taus')))):
             val = 1-(
                 # none pass single
-                product([1-self.__getSingleEfficiency(rtrow,triggers,mode,cand,pts[cand],etas[cand]) for cand in cands if cand[0] in ['electrons','muons']]) # only electron/muon single triggers
+                product([1-self.__getSingleEfficiency(triggers,mode,cand) for cand in cands if cand.collName in ['electrons','muons']]) # only electron/muon single triggers
             )*(
                 # none pass lead
-                product([1-self.__getLeadEfficiency(rtrow,triggers,mode,cand,pts[cand],etas[cand]) for cand in cands])
+                product([1-self.__getLeadEfficiency(triggers,mode,cand) for cand in cands])
                 # one pass lead, none pass trail
-                +sum([self.__getLeadEfficiency(rtrow,triggers,mode,lead,pts[lead],etas[lead])
-                      *product([1-self.__getTrailEfficiency(rtrow,triggers,mode,trail,pts[trail],etas[trail]) if trail!=lead else 1. for trail in cands if (
-                                       (trail[0]=='taus' and lead[0]=='taus') or                                # no cross trigger with taus
-                                       (trail[0] in ['electrons','muons'] and lead[0] in ['electrons','muons']) # allow cross triggers with e/m
+                +sum([self.__getLeadEfficiency(triggers,mode,lead)
+                      *product([1-self.__getTrailEfficiency(triggers,mode,trail) if trail!=lead else 1. for trail in cands if (
+                                       (trail.collName=='taus' and lead.collName=='taus') or                                # no cross trigger with taus
+                                       (trail.collName in ['electrons','muons'] and lead.collName in ['electrons','muons']) # allow cross triggers with e/m
                                    )
                                ]) for lead in cands])
                 # TODO: DZ not included ???
@@ -343,17 +339,17 @@ class TriggerScales(object):
 
         return val
 
-    def getMCEfficiency(self,rtrow,triggers,cands):
+    def getMCEfficiency(self,triggers,cands):
         '''Get the efficiency for a set of triggers for a list of candidates in MC'''
-        return self.__getTriggerEfficiency(rtrow,triggers,cands,'MC')
+        return self.__getTriggerEfficiency(triggers,cands,'MC')
 
-    def getDataEfficiency(self,rtrow,triggers,cands):
+    def getDataEfficiency(self,triggers,cands):
         '''Get the efficiency for a set of triggers for a list of candidates in DATA'''
-        return self.__getTriggerEfficiency(rtrow,triggers,cands,'DATA')
+        return self.__getTriggerEfficiency(triggers,cands,'DATA')
 
-    def getRatio(self,rtrow,triggers,cands):
+    def getRatio(self,triggers,cands):
         '''Get the scale to apply to MC (eff_data/eff_mc)'''
-        eff_data = self.getDataEfficiency(rtrow,triggers,cands)
-        eff_mc = self.getMCEfficiency(rtrow,triggers,cands)
+        eff_data = self.getDataEfficiency(triggers,cands)
+        eff_mc = self.getMCEfficiency(triggers,cands)
         if eff_mc: return eff_data/eff_mc
         return 1.

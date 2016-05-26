@@ -1,6 +1,24 @@
+import math
+
 import ROOT
 
 from utilities import deltaR, deltaPhi
+
+##########################
+### Basic tree wrapper ###
+##########################
+class Event(object):
+    '''
+    Wrap a tree.
+    '''
+    def __init__(self,tree):
+        self.tree = tree
+
+    def __getattr__(self,name):
+        return lambda: self.get(name) # returns attribute as a function
+
+    def get(self,var):
+        return getattr(self.tree,var)
 
 ##############################
 ### Basic candidate access ###
@@ -9,7 +27,7 @@ class Candidate(object):
     '''
     Encapsulate access to an object in a TTree.
     '''
-    def __init__(self,tree,entry=-1,collName=''):
+    def __init__(self,tree=None,entry=-1,collName=''):
         self.tree = tree
         self.collName = collName
         self.entry = entry
@@ -19,11 +37,14 @@ class Candidate(object):
 
     def get(self,var):
         '''Default variable access from tree.'''
+        if not self.tree: return 0
         varName = '{0}_{1}'.format(self.collName,var)
         return getattr(self.tree,varName)[self.entry]
 
     def p4(self):
-        return ROOT.TLorentzVector(self.pt(), self.eta(), self.phi(), self.energy())
+        p4 = ROOT.TLorentzVector()
+        p4.SetPtEtaPhiE(self.pt(), self.eta(), self.phi(), self.energy())
+        return p4
 
 ############
 ### Muon ###
@@ -32,8 +53,8 @@ class Muon(Candidate):
     '''
     Muon object access.
     '''
-    def __init__(self,tree,entry,collName='muons',shift=None):
-        super(Muon, self).__init__(tree,entry=entry,collName=collName)
+    def __init__(self,tree=None,entry=-1,collName='muons',shift=None):
+        super(Muon, self).__init__(tree=tree,entry=entry,collName=collName)
         self.shift = shift
 
     def pt(self):
@@ -67,8 +88,8 @@ class Electron(Candidate):
     '''
     Electron object access.
     '''
-    def __init__(self,tree,entry,collName='electrons',shift=None):
-        super(Electron, self).__init__(tree,entry=entry,collName=collName)
+    def __init__(self,tree=None,entry=-1,collName='electrons',shift=None):
+        super(Electron, self).__init__(tree=tree,entry=entry,collName=collName)
         self.shift = shift
 
     def pt(self):
@@ -102,8 +123,8 @@ class Tau(Candidate):
     '''
     Tau object access.
     '''
-    def __init__(self,tree,entry,collName='taus',shift=None):
-        super(Tau, self).__init__(tree,entry=entry,collName=collName)
+    def __init__(self,tree=None,entry=-1,collName='taus',shift=None):
+        super(Tau, self).__init__(tree=tree,entry=entry,collName=collName)
         self.shift = shift
 
     def pt(self):
@@ -137,8 +158,8 @@ class Jet(Candidate):
     '''
     Jet object access.
     '''
-    def __init__(self,tree,entry,collName='jets',shift=None):
-        super(Jet, self).__init__(tree,entry=entry,collName=collName)
+    def __init__(self,tree=None,entry=-1,collName='jets',shift=None):
+        super(Jet, self).__init__(tree=tree,entry=entry,collName=collName)
         self.shift = shift
 
     def pt(self):
@@ -172,8 +193,19 @@ class Photon(Candidate):
     '''
     Photon object access.
     '''
-    def __init__(self,tree,entry,collName='photons',shift=None):
-        super(Photon, self).__init__(tree,entry=entry,collName=collName)
+    def __init__(self,tree=None,entry=-1,collName='photons',shift=None):
+        super(Photon, self).__init__(tree=None,entry=entry,collName=collName)
+        self.shift = shift
+
+###################
+### GenParticle ###
+###################
+class GenParticle(Candidate):
+    '''
+    Gen particle object access.
+    '''
+    def __init__(self,tree=None,entry=-1,collName='genParticles',shift=None):
+        super(GenParticle, self).__init__(tree=tree,entry=entry,collName=collName)
         self.shift = shift
 
 ###########
@@ -183,8 +215,8 @@ class Met(Candidate):
     '''
     Met object access.
     '''
-    def __init__(self,tree,entry=0,collName='pfmet',shift=None):
-        super(Met, self).__init__(tree,entry=entry,collName=collName)
+    def __init__(self,tree=None,entry=0,collName='pfmet',shift=None):
+        super(Met, self).__init__(tree=None,entry=entry,collName=collName)
         self.shift = shift
 
     def et(self):
@@ -250,7 +282,12 @@ class CompositeCandidate(object):
         return getattr(vec,var)
 
     def p4(self):
-        return sum([obj.p4() for obj in self.objects])
+        p4 = ROOT.TLorentzVector()
+        for obj in self.objects: p4 += obj.p4()
+        return p4
+
+    def st(self):
+        return sum([obj.pt() for obj in self.objects])
 
 ###################
 ### Dicandidate ###
@@ -283,6 +320,8 @@ class MetCompositeCandidate(CompositeCandidate):
     Met + candidate variable specialization.
     '''
     def __init__(self,met,*objects):
+        if not isinstance(met,Met):
+            raise TypeError('First argument must be Met object')
         super(MetCompositeCandidate, self).__init__(met,*objects)
         self.met = met
         self.cands = objects
@@ -291,7 +330,9 @@ class MetCompositeCandidate(CompositeCandidate):
         return self.met.p4()
 
     def candP4(self):
-        return sum([cand.p4() for cand in self.cands])
+        p4 = ROOT.TLorentzVector()
+        for cand in self.cands: p4 += cand.p4()
+        return p4
 
     def mt(self):
         metP4 = self.metP4()

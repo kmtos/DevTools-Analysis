@@ -2,6 +2,8 @@ from AnalysisBase import AnalysisBase
 from leptonId import passWZLoose, passWZMedium, passWZTight, passHppLoose, passHppMedium, passHppTight
 from utilities import ZMASS, deltaPhi, deltaR
 
+from Candidates import *
+
 import sys
 import itertools
 import operator
@@ -29,116 +31,118 @@ class WTauFakeRateAnalysis(AnalysisBase):
         self.tree.add(self.getChannelString, 'channel', ['C',3])
 
         # event counts
-        self.tree.add(lambda rtrow,cands: self.numJets(rtrow,'isLoose',30), 'numJetsLoose30', 'I')
-        self.tree.add(lambda rtrow,cands: self.numJets(rtrow,'isTight',30), 'numJetsTight30', 'I')
-        self.tree.add(lambda rtrow,cands: self.numJets(rtrow,'passCSVv2T',30), 'numBjetsTight30', 'I')
-        self.tree.add(lambda rtrow,cands: len(self.getCands(rtrow,'taus',self.passLoose)), 'numLooseTaus', 'I')
-        self.tree.add(lambda rtrow,cands: len(self.getCands(rtrow,'taus',self.passMedium)),'numMediumTaus', 'I')
-        self.tree.add(lambda rtrow,cands: len(self.getCands(rtrow,'taus',self.passTight)), 'numTightTaus', 'I')
+        self.tree.add(lambda cands: self.numJets('isLoose',30), 'numJetsLoose30', 'I')
+        self.tree.add(lambda cands: self.numJets('isTight',30), 'numJetsTight30', 'I')
+        self.tree.add(lambda cands: self.numJets('passCSVv2T',30), 'numBjetsTight30', 'I')
+        self.tree.add(lambda cands: len(self.getCands(self.taus,self.passLoose)), 'numLooseTaus', 'I')
+        self.tree.add(lambda cands: len(self.getCands(self.taus,self.passMedium)),'numMediumTaus', 'I')
+        self.tree.add(lambda cands: len(self.getCands(self.taus,self.passTight)), 'numTightTaus', 'I')
 
 
         # trigger
-        self.tree.add(lambda rtrow,cands: self.getTreeVariable(rtrow,'IsoMu20Pass'), 'pass_IsoMu20', 'I')
-        self.tree.add(lambda rtrow,cands: self.getTreeVariable(rtrow,'IsoTkMu20Pass'), 'pass_IsoTkMu20', 'I')
+        self.tree.add(lambda cands: self.event.IsoMu20Pass(), 'pass_IsoMu20', 'I')
+        self.tree.add(lambda cands: self.event.IsoTkMu20Pass(), 'pass_IsoTkMu20', 'I')
         self.tree.add(self.triggerEfficiency, 'triggerEfficiency', 'F')
 
         # lepton
         # mu tag
-        self.addLeptonMet('wm','m',('pfmet',0))
+        self.addLeptonMet('wm')
         self.addLepton('m')
-        self.tree.add(lambda rtrow,cands: self.tightScale(rtrow,cands['m']), 'm_tightScale', 'F')
+        self.tree.add(lambda cands: self.tightScale(cands['m']), 'm_tightScale', 'F')
 
         # tau probe
-        self.addLeptonMet('wt','t',('pfmet',0))
+        self.addLeptonMet('wt')
         self.addLepton('t')
-        self.tree.add(lambda rtrow,cands: self.passMedium(rtrow,cands['t']), 't_passMedium', 'I')
-        self.tree.add(lambda rtrow,cands: self.passTight(rtrow,cands['t']), 't_passTight', 'I')
-        self.tree.add(lambda rtrow,cands: self.looseScale(rtrow,cands['t']), 't_looseScale', 'F')
-        self.tree.add(lambda rtrow,cands: self.mediumScale(rtrow,cands['t']), 't_mediumScale', 'F')
-        self.tree.add(lambda rtrow,cands: self.tightScale(rtrow,cands['t']), 't_tightScale', 'F')
+        self.tree.add(lambda cands: self.passMedium(cands['t']), 't_passMedium', 'I')
+        self.tree.add(lambda cands: self.passTight(cands['t']), 't_passTight', 'I')
+        self.tree.add(lambda cands: self.looseScale(cands['t']), 't_looseScale', 'F')
+        self.tree.add(lambda cands: self.mediumScale(cands['t']), 't_mediumScale', 'F')
+        self.tree.add(lambda cands: self.tightScale(cands['t']), 't_tightScale', 'F')
 
         # dilepton combination
-        self.addDiLepton('z','m','t')
+        self.addDiLepton('z')
 
         # met
-        self.addMet('met',('pfmet',0))
+        self.addMet('met')
 
     #############################
     ### select fake candidate ###
     #############################
-    def selectCandidates(self,rtrow):
+    def selectCandidates(self):
         candidate = {
-            'm' : (),
-            't' : (),
+            'm' : None,
+            't' : None,
+            'z' : None,
+            'wm': None,
+            'wt': None,
+            'met': self.pfmet,
         }
 
         # get leptons
-        muons = self.getCands(rtrow,'muons',self.passTight)
-        loosemuons = self.getCands(rtrow,'muons',self.passLoose)
-        taus = self.getCands(rtrow,'taus',self.passLoose)
+        leps = self.getPassingCands('Loose')
+        muons = self.getCands(self.muons,self.passTight)
+        loosemuons = self.getCands(self.muons,self.passLoose)
+        taus = self.getCands(self.taus,self.passLoose)
         if len(muons)!=1: return candidate # need 1 tight muon
         if len(loosemuons)>1: return candidate # dont allow another loose muon
         if len(taus)<1: return candidate # need at least 1 tau 
 
-        mupt = self.getObjectVariable(rtrow,muons[0],'pt')
-        if mupt<25: return candidate
+        # get invariant masses
+        bestT = ()
+        bestPt = 0
+        for zpair in itertools.permutations(leps,2):
+            if zpair[0].collName!='muons': continue
+            if zpair[1].collName!='taus': continue
+            if zpair[0].pt()<25: continue
+            if zpair[1].pt()<20: continue
+            z = DiCandidate(*zpair)
+            if z.deltaR()<0.5: continue
+            pt = zpair[1].pt()
+            if pt>bestPt:
+                bestT = zpair
+                bestPt = pt
 
-        # select highest pt tau
-        tauCand = None
-        highest = 0
-        for tau in taus:
-            pt = self.getObjectVariable(rtrow,tau,'pt')
-            if pt > highest:
-                highest = pt
-                tauCand = tau
+        if not bestT: return candidate # need a z candidate
 
-        if not tauCand: return candidate
+        z = bestT
+        candidate['m'] = z[0]
+        candidate['t'] = z[1]
+        candidate['z'] = DiCandidate(z[0],z[1])
+        candidate['wm'] = MetCompositeCandidate(self.pfmet,z[0])
+        candidate['wt'] = MetCompositeCandidate(self.pfmet,z[1])
 
-        taupt = self.getObjectVariable(rtrow,tauCand,'pt')
-        if taupt<20: return candidate
-
-        candidate['m'] = muons[0]
-        candidate['t'] = tauCand
 
         return candidate
+
 
     ##################
     ### lepton IDs ###
     ##################
-    def passLoose(self,rtrow,cand):
-        return passHppLoose(self,rtrow,cand)
+    def passLoose(self,cand):
+        return passHppLoose(cand)
 
-    def passMedium(self,rtrow,cand):
-        return passHppMedium(self,rtrow,cand)
+    def passMedium(self,cand):
+        return passHppMedium(cand)
 
-    def passTight(self,rtrow,cand):
-        return passHppTight(self,rtrow,cand)
+    def passTight(self,cand):
+        return passHppTight(cand)
 
-    def looseScale(self,rtrow,cand):
-        if cand[0]=='muons':
-            return self.leptonScales.getScale(rtrow,'MediumIDLooseIso',cand)
-        elif cand[0]=='electrons':
-            return self.leptonScales.getScale(rtrow,'CutbasedVeto',cand) # TODO, fix
-        else:
-            return 1.
+    def looseScale(self,cand):
+        if isinstance(cand,Muon):       return self.leptonScales.getScale('MediumIDLooseIso',cand)
+        elif isinstance(cand,Electron): return self.leptonScales.getScale('CutbasedVeto',cand)
+        else:                           return 1.
 
-    def mediumScale(self,rtrow,cand):
-        if cand[0]=='muons':
-            return self.leptonScales.getScale(rtrow,'MediumIDTightIso',cand)
-        elif cand[0]=='electrons':
-            return self.leptonScales.getScale(rtrow,'CutbasedMedium',cand)
-        else:
-            return 1.
+    def mediumScale(self,cand):
+        if isinstance(cand,Muon):       return self.leptonScales.getScale('MediumIDTightIso',cand)
+        elif isinstance(cand,Electron): return self.leptonScales.getScale('CutbasedMedium',cand)
+        else:                           return 1.
 
-    def tightScale(self,rtrow,cand):
-        if cand[0]=='muons':
-            return self.leptonScales.getScale(rtrow,'MediumIDTightIso',cand)
-        elif cand[0]=='electrons':
-            return self.leptonScales.getScale(rtrow,'CutbasedTight',cand)
-        else:
-            return 1.
+    def tightScale(self,cand):
+        if isinstance(cand,Muon):       return self.leptonScales.getScale('MediumIDTightIso',cand)
+        elif isinstance(cand,Electron): return self.leptonScales.getScale('CutbasedTight',cand)
+        else:                           return 1.
 
-    def getPassingCands(self,rtrow,mode):
+    def getPassingCands(self,mode):
         if mode=='Loose':
             passMode = self.passLoose
         elif mode=='Medium':
@@ -148,24 +152,49 @@ class WTauFakeRateAnalysis(AnalysisBase):
         else:
             return []
         cands = []
-        for coll in ['muons']:
-            cands += self.getCands(rtrow,coll,passMode)
+        for coll in [self.muons,self.taus]:
+            cands += self.getCands(coll,passMode)
         return cands
 
-    def numJets(self,rtrow,mode,pt):
+    def numJets(self,mode,pt):
         return len(
             self.getCands(
-                rtrow,
-                'jets',
-                lambda rtrow,cand: self.getObjectVariable(rtrow,cand,mode)>0.5 
-                                   and self.getObjectVariable(rtrow,cand,'pt')>pt
+                self.jets,
+                lambda cand: getattr(cand,mode)()>0.5 and cand.pt()>pt
             )
         )
+
+    def numCentralJets(self,cands,mode,pt):
+        if not cands['leadJet']: return -1
+        if not cands['subleadJet']: return -1
+        eta1 = cands['leadJet'].eta()
+        eta2 = cands['subleadJet'].eta()
+        mineta = min(eta1,eta2)
+        maxeta = max(eta1,eta2)
+        return len(
+            self.getCands(
+                self.jets,
+                lambda cand: getattr(cand,mode)()>0.5
+                             and cand.pt()>pt
+                             and cand.eta()>mineta
+                             and cand.eta()<maxeta
+            )
+        )
+
+    def zeppenfeld(self,cands,*probeCands):
+        if not cands['leadJet']: return -10.
+        if not cands['subleadJet']: return -10.
+        eta1 = cands['leadJet'].eta()
+        eta2 = cands['subleadJet'].eta()
+        meaneta = (eta1+eta2)/2
+        composite = CompositeCandidate(*probeCands)
+        eta = composite.eta()
+        return eta-meaneta
 
     ######################
     ### channel string ###
     ######################
-    def getChannelString(self,rtrow,cands):
+    def getChannelString(self,cands):
         '''Get the channel string'''
         chanString = 'mt'
         return chanString
@@ -173,9 +202,9 @@ class WTauFakeRateAnalysis(AnalysisBase):
     ###########################
     ### analysis selections ###
     ###########################
-    def trigger(self,rtrow,cands):
+    def trigger(self,cands):
         # accept MC, check trigger for data
-        if rtrow.isData<0.5: return True
+        if self.event.isData()<0.5: return True
         triggerNames = {
             'SingleMuon'     : [
                 'IsoMu20',
@@ -192,13 +221,13 @@ class WTauFakeRateAnalysis(AnalysisBase):
         # reject triggers if they are in another dataset
         # looks for the dataset name in the filename
         # for MC it accepts all
-        reject = True if rtrow.isData>0.5 else False
+        reject = True if self.event.isData()>0.5 else False
         for dataset in datasets:
             # if we match to the dataset, start accepting triggers
             if dataset in self.fileNames[0]: reject = False
             for trigger in triggerNames[dataset]:
                 var = '{0}Pass'.format(trigger)
-                passTrigger = self.getTreeVariable(rtrow,var)
+                passTrigger = getattr(self.event,var)()
                 if passTrigger>0.5:
                     # it passed the trigger
                     # in data: reject if it corresponds to a higher dataset
@@ -207,8 +236,8 @@ class WTauFakeRateAnalysis(AnalysisBase):
             if dataset in self.fileNames[0]: break
         return False
 
-    def triggerEfficiency(self,rtrow,cands):
+    def triggerEfficiency(self,cands):
         candList = [cands['m']]
         triggerList = ['IsoMu20_OR_IsoTkMu20']
-        return self.triggerScales.getDataEfficiency(rtrow,triggerList,candList)
+        return self.triggerScales.getDataEfficiency(triggerList,candList)
 

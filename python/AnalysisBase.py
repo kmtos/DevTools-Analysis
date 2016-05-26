@@ -106,17 +106,17 @@ class AnalysisBase(object):
 
         # some things we always need:
         # pileup
-        self.tree.add(lambda rtrow,cands: self.pileupWeights.weight(rtrow)[0], 'pileupWeight', 'F')
-        self.tree.add(lambda rtrow,cands: self.pileupWeights.weight(rtrow)[1], 'pileupWeightUp', 'F')
-        self.tree.add(lambda rtrow,cands: self.pileupWeights.weight(rtrow)[2], 'pileupWeightDown', 'F')
-        self.tree.add(lambda rtrow,cands: self.getTreeVariable(rtrow,'vertices_count'), 'numVertices', 'I')
+        self.tree.add(lambda cands: self.pileupWeights.weight(self.event)[0], 'pileupWeight', 'F')
+        self.tree.add(lambda cands: self.pileupWeights.weight(self.event)[1], 'pileupWeightUp', 'F')
+        self.tree.add(lambda cands: self.pileupWeights.weight(self.event)[2], 'pileupWeightDown', 'F')
+        self.tree.add(lambda cands: self.event.vertices_count(), 'numVertices', 'I')
 
         # gen
-        self.tree.add(lambda rtrow,cands: self.getTreeVariable(rtrow,'nTrueVertices'), 'numTrueVertices', 'I')
-        self.tree.add(lambda rtrow,cands: self.getTreeVariable(rtrow,'NUP'), 'NUP', 'I')
-        self.tree.add(lambda rtrow,cands: self.getTreeVariable(rtrow,'isData'), 'isData', 'I')
-        self.tree.add(lambda rtrow,cands: self.getTreeVariable(rtrow,'genWeight'), 'genWeight', 'I')
-        self.tree.add(lambda rtrow,cands: self.getTreeVariable(rtrow,'numGenJets'), 'numGenJets', 'I')
+        self.tree.add(lambda cands: self.event.nTrueVertices(), 'numTrueVertices', 'I')
+        self.tree.add(lambda cands: self.event.NUP(), 'NUP', 'I')
+        self.tree.add(lambda cands: self.event.isData(), 'isData', 'I')
+        self.tree.add(lambda cands: self.event.genWeight(), 'genWeight', 'I')
+        self.tree.add(lambda cands: self.event.numGenJets(), 'numGenJets', 'I')
         # scale shifts
         weightMap = {
             0: {'muR':1.0, 'muF':1.0},
@@ -129,15 +129,15 @@ class AnalysisBase(object):
             7: {'muR':0.5, 'muF':2.0},
             8: {'muR':0.5, 'muF':0.5},
         }
-        self.tree.add(lambda rtrow,cands: self.getTreeVectorVariable(rtrow,'genWeights',0), 'genWeight_muR{muR:3.1f}_muF{muF:3.1f}'.format(**weightMap[0]), 'F')
-        self.tree.add(lambda rtrow,cands: self.getTreeVectorVariable(rtrow,'genWeights',1), 'genWeight_muR{muR:3.1f}_muF{muF:3.1f}'.format(**weightMap[1]), 'F')
-        self.tree.add(lambda rtrow,cands: self.getTreeVectorVariable(rtrow,'genWeights',2), 'genWeight_muR{muR:3.1f}_muF{muF:3.1f}'.format(**weightMap[2]), 'F')
-        self.tree.add(lambda rtrow,cands: self.getTreeVectorVariable(rtrow,'genWeights',3), 'genWeight_muR{muR:3.1f}_muF{muF:3.1f}'.format(**weightMap[3]), 'F')
-        self.tree.add(lambda rtrow,cands: self.getTreeVectorVariable(rtrow,'genWeights',4), 'genWeight_muR{muR:3.1f}_muF{muF:3.1f}'.format(**weightMap[4]), 'F')
-        self.tree.add(lambda rtrow,cands: self.getTreeVectorVariable(rtrow,'genWeights',5), 'genWeight_muR{muR:3.1f}_muF{muF:3.1f}'.format(**weightMap[5]), 'F')
-        self.tree.add(lambda rtrow,cands: self.getTreeVectorVariable(rtrow,'genWeights',6), 'genWeight_muR{muR:3.1f}_muF{muF:3.1f}'.format(**weightMap[6]), 'F')
-        self.tree.add(lambda rtrow,cands: self.getTreeVectorVariable(rtrow,'genWeights',7), 'genWeight_muR{muR:3.1f}_muF{muF:3.1f}'.format(**weightMap[7]), 'F')
-        self.tree.add(lambda rtrow,cands: self.getTreeVectorVariable(rtrow,'genWeights',8), 'genWeight_muR{muR:3.1f}_muF{muF:3.1f}'.format(**weightMap[8]), 'F')
+        self.tree.add(lambda cands: 0. if self.event.isData() else self.event.genWeights()[0] if len(self.event.genWeights())>0 else 0., 'genWeight_muR{muR:3.1f}_muF{muF:3.1f}'.format(**weightMap[0]), 'F')
+        self.tree.add(lambda cands: 0. if self.event.isData() else self.event.genWeights()[1] if len(self.event.genWeights())>1 else 0., 'genWeight_muR{muR:3.1f}_muF{muF:3.1f}'.format(**weightMap[1]), 'F')
+        self.tree.add(lambda cands: 0. if self.event.isData() else self.event.genWeights()[2] if len(self.event.genWeights())>2 else 0., 'genWeight_muR{muR:3.1f}_muF{muF:3.1f}'.format(**weightMap[2]), 'F')
+        self.tree.add(lambda cands: 0. if self.event.isData() else self.event.genWeights()[3] if len(self.event.genWeights())>3 else 0., 'genWeight_muR{muR:3.1f}_muF{muF:3.1f}'.format(**weightMap[3]), 'F')
+        self.tree.add(lambda cands: 0. if self.event.isData() else self.event.genWeights()[4] if len(self.event.genWeights())>4 else 0., 'genWeight_muR{muR:3.1f}_muF{muF:3.1f}'.format(**weightMap[4]), 'F')
+        self.tree.add(lambda cands: 0. if self.event.isData() else self.event.genWeights()[5] if len(self.event.genWeights())>5 else 0., 'genWeight_muR{muR:3.1f}_muF{muF:3.1f}'.format(**weightMap[5]), 'F')
+        self.tree.add(lambda cands: 0. if self.event.isData() else self.event.genWeights()[6] if len(self.event.genWeights())>6 else 0., 'genWeight_muR{muR:3.1f}_muF{muF:3.1f}'.format(**weightMap[6]), 'F')
+        self.tree.add(lambda cands: 0. if self.event.isData() else self.event.genWeights()[7] if len(self.event.genWeights())>7 else 0., 'genWeight_muR{muR:3.1f}_muF{muF:3.1f}'.format(**weightMap[7]), 'F')
+        self.tree.add(lambda cands: 0. if self.event.isData() else self.event.genWeights()[8] if len(self.event.genWeights())>8 else 0., 'genWeight_muR{muR:3.1f}_muF{muF:3.1f}'.format(**weightMap[8]), 'F')
 
 
     def __exit__(self, type, value, traceback):
@@ -184,20 +184,21 @@ class AnalysisBase(object):
                 tree.Draw('>>{0}'.format(skimName),self.preselection,'entrylist')
                 skimlist = ROOT.gDirectory.Get(skimName)
                 listEvents = skimlist.GetN()
-                rtrow = tree
                 for r in xrange(listEvents):
                     total += 1
-                    rtrow.GetEntry(skimlist.Next())
+                    tree.GetEntry(skimlist.Next())
                     self.pbar.update(total)
                     # load objects
-                    self.electrons = [Electron(rtrow,i) for i in range(rtrow.electrons_count)]
-                    self.muons     = [Muon(rtrow,i) for i in range(rtrow.muons_count)]
-                    self.taus      = [Tau(rtrow,i) for i in range(rtrow.taus_count)]
-                    self.photons   = [Photon(rtrow,i) for i in range(rtrow.photons_count)]
-                    self.jets      = [Jet(rtrow,i) for i in range(rtrow.jets_count)]
-                    self.pfmet     = Met(rtrow)
+                    self.event     = Event(tree)
+                    if not self.event.isData(): self.gen = [GenParticle(tree,i) for i in range(tree.genParticles_count)]
+                    self.electrons = [Electron(tree,i) for i in range(tree.electrons_count)]
+                    self.muons     = [Muon(tree,i) for i in range(tree.muons_count)]
+                    self.taus      = [Tau(tree,i) for i in range(tree.taus_count)]
+                    self.photons   = [Photon(tree,i) for i in range(tree.photons_count)]
+                    self.jets      = [Jet(tree,i) for i in range(tree.jets_count)]
+                    self.pfmet     = Met(tree)
                     # call per row action
-                    self.perRowAction(rtrow)
+                    self.perRowAction()
                 tfile.Close('R')
         else:
             total = 0
@@ -210,11 +211,10 @@ class AnalysisBase(object):
                 tree.Draw('>>{0}'.format(skimName),self.preselection,'entrylist')
                 skimlist = ROOT.gDirectory.Get(skimName)
                 listEvents = skimlist.GetN()
-                rtrow = tree
                 for r in xrange(listEvents):
                     total += 1
                     if total==2: start = time.time() # just ignore first event for timing
-                    rtrow.GetEntry(skimlist.Next())
+                    tree.GetEntry(skimlist.Next())
                     if total % 1000 == 1:
                         cur = time.time()
                         elapsed = cur-start
@@ -224,32 +224,35 @@ class AnalysisBase(object):
                         logging.info('{0}: Processing event {1}/{2} - {3}:{4:02d}:{5:02d} remaining'.format(self.outputTreeName,total,self.totalEntries,hours,mins,secs))
                         self.flush()
                     # load objects
-                    self.electrons = [Electron(rtrow,i) for i in range(rtrow.electrons_count)]
-                    self.muons     = [Muon(rtrow,i) for i in range(rtrow.muons_count)]
-                    self.taus      = [Tau(rtrow,i) for i in range(rtrow.taus_count)]
-                    self.photons   = [Photon(rtrow,i) for i in range(rtrow.photons_count)]
-                    self.jets      = [Jet(rtrow,i) for i in range(rtrow.jets_count)]
-                    self.pfmet     = Met(rtrow)
+                    self.event     = Event(tree)
+                    if not self.event.isData(): self.gen = [GenParticle(tree,i) for i in range(tree.genParticles_count)]
+                    self.electrons = [Electron(tree,i) for i in range(tree.electrons_count)]
+                    self.muons     = [Muon(tree,i) for i in range(tree.muons_count)]
+                    self.taus      = [Tau(tree,i) for i in range(tree.taus_count)]
+                    self.photons   = [Photon(tree,i) for i in range(tree.photons_count)]
+                    self.jets      = [Jet(tree,i) for i in range(tree.jets_count)]
+                    self.pfmet     = Met(tree)
                     # call per row action
-                    self.perRowAction(rtrow)
+                    self.perRowAction()
                 tfile.Close('R')
 
-    def perRowAction(self,rtrow):
+    def perRowAction(self):
         '''Per row action, can be overridden'''
         # select candidates
-        cands = self.selectCandidates(rtrow)
+        cands = self.selectCandidates()
+        cands['event'] = self.event
 
         # store event?
-        goodToStore = self.cutTree.evaluate(rtrow,cands)
+        goodToStore = self.cutTree.evaluate(cands)
 
         # do we store the tree?
         if not goodToStore: return
 
-        self.tree.fill(rtrow,cands)
+        self.tree.fill(cands)
         self.eventsStored += 1
         #self.outfile.Flush()
 
-    def selectCandidates(self,rtrow):
+    def selectCandidates(self):
         '''
         Select candidates
             format should be:
@@ -264,233 +267,48 @@ class AnalysisBase(object):
     #################
     ### utilities ###
     #################
-    def findDecay(self,rtrow,m_pdgid,d1_pdgid,d2_pdgid):
+    def findDecay(self,m_pdgid,d1_pdgid,d2_pdgid):
         '''Check if requested decay present in event'''
-        for g in range(rtrow.genParticles_count):
-            if m_pdgid==rtrow.genParticles_pdgId[g]:
+        for g in self.gen:
+            if m_pdgid==g.pdgId():
                 if (
-                    (d1_pdgid==rtrow.genParticles_daughter_1[g]
-                    and d2_pdgid==rtrow.genParticles_daughter_2[g])
-                    or (d1_pdgid==rtrow.genParticles_daughter_2[g]
-                    and d2_pdgid==rtrow.genParticles_daughter_1[g])
+                    (d1_pdgid==g.daughter_1()
+                    and d2_pdgid==g.daughter_2())
+                    or (d1_pdgid==g.daughter_2()
+                    and d2_pdgid==g.daughter_1())
                    ):
                     return True
         return False
 
-    ########################
-    ### object variables ###
-    ########################
-    def getObjectVariable(self, rtrow, cand, var):
-        '''
-        Simple utility to get variables
-        '''
-        if len(cand)!=2:
-            return 0
-        coll, pos = cand
-        key = '{0}_{1}_{2}'.format(coll,var,pos)
-
-        # get a TLorentzVector
-        if var=='p4':
-            pt     = self.getObjectVariable(rtrow,cand,'pt')
-            eta    = self.getObjectVariable(rtrow,cand,'eta')
-            phi    = self.getObjectVariable(rtrow,cand,'phi')
-            energy = self.getObjectVariable(rtrow,cand,'energy')
-            val = ROOT.TLorentzVector()
-            val.SetPtEtaPhiE(pt,eta,phi,energy)
-            return val
-        elif var=='p4_uncorrected':
-            pt     = self.getObjectVariable(rtrow,cand,'pt_uncorrected')
-            eta    = self.getObjectVariable(rtrow,cand,'eta_uncorrected')
-            phi    = self.getObjectVariable(rtrow,cand,'phi_uncorrected')
-            energy = self.getObjectVariable(rtrow,cand,'energy_uncorrected')
-            val = ROOT.TLorentzVector()
-            val.SetPtEtaPhiE(pt,eta,phi,energy)
-            return val
-
-        # if invalid, return 0
-        elif pos<0:
-            val = 0
-            return val
-
-        # override muon pt/eta/phi/energy for rochester correction
-        elif coll=='muons' and var in ['pt','eta','phi','energy']:
-            val = getattr(rtrow,'{0}_rochester{1}'.format(coll,var.capitalize()))[pos]
-            return val
-        elif coll=='muons' and var in ['pt_uncorrected','eta_uncorrected','phi_uncorrected','energy_uncorrected']:
-            val = getattr(rtrow,'{0}_{1}'.format(coll,var.split('_')[0]))[pos]
-            return val
-
-        # the variable is in the input tree
-        elif hasattr(rtrow,'{0}_{1}'.format(coll,var)):
-            val = getattr(rtrow,'{0}_{1}'.format(coll,var))[pos]
-            return val
-
-
-        # didnt catch it
-        else:
-            val = 0
-            return val
-
-        return val
-
-    def getCompositeVariable(self,rtrow,var,*cands,**kwargs):
-        '''Create a composite candidate'''
-        uncorrected = kwargs.pop('uncorrected',False)
-
-        vec = ROOT.TLorentzVector()
-        components = []
-        p4Name = 'p4_uncorrected' if uncorrected else 'p4'
-        for cand in cands:
-            candp4 = self.getObjectVariable(rtrow,cand,p4Name)
-            components += [candp4]
-            vec += candp4
-
-        if var=='p4':
-            val = vec
-            return val
-        elif var in ['mass','Mass','m','M']:
-            val = vec.M()
-            return val
-        elif var in ['pt','Pt']:
-            val = vec.Pt()
-            return val
-        elif var in ['eta','Eta']:
-            val = vec.Eta()
-            return val
-        elif var in ['phi','Phi']:
-            val = vec.Phi()
-            return val
-        elif var in ['energy','Energy']:
-            val = vec.Energy()
-            return val
-        elif len(cands)==2:
-            if var in ['deltaR','dR','dr','DR']:
-                eta1 = self.getObjectVariable(rtrow,cands[0],'eta')
-                phi1 = self.getObjectVariable(rtrow,cands[0],'phi')
-                eta2 = self.getObjectVariable(rtrow,cands[1],'eta')
-                phi2 = self.getObjectVariable(rtrow,cands[1],'phi')
-                val = deltaR(eta1,phi1,eta2,phi2)
-                return val
-            elif var in ['deltaPhi','dPhi','dphi','DPhi']:
-                phi1 = self.getObjectVariable(rtrow,cands[0],'phi')
-                phi2 = self.getObjectVariable(rtrow,cands[1],'phi')
-                val = deltaPhi(phi1,phi2)
-                return val
-            elif var in ['deltaEta','dEta','deta','DEta']:
-                eta1 = self.getObjectVariable(rtrow,cands[0],'eta')
-                eta2 = self.getObjectVariable(rtrow,cands[1],'eta')
-                val = abs(eta1-eta2)
-                return val
-            else:
-                val = 0
-                return val
-        else:
-            val = 0
-            return val
-
-        return val
-
-    def getCompositeMetVariable(self,rtrow,var,met,*cands,**kwargs):
-        '''Get composite met variables'''
-
-        candVec = self.getCompositeVariable(rtrow,'p4',*cands)
-
-        metVec = ROOT.TLorentzVector()
-        metPt = self.getObjectVariable(rtrow,met,'et')
-        metPhi = self.getObjectVariable(rtrow,met,'phi')
-        metVec.SetPtEtaPhiM(metPt,0,metPhi,0)
-
-        vec = candVec + metVec
-
-        if var=='p4':
-            val = vec
-            return val
-        elif var in ['mt','Mt','mT','MT']:
-            #val = math.sqrt(2*candVec.Pt()*metPt*(1-math.cos(deltaPhi(candVec.Phi(),metPhi))))
-            val = math.sqrt(abs((candVec.Et()+metVec.Et())**2 - (vec.Pt())**2))
-            return val
-        elif var in ['mass','Mass','m','M']:
-            val = vec.M()
-            return val
-        elif var in ['pt','Pt']:
-            val = vec.Pt()
-            return val
-        elif var in ['eta','Eta']:
-            val = vec.Eta()
-            return val
-        elif var in ['phi','Phi']:
-            val = vec.Phi()
-            return val
-        elif var in ['energy','Energy']:
-            val = vec.Energy()
-            return val
-        elif len(cands)==1:
-            if var in ['deltaPhi','dPhi','dphi','DPhi']:
-                phi1 = self.getObjectVariable(rtrow,cands[0],'phi')
-                phi2 = metPhi
-                val = deltaPhi(phi1,phi2)
-                return val
-            else:
-                val = 0
-                return val
-        else:
-            val = 0
-            return val
-
-        return val
-
-    def getTreeVectorVariable(self, rtrow, var, pos):
-        '''
-        Get event wide variables
-        '''
-        if hasattr(rtrow,var):
-            val = getattr(rtrow,var)[pos] if len(getattr(rtrow,var))>pos else 0
-        else:
-            val = 0
-            logging.info("{0} not found.".format(var))
-
-        return val
-
-
-    def getTreeVariable(self, rtrow, var):
-        '''
-        Get event wide variables
-        '''
-        if hasattr(rtrow,var):
-            val = getattr(rtrow,var)
-        else:
-            val = 0
-            logging.info("{0} not found.".format(var))
-
-        return val
-
-    def getCands(self,rtrow,coll,func):
+    def getCands(self,coll,func):
         cands = []
-        numColl = getattr(rtrow,'{0}_count'.format(coll))
-        for c in range(numColl):
-            cand = (coll,c)
-            if func(rtrow,cand): cands += [cand]
+        for cand in coll:
+            if func(cand): cands += [cand]
         return cands
 
     def getCollectionString(self,cand):
-        if cand[0]=='electrons': return 'e'
-        elif cand[0]=='muons':   return 'm'
-        elif cand[0]=='taus':    return 't'
-        elif cand[0]=='photons': return 'g'
-        elif cand[0]=='jets':    return 'j'
-        else:                    return 'a'
+        if isinstance(cand,Electron): return 'e'
+        elif isinstance(cand,Muon):   return 'm'
+        elif isinstance(cand,Tau):    return 't'
+        elif isinstance(cand,Photon): return 'g'
+        elif isinstance(cand,Jet):    return 'j'
+        else:                         return 'a'
 
     ##########################
     ### add object to tree ###
     ##########################
-    def addMet(self,label,met):
-        '''Add Met variables'''
-        self.addMetVar(label,met,'pt','et','F')
-        self.addMetVar(label,met,'phi','phi','F')
+    def addCandVar(self,label,varLabel,var,rootType):
+        '''Add a variable for a cand'''
+        self.tree.add(lambda cands: getattr(cands[label],var)(), '{0}_{1}'.format(label,varLabel), rootType)
 
-    def addMetVar(self,label,met,varLabel,var,rootType):
-        '''Add a single met var'''
-        self.tree.add(lambda rtrow,cands: self.getObjectVariable(rtrow,met,var), '{0}_{1}'.format(label,varLabel), rootType)
+    def addFlavorDependentCandVar(self,label,varLabel,varMap,rootType):
+        '''Add a variable for a cand based on flavor'''
+        self.tree.add(lambda cands: getattr(cands[label],varMap[cands[label].collName])() if cands[label].collName in varMap else 0., '{0}_{1}'.format(label,varLabel), rootType)
+
+    def addMet(self,label):
+        '''Add Met variables'''
+        self.addCandVar(label,'pt','et','F')
+        self.addCandVar(label,'phi','phi','F')
 
     def addJet(self,label):
         '''Add variables relevant for jets'''
@@ -511,7 +329,7 @@ class AnalysisBase(object):
         self.addFlavorDependentCandVar(label,'dxy',      {'electrons':'dB2D',          'muons':'dB2D', 'taus':'dxy',  '':''},'F')
         self.addFlavorDependentCandVar(label,'isolation',{'electrons':'relPFIsoRhoR03','muons':'relPFIsoDeltaBetaR04','':''},'F')
         self.addFlavorDependentCandVar(label,'genMatch',       {'electrons':'genMatch',       'muons':'genMatch',  'taus':'genJetMatch', '':''},'I')
-        self.tree.add(lambda rtrow,cands: self.genDeltaR(rtrow,cands[label]) if cands[label][0] in ['electrons','muons'] else self.genJetDeltaR(rtrow,cands[label]), '{0}_genDeltaR'.format(label), 'F')
+        self.tree.add(lambda cands: self.genDeltaR(cands[label]) if isinstance(cands[label],Electron) or isinstance(cands[label],Muon) else self.genJetDeltaR(cands[label]), '{0}_genDeltaR'.format(label), 'F')
         self.addFlavorDependentCandVar(label,'genStatus',      {'electrons':'genStatus',      'muons':'genStatus', 'taus':'genJetStatus','':''},'I')
         self.addFlavorDependentCandVar(label,'genPdgId',       {'electrons':'genPdgId',       'muons':'genPdgId',  'taus':'genJetPdgId', '':''},'I')
         self.addFlavorDependentCandVar(label,'genPt',          {'electrons':'genPt',          'muons':'genPt',     'taus':'genJetPt',    '':''},'F')
@@ -523,90 +341,66 @@ class AnalysisBase(object):
         self.addFlavorDependentCandVar(label,'genIsFromTau',   {'electrons':'genIsFromTau',   'muons':'genIsFromTau',   '':''},'I')
         self.addFlavorDependentCandVar(label,'genIsFromHadron',{'electrons':'genIsFromHadron','muons':'genIsFromHadron','':''},'I')
 
-    def genDeltaR(self,rtrow,cand):
+    def genDeltaR(self,cand):
         '''Get the gen level deltaR'''
-        if self.getObjectVariable(rtrow,cand,'genMatch')==0: return 0.
-        eta = self.getObjectVariable(rtrow,cand,'eta')
-        genEta = self.getObjectVariable(rtrow,cand,'genEta')
-        phi = self.getObjectVariable(rtrow,cand,'phi')
-        genPhi = self.getObjectVariable(rtrow,cand,'genPhi')
+        if cand.genMatch()==0: return 0.
+        eta = cand.eta()
+        genEta = cand.genEta()
+        phi = cand.phi()
+        genPhi = cand.genPhi()
         return deltaR(eta,phi,genEta,genPhi)
 
-    def genJetDeltaR(self,rtrow,cand):
+    def genJetDeltaR(self,cand):
         '''Get the gen level deltaR'''
-        if self.getObjectVariable(rtrow,cand,'genJetMatch')==0: return 0.
-        eta = self.getObjectVariable(rtrow,cand,'eta')
-        genEta = self.getObjectVariable(rtrow,cand,'genJetEta')
-        phi = self.getObjectVariable(rtrow,cand,'phi')
-        genPhi = self.getObjectVariable(rtrow,cand,'genJetPhi')
+        if cand.genJetMatch()==0: return 0.
+        eta = cand.eta()
+        genEta = cand.genJetEta()
+        phi = cand.phi()
+        genPhi = cand.genJetPhi()
         return deltaR(eta,phi,genEta,genPhi)
 
-    def addCandVar(self,label,varLabel,var,rootType):
-        '''Add a variable for a cand'''
-        self.tree.add(lambda rtrow,cands: self.getObjectVariable(rtrow,cands[label],var), '{0}_{1}'.format(label,varLabel), rootType)
-
-    def addFlavorDependentCandVar(self,label,varLabel,varMap,rootType):
-        '''Add a variable for a cand based on flavor'''
-        self.tree.add(lambda rtrow,cands: self.getObjectVariable(rtrow,cands[label],varMap[cands[label][0]]) if cands[label][0] in varMap else 0., '{0}_{1}'.format(label,varLabel), rootType)
-
-    def addDiJet(self,label,obj1,obj2):
+    def addDiJet(self,label):
         '''Add variables relevant for a dijet candidate'''
-        self.addDiCandVar(label,obj1,obj2,'mass','mass','F')
-        self.addDiCandVar(label,obj1,obj2,'pt','pt','F')
-        self.addDiCandVar(label,obj1,obj2,'eta','eta','F')
-        self.addDiCandVar(label,obj1,obj2,'phi','phi','F')
-        self.addDiCandVar(label,obj1,obj2,'deltaR','deltaR','F')
-        self.addDiCandVar(label,obj1,obj2,'deltaEta','deltaEta','F')
-        self.addDiCandVar(label,obj1,obj2,'deltaPhi','deltaPhi','F')
-        self.addDiCandVar(label,obj1,obj2,'energy','energy','F')
+        self.addCandVar(label,'mass','M','F')
+        self.addCandVar(label,'pt','Pt','F')
+        self.addCandVar(label,'eta','Eta','F')
+        self.addCandVar(label,'phi','Phi','F')
+        self.addCandVar(label,'deltaR','deltaR','F')
+        self.addCandVar(label,'deltaEta','deltaEta','F')
+        self.addCandVar(label,'deltaPhi','deltaPhi','F')
+        self.addCandVar(label,'energy','Energy','F')
 
-    def addDiLepton(self,label,obj1,obj2):
+    def addDiLepton(self,label):
         '''Add variables relevant for a dilepton candidate'''
-        self.addDiCandVar(label,obj1,obj2,'mass','mass','F')
-        self.addDiCandVar(label,obj1,obj2,'pt','pt','F')
-        self.addDiCandVar(label,obj1,obj2,'eta','eta','F')
-        self.addDiCandVar(label,obj1,obj2,'phi','phi','F')
-        self.addDiCandVar(label,obj1,obj2,'deltaR','deltaR','F')
-        self.addDiCandVar(label,obj1,obj2,'deltaEta','deltaEta','F')
-        self.addDiCandVar(label,obj1,obj2,'deltaPhi','deltaPhi','F')
-        self.addDiCandVar(label,obj1,obj2,'energy','energy','F')
+        self.addCandVar(label,'mass','M','F')
+        self.addCandVar(label,'pt','Pt','F')
+        self.addCandVar(label,'eta','Eta','F')
+        self.addCandVar(label,'phi','Phi','F')
+        self.addCandVar(label,'deltaR','deltaR','F')
+        self.addCandVar(label,'deltaEta','deltaEta','F')
+        self.addCandVar(label,'deltaPhi','deltaPhi','F')
+        self.addCandVar(label,'energy','Energy','F')
 
-    def addDiCandVar(self,label,obj1,obj2,varLabel,var,rootType,**kwargs):
-        '''Add a variable for a dilepton candidate'''
-        self.tree.add(lambda rtrow,cands: self.getCompositeVariable(rtrow,var,cands[obj1],cands[obj2],**kwargs), '{0}_{1}'.format(label,varLabel), rootType)
-
-    def addLeptonMet(self,label,obj,met):
+    def addLeptonMet(self,label):
         '''Add variables related to a lepton + met'''
-        self.addCandMetVar(label,obj,met,'mass','mass','F')
-        self.addCandMetVar(label,obj,met,'pt','pt','F')
-        self.addCandMetVar(label,obj,met,'eta','eta','F')
-        self.addCandMetVar(label,obj,met,'deltaPhi','deltaPhi','F')
-        self.addCandMetVar(label,obj,met,'mt','mt','F')
+        self.addCandVar(label,'mt','Mt','F')
+        self.addCandVar(label,'pt','Pt','F')
+        self.addCandVar(label,'eta','Eta','F')
+        self.addCandVar(label,'phi','Phi','F')
+        self.addCandVar(label,'deltaPhi','deltaPhi','F')
 
-    def addCandMetVar(self,label,obj,met,varLabel,var,rootType,**kwargs):
-        '''Add a single lepton met var'''
-        self.tree.add(lambda rtrow,cands: self.getCompositeMetVariable(rtrow,var,met,cands[obj],**kwargs), '{0}_{1}'.format(label,varLabel), rootType)
-
-    def addComposite(self,label,*objs):
+    def addComposite(self,label):
         '''Add variables related to multi object variables'''
-        self.addCompositeVar(label,objs,'mass','mass','F')
-        self.addCompositeVar(label,objs,'pt','pt','F')
-        self.addCompositeVar(label,objs,'eta','eta','F')
-        self.addCompositeVar(label,objs,'phi','phi','F')
-        self.addCompositeVar(label,objs,'energy','energy','F')
+        self.addCandVar(label,'mass','M','F')
+        self.addCandVar(label,'pt','Pt','F')
+        self.addCandVar(label,'eta','Eta','F')
+        self.addCandVar(label,'phi','Phi','F')
+        self.addCandVar(label,'energy','Energy','F')
 
-    def addCompositeVar(self,label,objs,varLabel,var,rootType,**kwargs):
-        '''Add single variable for multiple objects'''
-        self.tree.add(lambda rtrow,cands: self.getCompositeVariable(rtrow,var,*[cands[obj] for obj in objs],**kwargs), '{0}_{1}'.format(label,varLabel), rootType)
-
-    def addCompositeMet(self,label,met,*objs):
+    def addCompositeMet(self,label):
         '''Add variables related to multi object variables'''
-        self.addCompositeMetVar(label,objs,met,'mass','mass','F')
-        self.addCompositeMetVar(label,objs,met,'pt','pt','F')
-        self.addCompositeMetVar(label,objs,met,'eta','eta','F')
-        self.addCompositeMetVar(label,objs,met,'mt','mt','F')
-
-    def addCompositeMetVar(self,label,objs,met,varLabel,var,rootType,**kwargs):
-        '''Add single variable for multiple objects'''
-        self.tree.add(lambda rtrow,cands: self.getCompositeMetVariable(rtrow,var,met,*[cands[obj] for obj in objs],**kwargs), '{0}_{1}'.format(label,varLabel), rootType)
+        self.addCandVar(label,'mt','Mt','F')
+        self.addCandVar(label,'pt','Pt','F')
+        self.addCandVar(label,'eta','Eta','F')
+        self.addCandVar(label,'phi','Phi','F')
 

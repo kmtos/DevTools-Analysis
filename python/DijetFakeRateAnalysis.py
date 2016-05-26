@@ -1,6 +1,7 @@
 from AnalysisBase import AnalysisBase
 from leptonId import passWZLoose, passWZMedium, passWZTight, passHppLoose, passHppMedium, passHppTight
 from utilities import ZMASS, deltaPhi, deltaR
+from Candidates import *
 
 import sys
 import itertools
@@ -32,24 +33,24 @@ class DijetFakeRateAnalysis(AnalysisBase):
         self.tree.add(self.getChannelString, 'channel', ['C',2])
 
         # event counts
-        self.tree.add(lambda rtrow,cands: self.numJets(rtrow,'isLoose',30), 'numJetsLoose30', 'I')
-        self.tree.add(lambda rtrow,cands: self.numJets(rtrow,'isTight',30), 'numJetsTight30', 'I')
-        self.tree.add(lambda rtrow,cands: self.numJets(rtrow,'passCSVv2T',30), 'numBjetsTight30', 'I')
-        self.tree.add(lambda rtrow,cands: len(self.getCands(rtrow,'electrons',self.passLoose)), 'numLooseElectrons', 'I')
-        self.tree.add(lambda rtrow,cands: len(self.getCands(rtrow,'electrons',self.passMedium)), 'numMediumElectrons', 'I')
-        self.tree.add(lambda rtrow,cands: len(self.getCands(rtrow,'electrons',self.passTight)), 'numTightElectrons', 'I')
-        self.tree.add(lambda rtrow,cands: len(self.getCands(rtrow,'muons',self.passLoose)), 'numLooseMuons', 'I')
-        self.tree.add(lambda rtrow,cands: len(self.getCands(rtrow,'muons',self.passMedium)), 'numMediumMuons', 'I')
-        self.tree.add(lambda rtrow,cands: len(self.getCands(rtrow,'muons',self.passTight)), 'numTightMuons', 'I')
+        self.tree.add(lambda cands: self.numJets('isLoose',30), 'numJetsLoose30', 'I')
+        self.tree.add(lambda cands: self.numJets('isTight',30), 'numJetsTight30', 'I')
+        self.tree.add(lambda cands: self.numJets('passCSVv2T',30), 'numBjetsTight30', 'I')
+        self.tree.add(lambda cands: len(self.getCands(self.electrons,self.passLoose)), 'numLooseElectrons', 'I')
+        self.tree.add(lambda cands: len(self.getCands(self.electrons,self.passMedium)), 'numMediumElectrons', 'I')
+        self.tree.add(lambda cands: len(self.getCands(self.electrons,self.passTight)), 'numTightElectrons', 'I')
+        self.tree.add(lambda cands: len(self.getCands(self.muons,self.passLoose)), 'numLooseMuons', 'I')
+        self.tree.add(lambda cands: len(self.getCands(self.muons,self.passMedium)), 'numMediumMuons', 'I')
+        self.tree.add(lambda cands: len(self.getCands(self.muons,self.passTight)), 'numTightMuons', 'I')
 
         # trigger
-        self.tree.add(lambda rtrow,cands: self.getTreeVariable(rtrow,'Mu8_TrkIsoVVLPass'), 'pass_Mu8_TrkIsoVVL', 'I')
-        self.tree.add(lambda rtrow,cands: self.getTreeVariable(rtrow,'Mu17_TrkIsoVVLPass'), 'pass_Mu17_TrkIsoVVL', 'I')
-        self.tree.add(lambda rtrow,cands: self.getTreeVariable(rtrow,'Mu24_TrkIsoVVLPass'), 'pass_Mu24_TrkIsoVVL', 'I')
-        self.tree.add(lambda rtrow,cands: self.getTreeVariable(rtrow,'Mu34_TrkIsoVVLPass'), 'pass_Mu34_TrkIsoVVL', 'I')
-        self.tree.add(lambda rtrow,cands: self.getTreeVariable(rtrow,'Ele12_CaloIdL_TrackIdL_IsoVLPass'), 'pass_Ele12_CaloIdL_TrackIdL_IsoVL', 'I')
-        self.tree.add(lambda rtrow,cands: self.getTreeVariable(rtrow,'Ele17_CaloIdL_TrackIdL_IsoVLPass'), 'pass_Ele17_CaloIdL_TrackIdL_IsoVL', 'I')
-        self.tree.add(lambda rtrow,cands: self.getTreeVariable(rtrow,'Ele23_CaloIdL_TrackIdL_IsoVLPass'), 'pass_Ele23_CaloIdL_TrackIdL_IsoVL', 'I')
+        self.tree.add(lambda cands: self.event.Mu8_TrkIsoVVLPass(), 'pass_Mu8_TrkIsoVVL', 'I')
+        self.tree.add(lambda cands: self.event.Mu17_TrkIsoVVLPass(), 'pass_Mu17_TrkIsoVVL', 'I')
+        self.tree.add(lambda cands: self.event.Mu24_TrkIsoVVLPass(), 'pass_Mu24_TrkIsoVVL', 'I')
+        self.tree.add(lambda cands: self.event.Mu34_TrkIsoVVLPass(), 'pass_Mu34_TrkIsoVVL', 'I')
+        self.tree.add(lambda cands: self.event.Ele12_CaloIdL_TrackIdL_IsoVLPass(), 'pass_Ele12_CaloIdL_TrackIdL_IsoVL', 'I')
+        self.tree.add(lambda cands: self.event.Ele17_CaloIdL_TrackIdL_IsoVLPass(), 'pass_Ele17_CaloIdL_TrackIdL_IsoVL', 'I')
+        self.tree.add(lambda cands: self.event.Ele23_CaloIdL_TrackIdL_IsoVLPass(), 'pass_Ele23_CaloIdL_TrackIdL_IsoVL', 'I')
         self.tree.add(self.triggerEfficiency, 'triggerEfficiency', 'F')
         self.tree.add(self.triggerPrescale, 'triggerPrescale', 'F')
 
@@ -57,87 +58,86 @@ class DijetFakeRateAnalysis(AnalysisBase):
         self.addJet('leadJet')
 
         # lepton
-        self.addLeptonMet('w','l1',('pfmet',0))
+        self.addLeptonMet('w')
         self.addLepton('l1')
-        self.tree.add(lambda rtrow,cands: self.passMedium(rtrow,cands['l1']), 'l1_passMedium', 'I')
-        self.tree.add(lambda rtrow,cands: self.passTight(rtrow,cands['l1']), 'l1_passTight', 'I')
-        self.tree.add(lambda rtrow,cands: self.looseScale(rtrow,cands['l1']), 'l1_looseScale', 'F')
-        self.tree.add(lambda rtrow,cands: self.mediumScale(rtrow,cands['l1']), 'l1_mediumScale', 'F')
-        self.tree.add(lambda rtrow,cands: self.tightScale(rtrow,cands['l1']), 'l1_tightScale', 'F')
+        self.tree.add(lambda cands: self.passMedium(cands['l1']), 'l1_passMedium', 'I')
+        self.tree.add(lambda cands: self.passTight(cands['l1']), 'l1_passTight', 'I')
+        self.tree.add(lambda cands: self.looseScale(cands['l1']), 'l1_looseScale', 'F')
+        self.tree.add(lambda cands: self.mediumScale(cands['l1']), 'l1_mediumScale', 'F')
+        self.tree.add(lambda cands: self.tightScale(cands['l1']), 'l1_tightScale', 'F')
 
         # met
-        self.addMet('met',('pfmet',0))
+        self.addMet('met')
 
     #############################
     ### select fake candidate ###
     #############################
-    def selectCandidates(self,rtrow):
+    def selectCandidates(self):
         candidate = {
-            'l1' : (),
-            'leadJet' : (),
+            'l1' : None,
+            'w' : None,
+            'leadJet' : None,
+            'met': self.pfmet
         }
 
         # get leptons
-        colls = ['electrons','muons']
-        pts = {}
-        leps = []
-        leps = self.getPassingCands(rtrow,'Loose')
+        leps = self.getPassingCands('Loose')
         if len(leps)<1: return candidate # need at least 1 lepton
 
-        for cand in leps:
-            pts[cand] = self.getObjectVariable(rtrow,cand,'pt')
-
         # choose highest pt
-        l = sorted(pts.items(), key=operator.itemgetter(1))[-1][0]
-
-        candidate['l1'] = l
+        bestCand = 0
+        bestPt = 0
+        for l in leps:
+           if l.pt()>bestPt:
+               bestPt = l.pt()
+               bestCand = l
 
         # add jet
-        jets = self.getCands(rtrow, 'jets', lambda rtrow,cand: self.getObjectVariable(rtrow,cand,'isLoose')>0.5)
-        if len(jets)>0:
-            candidate['leadJet'] = jets[0]
-        else:
-            candidate['leadJet'] = ('jets',-1)
+        jets = self.getCands(self.jets, lambda cand: cand.isLoose()>0.5)
+        if len(jets)<0: return candidate # need a recoil jet
+
+        # choose highest pt
+        bestJet = 0
+        bestPt = 0
+        for j in jets:
+           if j.pt()>bestPt:
+               bestPt = j.pt()
+               bestJet = j
+
+        candidate['l1'] = bestCand
+        candidate['w'] = MetCompositeCandidate(self.pfmet,bestCand)
+        candidate['leadJet'] = bestJet
 
         return candidate
 
     ##################
     ### lepton IDs ###
     ##################
-    def passLoose(self,rtrow,cand):
-        return passHppLoose(self,rtrow,cand)
+    def passLoose(self,cand):
+        return passHppLoose(cand)
 
-    def passMedium(self,rtrow,cand):
-        return passHppMedium(self,rtrow,cand)
+    def passMedium(self,cand):
+        return passHppMedium(cand)
 
-    def passTight(self,rtrow,cand):
-        return passHppTight(self,rtrow,cand)
+    def passTight(self,cand):
+        return passHppTight(cand)
 
-    def looseScale(self,rtrow,cand):
-        if cand[0]=='muons':
-            return self.leptonScales.getScale(rtrow,'MediumIDLooseIso',cand)
-        elif cand[0]=='electrons':
-            return self.leptonScales.getScale(rtrow,'CutbasedVeto',cand)
-        else:
-            return 1.
+    def looseScale(self,cand):
+        if isinstance(cand,Muon):       return self.leptonScales.getScale('MediumIDLooseIso',cand)
+        elif isinstance(cand,Electron): return self.leptonScales.getScale('CutbasedVeto',cand)
+        else:                           return 1.
 
-    def mediumScale(self,rtrow,cand):
-        if cand[0]=='muons':
-            return self.leptonScales.getScale(rtrow,'MediumIDTightIso',cand)
-        elif cand[0]=='electrons':
-            return self.leptonScales.getScale(rtrow,'CutbasedMedium',cand)
-        else:
-            return 1.
+    def mediumScale(self,cand):
+        if isinstance(cand,Muon):       return self.leptonScales.getScale('MediumIDTightIso',cand)
+        elif isinstance(cand,Electron): return self.leptonScales.getScale('CutbasedMedium',cand)
+        else:                           return 1.
 
-    def tightScale(self,rtrow,cand):
-        if cand[0]=='muons':
-            return self.leptonScales.getScale(rtrow,'MediumIDTightIso',cand)
-        elif cand[0]=='electrons':
-            return self.leptonScales.getScale(rtrow,'CutbasedTight',cand)
-        else:
-            return 1.
+    def tightScale(self,cand):
+        if isinstance(cand,Muon):       return self.leptonScales.getScale('MediumIDTightIso',cand)
+        elif isinstance(cand,Electron): return self.leptonScales.getScale('CutbasedTight',cand)
+        else:                           return 1.
 
-    def getPassingCands(self,rtrow,mode):
+    def getPassingCands(self,mode):
         if mode=='Loose':
             passMode = self.passLoose
         elif mode=='Medium':
@@ -147,24 +147,22 @@ class DijetFakeRateAnalysis(AnalysisBase):
         else:
             return []
         cands = []
-        for coll in ['electrons','muons']:
-            cands += self.getCands(rtrow,coll,passMode)
+        for coll in [self.electrons,self.muons]:
+            cands += self.getCands(coll,passMode)
         return cands
 
-    def numJets(self,rtrow,mode,pt):
+    def numJets(self,mode,pt):
         return len(
             self.getCands(
-                rtrow,
-                'jets',
-                lambda rtrow,cand: self.getObjectVariable(rtrow,cand,mode)>0.5 
-                                   and self.getObjectVariable(rtrow,cand,'pt')>pt
+                self.jets,
+                lambda cand: getattr(cand,mode)()>0.5 and cand.pt()>pt
             )
         )
 
     ######################
     ### channel string ###
     ######################
-    def getChannelString(self,rtrow,cands):
+    def getChannelString(self,cands):
         '''Get the channel string'''
         chanString = ''
         for c in ['l1']:
@@ -174,19 +172,19 @@ class DijetFakeRateAnalysis(AnalysisBase):
     ###########################
     ### analysis selections ###
     ###########################
-    def vetoSecond(self,rtrow,cands):
-        return len(self.getPassingCands(rtrow,'Loose'))==1
+    def vetoSecond(self,cands):
+        return len(self.getPassingCands('Loose'))==1
 
-    def metVeto(self,rtrow,cands):
-        return self.getObjectVariable(rtrow,('pfmet',0),'et')<25
+    def metVeto(self,cands):
+        return cands['met'].et()<25
 
-    def mtVeto(self,rtrow,cands):
-        if not cands['l1']: return False
-        return self.getCompositeMetVariable(rtrow,'mt',('pfmet',0),cands['l1'])<25
+    def mtVeto(self,cands):
+        if not cands['w']: return False
+        return cands['w'].Mt()<25
 
-    def trigger(self,rtrow,cands):
+    def trigger(self,cands):
         # accept MC, check trigger for data
-        if rtrow.isData<0.5: return True
+        if self.event.isData()<0.5: return True
         if not cands['l1']: return False
         triggerNames = {
             'DoubleMuon'     : [
@@ -202,10 +200,10 @@ class DijetFakeRateAnalysis(AnalysisBase):
             ],
         }
         # here we need to accept only a specific trigger after a certain pt threshold
-        pt = self.getObjectVariable(rtrow,cands['l1'],'pt')
-        dataset = 'DoubleEG' if cands['l1'][0] == 'electrons' else 'DoubleMuon'
+        pt = cands['l1'].pt()
+        dataset = 'DoubleEG' if isinstance(cands['l1'],Electron) else 'DoubleMuon'
         # accept the event only if it is triggered in the current dataset
-        reject = True if rtrow.isData>0.5 else False
+        reject = True if self.event.isData()>0.5 else False
         if dataset in self.fileNames[0]: reject = False
         # now pick the appropriate trigger for the pt
         theTrigger = ''
@@ -213,15 +211,15 @@ class DijetFakeRateAnalysis(AnalysisBase):
             if pt < ptThresh: break
             theTrigger = trig
         # and check if we pass
-        passTrigger = self.getTreeVariable(rtrow,'{0}Pass'.format(theTrigger))
+        passTrigger = getattr(self.event,'{0}Pass'.format(theTrigger))()
         if passTrigger>0.5: return False if reject else True
         return False
 
-    def triggerEfficiency(self,rtrow,cands):
+    def triggerEfficiency(self,cands):
         candList = [cands['l1']]
         # select via pt and flavor
-        pt = self.getObjectVariable(rtrow,cands['l1'],'pt')
-        if cands['l1'][0] == 'electrons':
+        pt = cands['l1'].pt()
+        if isinstance(cands['l1'],Electron):
             if pt<20:
                 triggerList = ['Ele17_Ele12Leg2']
             else:
@@ -231,12 +229,12 @@ class DijetFakeRateAnalysis(AnalysisBase):
                 triggerList = ['Mu17_Mu8Leg2']
             else:
                 triggerList = ['Mu17_Mu8Leg1']
-        return self.triggerScales.getDataEfficiency(rtrow,triggerList,candList)
+        return self.triggerScales.getDataEfficiency(triggerList,candList)
 
-    def triggerPrescale(self,rtrow,cands):
+    def triggerPrescale(self,cands):
         # select via pt and flavor
-        pt = self.getObjectVariable(rtrow,cands['l1'],'pt')
-        if cands['l1'][0] == 'electrons':
+        pt = cands['l1'].pt()
+        if isinstance(cands['l1'],Electron):
             if pt<20:
                 trigger = 'Ele17_Ele12Leg2'
             else:
