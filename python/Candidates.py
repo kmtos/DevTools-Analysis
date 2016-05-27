@@ -270,6 +270,12 @@ class CompositeCandidate(object):
     def __init__(self,*objects):
         self.objects = objects
 
+    def __getitem__(self,key):
+        if isinstance(key,int): return self.objects[key]
+
+    def __setitem__(self,key,value):
+        if isinstance(key,int): self.objects[key] = value
+
     def __getattr__(self,name):
         try:
             return self.get(name)
