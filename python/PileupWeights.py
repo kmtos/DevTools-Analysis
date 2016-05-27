@@ -11,7 +11,10 @@ class PileupWeights(object):
 
     def __init__(self,version):
         self.version = version
-        path = '{0}/src/DevTools/Analyzer/data/pileup_RunIIFall15MiniAODv2-PU25nsData2015v1_76X_mcRun2_asymptotic_v12.root'.format(os.environ['CMSSW_BASE'])
+        if version == '76X':
+            path = '{0}/src/DevTools/Analyzer/data/pileup_RunIIFall15MiniAODv2-PU25nsData2015v1_76X_mcRun2_asymptotic_v12.root'.format(os.environ['CMSSW_BASE'])
+        else:
+            path = '{0}/src/DevTools/Analyzer/data/pileup_RunIISpring16MiniAODv2-PUSpring16_80X_mcRun2_asymptotic_2016_miniAODv2_v0.root'.format(os.environ['CMSSW_BASE'])
         self.scale = {}
         self.scale_up = {}
         self.scale_down = {}
@@ -34,7 +37,6 @@ class PileupWeights(object):
         rootfile.Close()
 
     def alt_weight(self,event,xsec):
-        if self.version=='80X': return 1
         vert = event.nTrueVertices()
         if vert < 0:
             return 1
@@ -46,7 +48,6 @@ class PileupWeights(object):
             return val
 
     def weight(self, event):
-        if self.version=='80X': return [1.,1.,1.]
         vert = event.nTrueVertices()
         if vert < 0:
             return [1,1,1]

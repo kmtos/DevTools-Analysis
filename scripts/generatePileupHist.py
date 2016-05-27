@@ -4,6 +4,8 @@ import os
 
 import ROOT
 
+from DevTools.Utilities.utilities import getCMSSWVersion
+
 def main(argv=None):
     if argv is None:
         argv = sys.argv[1:]
@@ -11,10 +13,15 @@ def main(argv=None):
     histName = 'pileup'
     fileName = 'pileup/pileup.root'
     
-    # 76X samples with pileup matching data
-    from SimGeneral.MixingModule.mix_2015_25ns_FallMC_matchData_PoissonOOTPU_cfi import mix
-    pileupDist = [float(x) for x in mix.input.nbPileupEvents.probValue]
-    
+    if getCMSSWVersion() == '76X':
+        # 76X samples with pileup matching data
+        from SimGeneral.MixingModule.mix_2015_25ns_FallMC_matchData_PoissonOOTPU_cfi import mix
+        pileupDist = [float(x) for x in mix.input.nbPileupEvents.probValue]
+    else:
+        # 80X sample with startup pileup
+        from SimGeneral.MixingModule.mix_2016_25ns_SpringMC_PUScenarioV1_PoissonOOTPU_cfi import mix
+        pileupDist = [float(x) for x in mix.input.nbPileupEvents.probValue]
+
     rootfile = ROOT.TFile(fileName,'recreate')
     
     # create mc pileup dist
@@ -42,7 +49,7 @@ def main(argv=None):
         for b in range(numbins):
             d = histdata.GetBinContent(b+1)
             m = histmc.GetBinContent(b+1)
-            sf = float(d)/m
+            sf = float(d)/m if m else 0.
             histscale.SetBinContent(b+1,sf)
         histscale.Write()
     
