@@ -42,7 +42,6 @@ class AnalysisBase(object):
         inputLumiName = kwargs.pop('inputTreeName','LumiTree')
         outputFileName = kwargs.pop('outputFileName','analysisTree.root')
         outputTreeName = kwargs.pop('outputTreeName','AnalysisTree')
-        self.version = getCMSSWVersion()
         self.outputTreeName = outputTreeName
         if hasProgress:
             self.pbar = kwargs.pop('progressbar',ProgressBar(widgets=['{0}: '.format(outputTreeName),' ',SimpleProgress(),' events ',Percentage(),' ',Bar(),' ',ETA()]))
@@ -78,6 +77,13 @@ class AnalysisBase(object):
             listEvents = skimlist.GetN()
             self.skims[f] = skimlist
             self.totalEntries += listEvents
+            if not hasattr(self,'version'):
+                tree.GetEntry(1)
+                if hasattr(tree,'provenance'):
+                    ver = tree.provenance[0].split('_')
+                    self.version = ''.join([ver[1],ver[2],'X'])
+                else:
+                    self.version = getCMSSWVersion()
             tfile.Close('R')
             tchainLumi.Add(fName)
         # get the lumi info
