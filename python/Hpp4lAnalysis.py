@@ -3,7 +3,7 @@
 
 from AnalysisBase import AnalysisBase
 from utilities import ZMASS, deltaPhi, deltaR
-from leptonId import passWZLoose, passWZMedium, passWZTight, passHppLoose, passHppMedium, passHppTight
+from leptonId import passWZLoose, passWZMedium, passWZTight, passHppLoose, passHppMedium, passHppTight, passHZZLoose, passHZZTight
 
 from Candidates import *
 
@@ -274,12 +274,15 @@ class Hpp4lAnalysis(AnalysisBase):
     ##################
     def passLoose(self,cand):
         return passHppLoose(cand)
+        #return passHZZLoose(cand)
 
     def passMedium(self,cand):
         return passHppMedium(cand)
+        #return passHZZTight(cand)
 
     def passTight(self,cand):
         return passHppTight(cand)
+        #return passHZZTight(cand)
 
     def looseScale(self,cand):
         if cand.collName=='muons':

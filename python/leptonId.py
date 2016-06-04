@@ -2,6 +2,62 @@
 
 from Candidates import Electron, Muon, Tau
 
+##################
+### HZZ 4l IDs ###
+##################
+def passHZZLooseElectron(electron):
+    if electron.pt()<=7: return False
+    if abs(electron.eta())>=2.5: return False
+    if abs(electron.dxy())>=0.5: return False
+    if abs(electron.dz())>=1.: return False
+    if electron.relPFIsoRhoR03() >= 0.35: return False
+    return True
+
+def passHZZLooseMuon(muon):
+    if muon.pt()<=5: return False
+    if abs(muon.eta())>=2.4: return False
+    if abs(muon.dxy())>=0.5: return False
+    if abs(muon.dz())>=1.: return False
+    if not (muon.isGlobalMuon() or
+        (muon.isTrackerMuon() and muon.matchedStations()>0)): return False
+    if muon.muonBestTrackType()==2: return False
+    if muon.relPFIsoDeltaBetaR03()>=0.35: return False
+    return True
+
+def passHZZLoose(cand):
+    if isinstance(cand,Electron): return passHZZLooseElectron(cand)
+    if isinstance(cand,Muon):     return passHZZLooseMuon(cand)
+    return False
+
+def passHZZTightElectron(electron):
+    if not passHZZLooseElectron(electron): return False
+    mva = electron.mvaNonTrigValues()
+    eta = electron.superClusterEta()
+    pt = electron.pt()
+    if pt<=10:
+        if eta<0.8:
+            return mva > -0.265
+        elif eta<1.479:
+            return mva > -0.556
+        else:
+            return mva > -0.551
+    else:
+        if eta<0.8:
+            return mva > -0.072
+        elif eta<1.479:
+            return mva > -0.286
+        else:
+            return mva > -0.267
+
+def passHZZTightMuon(muon):
+    if not passHZZLooseMuon(muon): return False
+    return muon.isPFMuon()
+
+def passHZZTight(cand):
+    if isinstance(cand,Electron): return passHZZTightElectron(cand)
+    if isinstance(cand,Muon):     return passHZZTightMuon(cand)
+    return False
+
 #########################
 ### SMP-16-002 WZ ids ###
 #########################
