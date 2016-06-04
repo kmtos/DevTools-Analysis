@@ -409,29 +409,54 @@ class Hpp4lAnalysis(AnalysisBase):
     def trigger(self,cands):
         # accept MC, check trigger for data
         if self.event.isData()<0.5: return True
-        triggerNames = {
-            'DoubleMuon'     : [
-                'Mu17_TrkIsoVVL_Mu8_TrkIsoVVL_DZ',
-                'Mu17_TrkIsoVVL_TkMu8_TrkIsoVVL_DZ',
-            ],
-            'DoubleEG'       : [
-                'Ele17_Ele12_CaloIdL_TrackIdL_IsoVL_DZ',
-            ],
-            'MuonEG'         : [
-                'Mu8_TrkIsoVVL_Ele17_CaloIdL_TrackIdL_IsoVL',
-                'Mu17_TrkIsoVVL_Ele12_CaloIdL_TrackIdL_IsoVL',
-            ],
-            'SingleMuon'     : [
-                'IsoMu20',
-                'IsoTkMu20',
-            ],
-            'SingleElectron' : [
-                'Ele23_WPLoose_Gsf',
-            ],
-            'Tau' : [
-                'DoubleMediumIsoPFTau35_Trk1_eta2p1_Reg',
-            ],
-        }
+        if self.version=='76X':
+            triggerNames = {
+                'DoubleMuon'     : [
+                    'Mu17_TrkIsoVVL_Mu8_TrkIsoVVL_DZ',
+                    'Mu17_TrkIsoVVL_TkMu8_TrkIsoVVL_DZ',
+                ],
+                'DoubleEG'       : [
+                    'Ele17_Ele12_CaloIdL_TrackIdL_IsoVL_DZ',
+                ],
+                'MuonEG'         : [
+                    'Mu8_TrkIsoVVL_Ele17_CaloIdL_TrackIdL_IsoVL',
+                    'Mu17_TrkIsoVVL_Ele12_CaloIdL_TrackIdL_IsoVL',
+                ],
+                'SingleMuon'     : [
+                    'IsoMu20',
+                    'IsoTkMu20',
+                ],
+                'SingleElectron' : [
+                    'Ele23_WPLoose_Gsf',
+                ],
+                'Tau' : [
+                    'DoubleMediumIsoPFTau35_Trk1_eta2p1_Reg',
+                ],
+            }
+        else:
+            triggerNames = {
+                'DoubleMuon'     : [
+                    'Mu17_TrkIsoVVL_Mu8_TrkIsoVVL',
+                    'Mu17_TrkIsoVVL_TkMu8_TrkIsoVVL',
+                ],
+                'DoubleEG'       : [
+                    'Ele17_Ele12_CaloIdL_TrackIdL_IsoVL',
+                ],
+                'MuonEG'         : [
+                    'Mu8_TrkIsoVVL_Ele17_CaloIdL_TrackIdL_IsoVL',
+                    'Mu17_TrkIsoVVL_Ele12_CaloIdL_TrackIdL_IsoVL',
+                ],
+                'SingleMuon'     : [
+                    'IsoMu20',
+                    'IsoTkMu20',
+                ],
+                'SingleElectron' : [
+                    'Ele23_WPLoose_Gsf',
+                ],
+                'Tau' : [
+                    'DoubleMediumIsoPFTau35_Trk1_eta2p1_Reg',
+                ],
+            }
         # the order here defines the heirarchy
         # first dataset, any trigger passes
         # second dataset, if a trigger in the first dataset is found, reject event
