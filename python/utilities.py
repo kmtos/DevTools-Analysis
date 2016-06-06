@@ -37,8 +37,8 @@ def getTestFiles(sample,n=1):
         'wz'  : 'WZTo3LNu_TuneCUETP8M1_13TeV-powheg-pythia8',
         'data': 'DoubleMuon',
         'hpp' : 'HPlusPlusHMinusMinusHTo4L_M-500_13TeV-pythia8',
-        'dy'  : 'DYJetsToLL_M-50_TuneCUETP8M1_13TeV-amcatnloFXFX-pythia8',
-        #'dy'  : 'DYJetsToLL_M-50_TuneCUETP8M1_13TeV-madgraphMLM-pythia8',
+        #'dy'  : 'DYJetsToLL_M-50_TuneCUETP8M1_13TeV-amcatnloFXFX-pythia8',
+        'dy'  : 'DYJetsToLL_M-50_TuneCUETP8M1_13TeV-madgraphMLM-pythia8',
         'w'   : 'WJetsToLNu_TuneCUETP8M1_13TeV-amcatnloFXFX-pythia8',
     }
 

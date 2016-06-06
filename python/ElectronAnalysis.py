@@ -81,6 +81,7 @@ class ElectronAnalysis(AnalysisBase):
         self.addCandVar(label,'ecalEnergy','ecalEnergy','F')
         self.addCandVar(label,'eSuperClusterOverP','eSuperClusterOverP','F')
         self.tree.add(lambda cands: abs(1.-cands[label].eSuperClusterOverP())*1./cands[label].ecalEnergy(), '{0}_oneOverEMinusOneOverP'.format(label), 'F')
+        self.addCandVar(label,'relPFIsoRhoR03','relPFIsoRhoR03','F')
 
 
     def passMVATrigPre(self,cand):
