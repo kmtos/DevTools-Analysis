@@ -10,7 +10,6 @@ def passHZZLooseElectron(electron):
     if abs(electron.eta())>=2.5: return False
     if abs(electron.dxy())>=0.5: return False
     if abs(electron.dz())>=1.: return False
-    if electron.relPFIsoRhoR03() >= 0.35: return False
     return True
 
 def passHZZLooseMuon(muon):
@@ -21,7 +20,6 @@ def passHZZLooseMuon(muon):
     if not (muon.isGlobalMuon() or
         (muon.isTrackerMuon() and muon.matchedStations()>0)): return False
     if muon.muonBestTrackType()==2: return False
-    if muon.relPFIsoDeltaBetaR03()>=0.35: return False
     return True
 
 def passHZZLoose(cand):
@@ -31,6 +29,7 @@ def passHZZLoose(cand):
 
 def passHZZTightElectron(electron):
     if not passHZZLooseElectron(electron): return False
+    if electron.relPFIsoRhoR03() >= 0.35: return False
     mva = electron.mvaNonTrigValues()
     eta = electron.superClusterEta()
     pt = electron.pt()
@@ -51,6 +50,7 @@ def passHZZTightElectron(electron):
 
 def passHZZTightMuon(muon):
     if not passHZZLooseMuon(muon): return False
+    if muon.relPFIsoDeltaBetaR03()>=0.35: return False
     return muon.isPFMuon()
 
 def passHZZTight(cand):
