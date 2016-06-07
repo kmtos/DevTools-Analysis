@@ -27,7 +27,7 @@ class Candidate(object):
     '''
     Encapsulate access to an object in a TTree.
     '''
-    def __init__(self,tree=None,entry=-1,collName=''):
+    def __init__(self,tree,entry=-1,collName=''):
         self.tree = tree
         self.collName = collName
         self.entry = entry
@@ -53,8 +53,8 @@ class Muon(Candidate):
     '''
     Muon object access.
     '''
-    def __init__(self,tree=None,entry=-1,collName='muons',shift=None):
-        super(Muon, self).__init__(tree=tree,entry=entry,collName=collName)
+    def __init__(self,tree,entry=-1,collName='muons',shift=None):
+        super(Muon, self).__init__(tree,entry=entry,collName=collName)
         self.shift = shift
 
     def pt(self):
@@ -88,8 +88,8 @@ class Electron(Candidate):
     '''
     Electron object access.
     '''
-    def __init__(self,tree=None,entry=-1,collName='electrons',shift=None):
-        super(Electron, self).__init__(tree=tree,entry=entry,collName=collName)
+    def __init__(self,tree,entry=-1,collName='electrons',shift=None):
+        super(Electron, self).__init__(tree,entry=entry,collName=collName)
         self.shift = shift
 
     def pt(self):
@@ -123,8 +123,8 @@ class Tau(Candidate):
     '''
     Tau object access.
     '''
-    def __init__(self,tree=None,entry=-1,collName='taus',shift=None):
-        super(Tau, self).__init__(tree=tree,entry=entry,collName=collName)
+    def __init__(self,tree,entry=-1,collName='taus',shift=None):
+        super(Tau, self).__init__(tree,entry=entry,collName=collName)
         self.shift = shift
 
     def pt(self):
@@ -158,8 +158,8 @@ class Jet(Candidate):
     '''
     Jet object access.
     '''
-    def __init__(self,tree=None,entry=-1,collName='jets',shift=None):
-        super(Jet, self).__init__(tree=tree,entry=entry,collName=collName)
+    def __init__(self,tree,entry=-1,collName='jets',shift=None):
+        super(Jet, self).__init__(tree,entry=entry,collName=collName)
         self.shift = shift
 
     def pt(self):
@@ -193,8 +193,8 @@ class Photon(Candidate):
     '''
     Photon object access.
     '''
-    def __init__(self,tree=None,entry=-1,collName='photons',shift=None):
-        super(Photon, self).__init__(tree=None,entry=entry,collName=collName)
+    def __init__(self,tree,entry=-1,collName='photons',shift=None):
+        super(Photon, self).__init__(tree,entry=entry,collName=collName)
         self.shift = shift
 
 ###################
@@ -204,8 +204,8 @@ class GenParticle(Candidate):
     '''
     Gen particle object access.
     '''
-    def __init__(self,tree=None,entry=-1,collName='genParticles',shift=None):
-        super(GenParticle, self).__init__(tree=tree,entry=entry,collName=collName)
+    def __init__(self,tree,entry=-1,collName='genParticles',shift=None):
+        super(GenParticle, self).__init__(tree,entry=entry,collName=collName)
         self.shift = shift
 
 ###########
@@ -215,8 +215,8 @@ class Met(Candidate):
     '''
     Met object access.
     '''
-    def __init__(self,tree=None,entry=0,collName='pfmet',shift=None):
-        super(Met, self).__init__(tree=None,entry=entry,collName=collName)
+    def __init__(self,tree,entry=0,collName='pfmet',shift=None):
+        super(Met, self).__init__(tree,entry=entry,collName=collName)
         self.shift = shift
 
     def et(self):
