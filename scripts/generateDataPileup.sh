@@ -1,13 +1,19 @@
 #!/bin/bash
 version=`python -c "from DevTools.Utilities.utilities import getCMSSWVersion; print getCMSSWVersion()"`
 if [ "$version" == "76X" ]; then
-    lumimask="/afs/cern.ch/cms/CAF/CMSCOMM/COMM_DQM/certification/Collisions15/13TeV/Cert_246908-260627_13TeV_PromptReco_Collisions15_25ns_JSON_v2.txt"
-    pileupjson="/afs/cern.ch/cms/CAF/CMSCOMM/COMM_DQM/certification/Collisions15/13TeV/PileUp/pileup_latest.txt"
+    runPeriod="Collisions15"
 else
-    lumimask="/afs/cern.ch/cms/CAF/CMSCOMM/COMM_DQM/certification/Collisions16/13TeV/Cert_271036-274240_13TeV_PromptReco_Collisions16_JSON.txt"
-    pileupjson="/afs/cern.ch/cms/CAF/CMSCOMM/COMM_DQM/certification/Collisions16/13TeV/PileUp/pileup_latest.txt"
+    runPeriod="Collisions16"
 fi
-mkdir pileup
+lumimask=`python -c "from DevTools.Utilities.utilities import getJson; print getJson('$runPeriod')"`
+normtag=`python -c "from DevTools.Utilities.utilities import getNormtag; print getNormtag('$runPeriod')"`
+pileupjson="/afs/cern.ch/cms/CAF/CMSCOMM/COMM_DQM/certification/$runPeriod/13TeV/PileUp/pileup_latest.txt"
+mkdir -p pileup
+
+# new (doesnt work)
+#brilcalc lumi -b "STABLE BEAMS" -i $lumimask -o pileup.txt --normtag $normtag --byls --minBiasXsec 71000
+
+# old pileup
 for xsec in 71000; do
     up=$(echo "$xsec*1.05" | bc)
     down=$(echo "$xsec*0.95" | bc)
