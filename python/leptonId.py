@@ -25,6 +25,7 @@ def passHZZLooseMuon(muon):
 def passHZZLoose(cand):
     if isinstance(cand,Electron): return passHZZLooseElectron(cand)
     if isinstance(cand,Muon):     return passHZZLooseMuon(cand)
+    if isinstance(cand,Tau):      return passHppLooseTau(cand)
     return False
 
 def passHZZTightElectron(electron):
@@ -56,6 +57,7 @@ def passHZZTightMuon(muon):
 def passHZZTight(cand):
     if isinstance(cand,Electron): return passHZZTightElectron(cand)
     if isinstance(cand,Muon):     return passHZZTightMuon(cand)
+    if isinstance(cand,Tau):      return passHppMediumTau(cand)
     return False
 
 #########################

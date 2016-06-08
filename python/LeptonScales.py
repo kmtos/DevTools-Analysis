@@ -36,6 +36,16 @@ class LeptonScales(object):
                 if mid=='LooseID' and iso=='LooseRelIso': continue
                 name = '{0}{1}'.format(iso,mid)
                 self.muon_pog_scales[name] = self.muon_pog_iso_rootfile.Get('MC_NUM_{0}_DEN_{1}_PAR_pt_spliteta_bin1/abseta_pt_ratio'.format(iso,mid))
+        # HZZ
+        self.muon_hzz_scales = {}
+        idpath = '{0}/src/DevTools/Analyzer/data/HZZ_muon_76X.root'.format(os.environ['CMSSW_BASE'])
+        self.muon_hzz_rootfile = ROOT.TFile(idpath)
+        self.muon_hzz_scales['HZZTight'] = self.muon_hzz_rootfile.Get('FINAL')
+
+        self.electron_hzz_scales = {}
+        idpath = '{0}/src/DevTools/Analyzer/data/HZZ_electron_76X.root'.format(os.environ['CMSSW_BASE'])
+        self.electron_hzz_rootfile = ROOT.TFile(idpath)
+        self.electron_hzz_scales['HZZTight'] = self.electron_hzz_rootfile.Get('hScaleFactors_IdIsoSip')
 
     def __exit__(self, type, value, traceback):
         self.finish()
@@ -48,6 +58,8 @@ class LeptonScales(object):
             rootfile.Close()
         self.muon_pog_id_rootfile.Close()
         self.muon_pog_iso_rootfile.Close()
+        self.muon_hzz_rootfile.Close()
+        self.electron_hzz_rootfile.Close()
 
     def __getElectronScale(self,leptonId,cand):
         pt  = cand.pt()
@@ -58,6 +70,11 @@ class LeptonScales(object):
             if 'Trig' in leptonId and pt<15: pt = 16.
             hist = self.egamma_pog_scales[leptonId]
             val = hist.GetBinContent(hist.FindBin(abs(eta),pt))
+        elif leptonId in self.electron_hzz_scales:
+            if pt>200: pt = 199
+            if pt<7: pt = 8
+            hist = self.electron_hzz_scales[leptonId]
+            val = hist.GetBinContent(hist.FindBin(pt,eta))
         else:
             val = 1.
         return val
@@ -70,6 +87,11 @@ class LeptonScales(object):
             if pt<20: pt = 21.
             hist = self.muon_pog_scales[leptonId]
             val = hist.GetBinContent(hist.FindBin(abs(eta),pt))
+        elif leptonId in self.muon_hzz_scales:
+            if pt>80: pt = 79
+            if pt<5: pt = 6
+            hist = self.muon_hzz_scales[leptonId]
+            val = hist.GetBinContent(hist.FindBin(eta,pt))
         else:
             val = 1.
         return val
@@ -96,9 +118,9 @@ class LeptonScales(object):
             if idname and isoname:
                 idval = self.__getMuonScale(idname,cand)
                 isoval = self.__getMuonScale(isoname,cand)
+                val = idval*isoval
             else:
-                idval, isoval = 1., 1.
-            val = idval*isoval
+                val = self.__getMuonScale(leptonId,cand)
         elif cand.collName=='taus':
             val = self.__getTauScale(leptonId,cand)
         else:
