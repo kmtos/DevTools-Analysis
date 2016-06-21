@@ -96,6 +96,7 @@ class AnalysisBase(object):
             self.summedWeights += tchainLumi.summedWeights
         logging.info("Will process {0} lumi sections with {1} events ({2}).".format(self.numLumis,self.numEvents,self.summedWeights))
         self.flush()
+        if not len(self.fileNames): raise Exception
         # other input files
         self.pileupWeights = PileupWeights(self.version)
         self.fakeRates = FakeRates(self.version)

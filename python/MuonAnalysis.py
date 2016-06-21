@@ -75,4 +75,5 @@ class MuonAnalysis(AnalysisBase):
         self.addCandVar(label,'trackerStandaloneMatch','trackerStandaloneMatch','F')
         self.addCandVar(label,'trackKink','trackKink','F')
         self.addCandVar(label,'relPFIsoDeltaBetaR03','relPFIsoDeltaBetaR03','F')
+        self.addCandVar(label,'relPFIsoDeltaBetaR04','relPFIsoDeltaBetaR04','F')
         self.tree.add(lambda cands: cands[label].trackIso()/cands[label].pt(), '{0}_trackRelIso'.format(label), 'F')
