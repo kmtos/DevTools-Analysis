@@ -13,18 +13,20 @@ mkdir -p pileup
 # new (doesnt work)
 #brilcalc lumi -b "STABLE BEAMS" -i $lumimask -o pileup.txt --normtag $normtag --byls --minBiasXsec 71000
 
+maxBins=80
+
 # old pileup
 for xsec in 71000; do
     up=$(echo "$xsec*1.05" | bc)
     down=$(echo "$xsec*0.95" | bc)
     echo $xsec
-    pileupCalc.py -i $lumimask --inputLumiJSON $pileupjson --calcMode true  --minBiasXsec $xsec --maxPileupBin 50 --numPileupBins 50 pileup/PileUpData.root
+    pileupCalc.py -i $lumimask --inputLumiJSON $pileupjson --calcMode true  --minBiasXsec $xsec --maxPileupBin $maxBins --numPileupBins $maxBins pileup/PileUpData.root
     echo $up
-    pileupCalc.py -i $lumimask --inputLumiJSON $pileupjson --calcMode true  --minBiasXsec $up --maxPileupBin 50 --numPileupBins 50 pileup/PileUpData_up.root
+    pileupCalc.py -i $lumimask --inputLumiJSON $pileupjson --calcMode true  --minBiasXsec $up --maxPileupBin $maxBins --numPileupBins $maxBins pileup/PileUpData_up.root
     echo $down
-    pileupCalc.py -i $lumimask --inputLumiJSON $pileupjson --calcMode true  --minBiasXsec $down --maxPileupBin 50 --numPileupBins 50 pileup/PileUpData_down.root
+    pileupCalc.py -i $lumimask --inputLumiJSON $pileupjson --calcMode true  --minBiasXsec $down --maxPileupBin $maxBins --numPileupBins $maxBins pileup/PileUpData_down.root
 done
 for xsec in 65000 66000 67000 68000 69000 70000 71000 72000 73000 74000 75000 76000 77000 78000 79000 80000; do
     echo $xsec
-    pileupCalc.py -i $lumimask --inputLumiJSON $pileupjson --calcMode true  --minBiasXsec $xsec --maxPileupBin 50 --numPileupBins 50 pileup/PileUpData_$xsec.root
+    pileupCalc.py -i $lumimask --inputLumiJSON $pileupjson --calcMode true  --minBiasXsec $xsec --maxPileupBin $maxBins --numPileupBins $maxBins pileup/PileUpData_$xsec.root
 done
