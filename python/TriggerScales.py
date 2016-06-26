@@ -77,6 +77,65 @@ class TriggerScales(object):
             'taus'     : ['DoublePFTau35'],
         }
 
+        ################
+        ### 80X 2016 ###
+        ################
+        # tau https://indico.cern.ch/event/544712/contributions/2213574/attachments/1295299/1930984/htt_tau_trigger_17_6_2016.pdf
+        self.tau_efficiencies_2016 = {
+            'MediumIsoPFTau35_Trk_eta2p1': {
+                'val'    : {'m0' : 3.86506E+01, 'sigma' : 5.81155E+00, 'alpha' : 5.82783E+00, 'n' : 3.38903E+00, 'norm' : 9.33449E+00,}, # no iso
+            },
+            'LooseIsoPFTau20_SingleL1' : {
+                'val'    : {'m0' : 2.14111E+01, 'sigma' : 1.05522E+00, 'alpha' : 1.32782E+00, 'n' : 1.50352E+00, 'norm' : 9.96428E-01,}, # no iso
+            },
+            'LooseIsoPFTau20' : {
+                'val'    : {'m0' : 2.13600E+01, 'sigma' : 8.1845E-01, 'alpha' : 6.5401E-01, 'n' : 1.71559E+00, 'norm' : 1.00000E+00,}, # no iso
+            },
+        }
+
+        # private electron
+        self.private_electron_80X = {}
+        path = '{0}/src/DevTools/Analyzer/data/trigger_efficiencies_electron_2016.root'.format(os.environ['CMSSW_BASE'])
+        self.private_electron_80X_rootfile = ROOT.TFile(path)
+        trigMap = {
+            'Ele23Ele12DZ'         : 'passingHLTEle23Ele12DZ/probe_sc_pt_probe_sc_eta_PLOT_passingHLTEle23Ele12Leg2_true_&_tag_passingEle23Ele12Leg1_true',
+            'Ele23Ele12Leg1'       : 'passingHLTEle23Ele12Leg1/probe_sc_pt_probe_sc_eta_PLOT',
+            'Ele23Ele12Leg2'       : 'passingHLTEle23Ele12Leg2/probe_sc_pt_probe_sc_eta_PLOT_tag_passingEle23Ele12Leg1_true',
+            'Ele24Tau20LegSingleL1': 'passingHLTEle24Tau20LegSingleL1/probe_sc_pt_probe_sc_eta_PLOT',
+            'Ele25Eta2p1'          : 'passingHLTEle25Eta2p1/probe_sc_pt_probe_sc_eta_PLOT',
+            'Ele25Tight'           : 'passingHLTEle25Tight/probe_sc_pt_probe_sc_eta_PLOT',
+            'Ele35'                : 'passingHLTEle35/probe_sc_pt_probe_sc_eta_PLOT',
+        }
+        for trig in trigMap:
+            self.private_electron_80X[trig] = self.private_electron_80X_rootfile.Get(trigMap[trig])
+
+        # private muon
+        self.private_muon_80X = {}
+        path = '{0}/src/DevTools/Analyzer/data/trigger_efficiencies_muon_2016.root'.format(os.environ['CMSSW_BASE'])
+        self.private_muon_80X_rootfile = ROOT.TFile(path)
+        trigMap = {
+            'IsoMu22ORIsoTkMu22'  : 'passingIsoMu22ORIsoTkMu22/probe_pt_probe_eta_PLOT',
+            'Mu17Mu8Leg1'         : 'passingMu17/probe_pt_probe_eta_PLOT',
+            'Mu17Mu8Leg2'         : 'passingMu8/probe_pt_probe_eta_PLOT_tag_passingMu17_true',
+            'Mu19Tau20LegSingleL1': 'passingMu19Tau20MLegSingleL1/probe_pt_probe_eta_PLOT',
+        }
+        for trig in trigMap:
+            self.private_muon_80X[trig] = self.private_muon_80X_rootfile.Get(trigMap[trig])
+
+
+        # define supported triggers
+        if self.version=='80X':
+            self.singleTriggers = {
+                'muons'    : ['IsoMu22ORIsoTkMu22'],
+                'electrons': ['Ele25Eta2p1','Ele25Tight','Ele35'],
+                'taus'     : [],
+            }
+            self.doubleTriggers = {
+                'muons'    : ['Mu17Mu8','Mu19Tau20SingleL1'],
+                'electrons': ['Ele23Ele12','Ele24Tau20SingleL1'],
+                'taus'     : ['DoublePFTau35','Ele24Tau20SingleL1','Mu19Tau20SingleL1'],
+            }
+
     def __parse_hww(self,filename,fileType):
         '''Parse text file of trigger efficiencies
            Format:
@@ -106,12 +165,21 @@ class TriggerScales(object):
                 }]
         return scales
 
-    def __doubleTau35_fit(self,pt,mode):
-        m0    = self.doubleTau_efficiencies[mode]['val']['m0']
-        sigma = self.doubleTau_efficiencies[mode]['val']['sigma']
-        alpha = self.doubleTau_efficiencies[mode]['val']['alpha']
-        n     = self.doubleTau_efficiencies[mode]['val']['n']
-        norm  = self.doubleTau_efficiencies[mode]['val']['norm']
+    def __crystalball_fit(self,pt,mode):
+        if self.version=='80X' and mode in self.tau_efficiencies_2016: # 2016
+            m0    = self.tau_efficiencies_2016[mode]['val']['m0']
+            sigma = self.tau_efficiencies_2016[mode]['val']['sigma']
+            alpha = self.tau_efficiencies_2016[mode]['val']['alpha']
+            n     = self.tau_efficiencies_2016[mode]['val']['n']
+            norm  = self.tau_efficiencies_2016[mode]['val']['norm']
+        elif self.version=='76X' and mode in self.doubleTau_efficiencies:
+            m0    = self.doubleTau_efficiencies[mode]['val']['m0']
+            sigma = self.doubleTau_efficiencies[mode]['val']['sigma']
+            alpha = self.doubleTau_efficiencies[mode]['val']['alpha']
+            n     = self.doubleTau_efficiencies[mode]['val']['n']
+            norm  = self.doubleTau_efficiencies[mode]['val']['norm']
+        else:
+            return 0.
         x = pt
         # recreate the fit
         sqrtPiOver2 = math.sqrt(ROOT.TMath.PiOver2())
@@ -145,6 +213,8 @@ class TriggerScales(object):
 
     def __finish(self):
         self.singleMu_rootfile.Close()
+        self.private_electron_80X_rootfile.Close()
+        self.private_muon_80X_rootfile.Close()
 
     def __triggerWarning(self,triggers):
         logging.warning('Unmatched triggers: {0}'.format(' '.join(triggers)))
@@ -154,91 +224,121 @@ class TriggerScales(object):
         pt = cand.pt()
         eta = cand.eta()
         if cand.collName=='muons':
-            # Muon POG
-            # ignore Run2015C, reweight isomu via hlt trigger
-            if rootName == 'IsoMu20_OR_IsoTkMu20':
-                if pt>120: pt = 119
-                name0 = 'runD_{0}_HLTv4p2'.format(rootName)
-                name1 = 'runD_{0}_HLTv4p3'.format(rootName)
-                hist0 = self.singleMu_efficiencies[name0][mode]
-                hist1 = self.singleMu_efficiencies[name1][mode]
-                val0 = hist0.GetBinContent(hist0.FindBin(pt,abs(eta)))
-                val1 = hist0.GetBinContent(hist1.FindBin(pt,abs(eta)))
-                return (0.401*val0+1.899*val1)/2.3
-            elif rootName in ['Mu50', 'Mu45_eta2p1']:
-                if pt>120: pt = 119
-                hist = self.singleMu_efficiencies['runD_{0}'.format(rootName)][mode]
-                return hist.GetBinContent(hist.FindBin(pt,abs(eta)))
-            # HWW
-            elif rootName=='Mu17_Mu8Leg1':
-                if pt>200: pt = 199
-                for row in self.hww_doubleMuLeg1_efficiencies:
-                   if (eta>=row['etamin'] 
-                       and eta<=row['etamax']
-                       and pt>=row['ptmin']
-                       and pt<=row['ptmax']):
-                       return row['eff']
-            elif rootName=='Mu17_Mu8Leg2':
-                if pt>200: pt = 199
-                for row in self.hww_doubleMuLeg2_efficiencies:
-                   if (eta>=row['etamin'] 
-                       and eta<=row['etamax']
-                       and pt>=row['ptmin']
-                       and pt<=row['ptmax']):
-                       return row['eff']
+            if self.version=='76X':
+                # Muon POG
+                # ignore Run2015C, reweight isomu via hlt trigger
+                if rootName == 'IsoMu20_OR_IsoTkMu20':
+                    if pt>120: pt = 119
+                    name0 = 'runD_{0}_HLTv4p2'.format(rootName)
+                    name1 = 'runD_{0}_HLTv4p3'.format(rootName)
+                    hist0 = self.singleMu_efficiencies[name0][mode]
+                    hist1 = self.singleMu_efficiencies[name1][mode]
+                    val0 = hist0.GetBinContent(hist0.FindBin(pt,abs(eta)))
+                    val1 = hist0.GetBinContent(hist1.FindBin(pt,abs(eta)))
+                    return (0.401*val0+1.899*val1)/2.3
+                elif rootName in ['Mu50', 'Mu45_eta2p1']:
+                    if pt>120: pt = 119
+                    hist = self.singleMu_efficiencies['runD_{0}'.format(rootName)][mode]
+                    return hist.GetBinContent(hist.FindBin(pt,abs(eta)))
+                # HWW
+                elif rootName=='Mu17_Mu8Leg1':
+                    if pt>200: pt = 199
+                    for row in self.hww_doubleMuLeg1_efficiencies:
+                       if (eta>=row['etamin'] 
+                           and eta<=row['etamax']
+                           and pt>=row['ptmin']
+                           and pt<=row['ptmax']):
+                           return row['eff']
+                elif rootName=='Mu17_Mu8Leg2':
+                    if pt>200: pt = 199
+                    for row in self.hww_doubleMuLeg2_efficiencies:
+                       if (eta>=row['etamin'] 
+                           and eta<=row['etamax']
+                           and pt>=row['ptmin']
+                           and pt<=row['ptmax']):
+                           return row['eff']
+            elif self.version=='80X':
+                if rootName in self.private_muon_80X:
+                    if pt>1000: pt = 999
+                    hist = self.private_muon_80X[rootName]
+                    return hist.GetBinContent(hist.FindBin(pt,eta))
         elif cand.collName=='electrons':
-            # HWW
-            if rootName=='Ele23_WPLoose':
-                if pt>100: pt = 99
-                for row in self.hww_singleE_efficiencies:
-                   if (eta>=row['etamin'] 
-                       and eta<=row['etamax']
-                       and pt>=row['ptmin']
-                       and pt<=row['ptmax']):
-                       return row['eff']
-            elif rootName=='Ele17_Ele12Leg1':
-                if pt>100: pt = 99
-                for row in self.hww_doubleELeg1_efficiencies:
-                   if (eta>=row['etamin'] 
-                       and eta<=row['etamax']
-                       and pt>=row['ptmin']
-                       and pt<=row['ptmax']):
-                       return row['eff']
-            elif rootName=='Ele17_Ele12Leg2':
-                if pt>100: pt = 99
-                for row in self.hww_doubleELeg2_efficiencies:
-                   if (eta>=row['etamin'] 
-                       and eta<=row['etamax']
-                       and pt>=row['ptmin']
-                       and pt<=row['ptmax']):
-                       return row['eff']
+            if self.version=='76X':
+                # HWW
+                if rootName=='Ele23_WPLoose':
+                    if pt>100: pt = 99
+                    for row in self.hww_singleE_efficiencies:
+                       if (eta>=row['etamin'] 
+                           and eta<=row['etamax']
+                           and pt>=row['ptmin']
+                           and pt<=row['ptmax']):
+                           return row['eff']
+                elif rootName=='Ele17_Ele12Leg1':
+                    if pt>100: pt = 99
+                    for row in self.hww_doubleELeg1_efficiencies:
+                       if (eta>=row['etamin'] 
+                           and eta<=row['etamax']
+                           and pt>=row['ptmin']
+                           and pt<=row['ptmax']):
+                           return row['eff']
+                elif rootName=='Ele17_Ele12Leg2':
+                    if pt>100: pt = 99
+                    for row in self.hww_doubleELeg2_efficiencies:
+                       if (eta>=row['etamin'] 
+                           and eta<=row['etamax']
+                           and pt>=row['ptmin']
+                           and pt<=row['ptmax']):
+                           return row['eff']
+            elif self.version=='80X':
+                if rootName in self.private_electron_80X:
+                    if pt>1000: pt = 999
+                    hist = self.private_electron_80X[rootName]
+                    return hist.GetBinContent(hist.FindBin(pt,eta))
         elif cand.collName=='taus':
-            if rootName=='PFTau35':
-                return self.__doubleTau35_fit(pt,mode)
+            if self.version=='76X':
+                return self.__crystalball_fit(pt,mode)
+            elif self.version=='80X':
+                return self.__crystalball_fit(pt,rootName)
         return 0.
 
     def __getLeadEfficiency(self,rootNames,mode,cand):
         if cand.collName=='electrons':
             if 'Ele17_Ele12' in rootNames:
                 return self.__getEfficiency('Ele17_Ele12Leg1',mode,cand)
+            if 'Ele23Ele12' in rootNames:
+                return self.__getEfficiency('Ele23Ele12Leg1',mode,cand)
+            if 'Ele24Tau20SingleL1' in rootNames:
+                return self.__getEfficiency('Ele24Tau20LegSingleL1',mode,cand)
         elif cand.collName=='muons':
             if 'Mu17_Mu8' in rootNames:
                 return self.__getEfficiency('Mu17_Mu8Leg1',mode,cand)
+            if 'Mu17Mu8' in rootNames:
+                return self.__getEfficiency('Mu17Mu8Leg1',mode,cand)
+            if 'Mu19Tau20SingleL1' in rootNames:
+                return self.__getEfficiency('Mu19Tau20LegSingleL1',mode,cand)
         elif cand.collName=='taus':
             if 'DoublePFTau35' in rootNames:
-                return self.__getEfficiency('PFTau35',mode,cand)
+                return self.__getEfficiency('MediumIsoPFTau35_Trk_eta2p1',mode,cand)
         return 0.
 
     def __getTrailEfficiency(self,rootNames,mode,cand):
         if cand.collName=='electrons':
             if 'Ele17_Ele12' in rootNames:
                 return self.__getEfficiency('Ele17_Ele12Leg2',mode,cand)
+            if 'Ele23Ele12' in rootNames:
+                return self.__getEfficiency('Ele23Ele12Leg2',mode,cand)
         elif cand.collName=='muons':
             if 'Mu17_Mu8' in rootNames:
                 return self.__getEfficiency('Mu17_Mu8Leg2',mode,cand)
+            if 'Mu17Mu8' in rootNames:
+                return self.__getEfficiency('Mu17Mu8Leg2',mode,cand)
         elif cand.collName=='taus':
             if 'DoublePFTau35' in rootNames:
-                return self.__getEfficiency('PFTau35',mode,cand)
+                return self.__getEfficiency('MediumIsoPFTau35_Trk_eta2p1',mode,cand)
+            if 'Ele24Tau20SingleL1' in rootNames:
+                return self.__getEfficiency('LooseIsoPFTau20_SingleL1',mode,cand)
+            if 'Mu19Tau20SingleL1' in rootNames:
+                return self.__getEfficiency('LooseIsoPFTau20_SingleL1',mode,cand)
         return 0.
 
     def __getSingleEfficiency(self,rootNames,mode,cand):
@@ -249,6 +349,10 @@ class TriggerScales(object):
                 return self.__getEfficiency('Ele17_Ele12Leg1',mode,cand)
             elif 'Ele17_Ele12Leg2' in rootNames:
                 return self.__getEfficiency('Ele17_Ele12Leg2',mode,cand)
+            elif 'Ele25Eta2p1' in rootNames:
+                return self.__getEfficiency('Ele25Eta2p1',mode,cand)
+            elif 'Ele25Tight' in rootNames:
+                return self.__getEfficiency('Ele25Tight',mode,cand)
         elif cand.collName=='muons':
             if 'IsoMu20_OR_IsoTkMu20' in rootNames:
                 return self.__getEfficiency('IsoMu20_OR_IsoTkMu20',mode,cand)
@@ -260,9 +364,10 @@ class TriggerScales(object):
                 return self.__getEfficiency('Mu17_Mu8Leg1',mode,cand)
             elif 'Mu17_Mu8Leg2' in rootNames:
                 return self.__getEfficiency('Mu17_Mu8Leg2',mode,cand)
+            elif 'IsoMu22ORIsoTkMu22' in rootNames:
+                return self.__getEfficiency('IsoMu22ORIsoTkMu22',mode,cand)
         elif cand.collName=='taus':
-            if 'PFTau35' in rootNames:
-                return self.__getEfficiency('PFTau35',mode,cand)
+            return 0.
         return 0.
 
     def __hasSingle(self,triggers,triggerType):
@@ -346,7 +451,6 @@ class TriggerScales(object):
 
     def getDataEfficiency(self,triggers,cands):
         '''Get the efficiency for a set of triggers for a list of candidates in DATA'''
-        if self.version=='80X': return 1
         return self.__getTriggerEfficiency(triggers,cands,'DATA')
 
     def getRatio(self,triggers,cands):

@@ -67,13 +67,16 @@ class DYAnalysis(AnalysisBase):
             self.tree.add(lambda cands: self.event.Mu17_TrkIsoVVL_Mu8_TrkIsoVVL_DZPass(), 'pass_Mu17_TrkIsoVVL_Mu8_TrkIsoVVL_DZ', 'I')
             self.tree.add(lambda cands: self.event.Mu17_TrkIsoVVL_TkMu8_TrkIsoVVL_DZPass(), 'pass_Mu17_TrkIsoVVL_TkMu8_TrkIsoVVL_DZ', 'I')
             self.tree.add(lambda cands: self.event.Ele17_Ele12_CaloIdL_TrackIdL_IsoVL_DZPass(), 'pass_Ele17_Ele12_CaloIdL_TrackIdL_IsoVL_DZ', 'I')
+            self.tree.add(lambda cands: self.event.IsoMu20Pass(), 'pass_IsoMu20', 'I')
+            self.tree.add(lambda cands: self.event.IsoTkMu20Pass(), 'pass_IsoTkMu20', 'I')
+            self.tree.add(lambda cands: self.event.Ele23_WPLoose_GsfPass(), 'pass_Ele23_WPLoose_Gsf', 'I')
         else:
             self.tree.add(lambda cands: self.event.Mu17_TrkIsoVVL_Mu8_TrkIsoVVLPass(), 'pass_Mu17_TrkIsoVVL_Mu8_TrkIsoVVL', 'I')
             self.tree.add(lambda cands: self.event.Mu17_TrkIsoVVL_TkMu8_TrkIsoVVLPass(), 'pass_Mu17_TrkIsoVVL_TkMu8_TrkIsoVVL', 'I')
-            self.tree.add(lambda cands: self.event.Ele17_Ele12_CaloIdL_TrackIdL_IsoVLPass(), 'pass_Ele17_Ele12_CaloIdL_TrackIdL_IsoVL', 'I')
-        self.tree.add(lambda cands: self.event.IsoMu20Pass(), 'pass_IsoMu20', 'I')
-        self.tree.add(lambda cands: self.event.IsoTkMu20Pass(), 'pass_IsoTkMu20', 'I')
-        self.tree.add(lambda cands: self.event.Ele23_WPLoose_GsfPass(), 'pass_Ele23_WPLoose_Gsf', 'I')
+            self.tree.add(lambda cands: self.event.Ele23_Ele12_CaloIdL_TrackIdL_IsoVL_DZPass(), 'pass_Ele23_Ele12_CaloIdL_TrackIdL_IsoVL_DZ', 'I')
+            self.tree.add(lambda cands: self.event.IsoMu22Pass(), 'pass_IsoMu22', 'I')
+            self.tree.add(lambda cands: self.event.IsoTkMu22Pass(), 'pass_IsoTkMu22', 'I')
+            self.tree.add(lambda cands: self.event.Ele25_WPTight_GsfPass(), 'pass_Ele25_WPTight_Gsf', 'I')
         self.tree.add(self.triggerEfficiency, 'triggerEfficiency', 'F')
 
         # z leptons
@@ -147,17 +150,17 @@ class DYAnalysis(AnalysisBase):
 
     def looseScale(self,cand):
         if isinstance(cand,Muon):       return self.leptonScales.getScale('MediumIDLooseIso',cand)
-        elif isinstance(cand,Electron): return self.leptonScales.getScale('CutbasedVeto',cand)
+        elif isinstance(cand,Electron): return self.leptonScales.getScale('CutbasedVeto',cand) if self.version=='76X' else self.leptonScales.getScale('CutBasedIDVeto',cand)
         else:                           return 1.
 
     def mediumScale(self,cand):
         if isinstance(cand,Muon):       return self.leptonScales.getScale('MediumIDTightIso',cand)
-        elif isinstance(cand,Electron): return self.leptonScales.getScale('CutbasedMedium',cand)
+        elif isinstance(cand,Electron): return self.leptonScales.getScale('CutbasedMedium',cand) if self.version=='76X' else self.leptonScales.getScale('CutBasedIDMedium',cand)
         else:                           return 1.
 
     def tightScale(self,cand):
         if isinstance(cand,Muon):       return self.leptonScales.getScale('MediumIDTightIso',cand)
-        elif isinstance(cand,Electron): return self.leptonScales.getScale('CutbasedTight',cand)
+        elif isinstance(cand,Electron): return self.leptonScales.getScale('CutbasedTight',cand) if self.version=='76X' else self.leptonScales.getScale('CutBasedIDTight',cand)
         else:                           return 1.
 
     def getPassingCands(self,mode):
@@ -252,14 +255,14 @@ class DYAnalysis(AnalysisBase):
                     'Mu17_TrkIsoVVL_TkMu8_TrkIsoVVL',
                 ],
                 'DoubleEG'       : [
-                    'Ele17_Ele12_CaloIdL_TrackIdL_IsoVL',
+                    'Ele23_Ele12_CaloIdL_TrackIdL_IsoVL_DZ',
                 ],
                 'SingleMuon'     : [
-                    'IsoMu20',
-                    'IsoTkMu20',
+                    'IsoMu22',
+                    'IsoTkMu22',
                 ],
                 'SingleElectron' : [
-                    'Ele23_WPLoose_Gsf',
+                    'Ele25_WPTight_Gsf',
                 ],
             }
         # the order here defines the heirarchy
@@ -298,9 +301,9 @@ class DYAnalysis(AnalysisBase):
     def triggerEfficiency(self,cands):
         candList = [cands[c] for c in ['z1','z2']]
         if isinstance(candList[0],Electron):
-            triggerList = ['Ele23_WPLoose','Ele17_Ele12']
+            triggerList = ['Ele23_WPLoose','Ele17_Ele12'] if self.version=='76X' else ['Ele25Tight','Ele23Ele12']
         else:
-            triggerList = ['IsoMu20_OR_IsoTkMu20','Mu17_Mu8']
+            triggerList = ['IsoMu20_OR_IsoTkMu20','Mu17_Mu8'] if self.version=='76X' else ['IsoMu22ORIsoTkMu22','Mu17Mu8']
         return self.triggerScales.getDataEfficiency(triggerList,candList)
 
 
