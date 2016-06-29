@@ -46,11 +46,8 @@ class DijetFakeRateAnalysis(AnalysisBase):
         # trigger
         self.tree.add(lambda cands: self.event.Mu8_TrkIsoVVLPass(), 'pass_Mu8_TrkIsoVVL', 'I')
         self.tree.add(lambda cands: self.event.Mu17_TrkIsoVVLPass(), 'pass_Mu17_TrkIsoVVL', 'I')
-        self.tree.add(lambda cands: self.event.Mu24_TrkIsoVVLPass(), 'pass_Mu24_TrkIsoVVL', 'I')
-        self.tree.add(lambda cands: self.event.Mu34_TrkIsoVVLPass(), 'pass_Mu34_TrkIsoVVL', 'I')
         self.tree.add(lambda cands: self.event.Ele12_CaloIdL_TrackIdL_IsoVLPass(), 'pass_Ele12_CaloIdL_TrackIdL_IsoVL', 'I')
         self.tree.add(lambda cands: self.event.Ele17_CaloIdL_TrackIdL_IsoVLPass(), 'pass_Ele17_CaloIdL_TrackIdL_IsoVL', 'I')
-        self.tree.add(lambda cands: self.event.Ele23_CaloIdL_TrackIdL_IsoVLPass(), 'pass_Ele23_CaloIdL_TrackIdL_IsoVL', 'I')
         self.tree.add(self.triggerEfficiency, 'triggerEfficiency', 'F')
         self.tree.add(self.triggerPrescale, 'triggerPrescale', 'F')
 
@@ -94,7 +91,7 @@ class DijetFakeRateAnalysis(AnalysisBase):
 
         # add jet
         jets = self.getCands(self.jets, lambda cand: cand.isLoose()>0.5)
-        if len(jets)<0: return candidate # need a recoil jet
+        if len(jets)<1: return candidate # need a recoil jet
 
         # choose highest pt
         bestJet = 0
@@ -124,17 +121,17 @@ class DijetFakeRateAnalysis(AnalysisBase):
 
     def looseScale(self,cand):
         if isinstance(cand,Muon):       return self.leptonScales.getScale('MediumIDLooseIso',cand)
-        elif isinstance(cand,Electron): return self.leptonScales.getScale('CutbasedVeto',cand)
+        elif isinstance(cand,Electron): return self.leptonScales.getScale('CutbasedVeto',cand) if self.version=='76X' else self.leptonScales.getScale('CutBasedIDVeto',cand)
         else:                           return 1.
 
     def mediumScale(self,cand):
         if isinstance(cand,Muon):       return self.leptonScales.getScale('MediumIDTightIso',cand)
-        elif isinstance(cand,Electron): return self.leptonScales.getScale('CutbasedMedium',cand)
+        elif isinstance(cand,Electron): return self.leptonScales.getScale('CutbasedMedium',cand) if self.version=='76X' else self.leptonScales.getScale('CutBasedIDMedium',cand)
         else:                           return 1.
 
     def tightScale(self,cand):
         if isinstance(cand,Muon):       return self.leptonScales.getScale('MediumIDTightIso',cand)
-        elif isinstance(cand,Electron): return self.leptonScales.getScale('CutbasedTight',cand)
+        elif isinstance(cand,Electron): return self.leptonScales.getScale('CutbasedTight',cand) if self.version=='76X' else self.leptonScales.getScale('CutBasedIDTight',cand)
         else:                           return 1.
 
     def getPassingCands(self,mode):
@@ -190,13 +187,10 @@ class DijetFakeRateAnalysis(AnalysisBase):
             'DoubleMuon'     : [
                 ['Mu8_TrkIsoVVL', 0],
                 ['Mu17_TrkIsoVVL', 20],
-                #['Mu24_TrkIsoVVL', 30],
-                #['Mu34_TrkIsoVVL', 40],
             ],
             'DoubleEG'       : [
                 ['Ele12_CaloIdL_TrackIdL_IsoVL', 0],
-                ['Ele17_CaloIdL_TrackIdL_IsoVL', 20],
-                #['Ele23_CaloIdL_TrackIdL_IsoVL', 30],
+                ['Ele17_CaloIdL_TrackIdL_IsoVL', 30],
             ],
         }
         # here we need to accept only a specific trigger after a certain pt threshold
@@ -220,15 +214,15 @@ class DijetFakeRateAnalysis(AnalysisBase):
         # select via pt and flavor
         pt = cands['l1'].pt()
         if isinstance(cands['l1'],Electron):
-            if pt<20:
-                triggerList = ['Ele17_Ele12Leg2']
+            if pt<30:
+                triggerList = ['Ele17_Ele12Leg2'] if self.verson=='76X' else ['Ele23Ele12Leg2']
             else:
-                triggerList = ['Ele17_Ele12Leg1']
+                triggerList = ['Ele17_Ele12Leg1'] if self.version=='76X' else ['Ele23Ele12Leg1'] # cheat a little, use Ele23 and choose pt on plateau
         else:
             if pt<20:
-                triggerList = ['Mu17_Mu8Leg2']
+                triggerList = ['Mu17_Mu8Leg2'] if self.version=='76X' else ['Mu17Mu8Leg2']
             else:
-                triggerList = ['Mu17_Mu8Leg1']
+                triggerList = ['Mu17_Mu8Leg1'] if self.version=='76X' else ['Mu17Mu8Leg1']
         return self.triggerScales.getDataEfficiency(triggerList,candList)
 
     def triggerPrescale(self,cands):

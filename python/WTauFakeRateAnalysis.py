@@ -40,8 +40,12 @@ class WTauFakeRateAnalysis(AnalysisBase):
 
 
         # trigger
-        self.tree.add(lambda cands: self.event.IsoMu20Pass(), 'pass_IsoMu20', 'I')
-        self.tree.add(lambda cands: self.event.IsoTkMu20Pass(), 'pass_IsoTkMu20', 'I')
+        if self.version=='76X':
+            self.tree.add(lambda cands: self.event.IsoMu20Pass(), 'pass_IsoMu20', 'I')
+            self.tree.add(lambda cands: self.event.IsoTkMu20Pass(), 'pass_IsoTkMu20', 'I')
+        else:
+            self.tree.add(lambda cands: self.event.IsoMu22Pass(), 'pass_IsoMu22', 'I')
+            self.tree.add(lambda cands: self.event.IsoTkMu22Pass(), 'pass_IsoTkMu22', 'I')
         self.tree.add(self.triggerEfficiency, 'triggerEfficiency', 'F')
 
         # lepton
@@ -129,17 +133,17 @@ class WTauFakeRateAnalysis(AnalysisBase):
 
     def looseScale(self,cand):
         if isinstance(cand,Muon):       return self.leptonScales.getScale('MediumIDLooseIso',cand)
-        elif isinstance(cand,Electron): return self.leptonScales.getScale('CutbasedVeto',cand)
+        elif isinstance(cand,Electron): return self.leptonScales.getScale('CutbasedVeto',cand) if self.version=='76X' else self.leptonScales.getScale('CutBasedIDVeto',cand)
         else:                           return 1.
 
     def mediumScale(self,cand):
         if isinstance(cand,Muon):       return self.leptonScales.getScale('MediumIDTightIso',cand)
-        elif isinstance(cand,Electron): return self.leptonScales.getScale('CutbasedMedium',cand)
+        elif isinstance(cand,Electron): return self.leptonScales.getScale('CutbasedMedium',cand) if self.version=='76X' else self.leptonScales.getScale('CutBasedIDMedium',cand)
         else:                           return 1.
 
     def tightScale(self,cand):
         if isinstance(cand,Muon):       return self.leptonScales.getScale('MediumIDTightIso',cand)
-        elif isinstance(cand,Electron): return self.leptonScales.getScale('CutbasedTight',cand)
+        elif isinstance(cand,Electron): return self.leptonScales.getScale('CutbasedTight',cand) if self.version=='76X' else self.leptonScales.getScale('CutBasedIDTight',cand)
         else:                           return 1.
 
     def getPassingCands(self,mode):
@@ -205,12 +209,20 @@ class WTauFakeRateAnalysis(AnalysisBase):
     def trigger(self,cands):
         # accept MC, check trigger for data
         if self.event.isData()<0.5: return True
-        triggerNames = {
-            'SingleMuon'     : [
-                'IsoMu20',
-                'IsoTkMu20',
-            ],
-        }
+        if self.version=='76X':
+            triggerNames = {
+                'SingleMuon'     : [
+                    'IsoMu20',
+                    'IsoTkMu20',
+                ],
+            }
+        else:
+            triggerNames = {
+                'SingleMuon'     : [
+                    'IsoMu22',
+                    'IsoTkMu22',
+                ],
+            }
         # the order here defines the heirarchy
         # first dataset, any trigger passes
         # second dataset, if a trigger in the first dataset is found, reject event
@@ -238,6 +250,6 @@ class WTauFakeRateAnalysis(AnalysisBase):
 
     def triggerEfficiency(self,cands):
         candList = [cands['m']]
-        triggerList = ['IsoMu20_OR_IsoTkMu20']
+        triggerList = ['IsoMu20_OR_IsoTkMu20'] if self.version=='76X' else ['IsoMu22ORIsoTkMu22']
         return self.triggerScales.getDataEfficiency(triggerList,candList)
 

@@ -126,8 +126,8 @@ class TriggerScales(object):
         # define supported triggers
         if self.version=='80X':
             self.singleTriggers = {
-                'muons'    : ['IsoMu22ORIsoTkMu22'],
-                'electrons': ['Ele25Eta2p1','Ele25Tight','Ele35'],
+                'muons'    : ['IsoMu22ORIsoTkMu22','Mu17Mu8Leg1','Mu17Mu8Leg2'],
+                'electrons': ['Ele25Eta2p1','Ele25Tight','Ele35','Ele23Ele12Leg1','Ele23Ele12Leg2'],
                 'taus'     : [],
             }
             self.doubleTriggers = {
