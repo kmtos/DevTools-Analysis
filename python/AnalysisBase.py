@@ -293,6 +293,17 @@ class AnalysisBase(object):
             if func(cand): cands += [cand]
         return cands
 
+    def cleanCands(self,src,other,dr):
+        cleaned = []
+        for s in src:
+            keep = True
+            for o in other:
+                if deltaR(s.eta(),s.phi(),o.eta(),o.phi())<dr:
+                    keep = False
+            if keep:
+                cleaned += [s]
+        return cleaned
+
     def getCollectionString(self,cand):
         if isinstance(cand,Electron): return 'e'
         elif isinstance(cand,Muon):   return 'm'

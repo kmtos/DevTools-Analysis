@@ -158,12 +158,13 @@ class ChargeAnalysis(AnalysisBase):
         return cands
 
     def numJets(self,mode,pt):
-        return len(
-            self.getCands(
-                self.jets,
-                lambda cand: getattr(cand,mode)()>0.5 and cand.pt()>pt
-            )
+        jetColl = self.getCands(
+            self.jets,
+            lambda cand: getattr(cand,mode)()>0.5 and cand.pt()>pt
         )
+        lepColl = self.getPassingCands('Medium')
+        return len(self.cleanCands(jetColl,lepColl,0.4))
+
 
     ######################
     ### channel string ###

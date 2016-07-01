@@ -169,39 +169,12 @@ class TauChargeAnalysis(AnalysisBase):
         return cands
 
     def numJets(self,mode,pt):
-        return len(
-            self.getCands(
-                self.jets,
-                lambda cand: getattr(cand,mode)()>0.5 and cand.pt()>pt
-            )
+        jetColl = self.getCands(
+            self.jets,
+            lambda cand: getattr(cand,mode)()>0.5 and cand.pt()>pt
         )
-
-    def numCentralJets(self,cands,mode,pt):
-        if not cands['leadJet']: return -1
-        if not cands['subleadJet']: return -1
-        eta1 = cands['leadJet'].eta()
-        eta2 = cands['subleadJet'].eta()
-        mineta = min(eta1,eta2)
-        maxeta = max(eta1,eta2)
-        return len(
-            self.getCands(
-                self.jets,
-                lambda cand: getattr(cand,mode)()>0.5
-                             and cand.pt()>pt
-                             and cand.eta()>mineta
-                             and cand.eta()<maxeta
-            )
-        )
-
-    def zeppenfeld(self,cands,*probeCands):
-        if not cands['leadJet']: return -10.
-        if not cands['subleadJet']: return -10.
-        eta1 = cands['leadJet'].eta()
-        eta2 = cands['subleadJet'].eta()
-        meaneta = (eta1+eta2)/2
-        composite = CompositeCandidate(*probeCands)
-        eta = composite.eta()
-        return eta-meaneta
+        lepColl = self.getPassingCands('Medium')
+        return len(self.cleanCands(jetColl,lepColl,0.4))
 
 
     ######################
