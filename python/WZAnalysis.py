@@ -48,15 +48,18 @@ class WZAnalysis(AnalysisBase):
             self.tree.add(lambda cands: self.event.Mu17_TrkIsoVVL_Mu8_TrkIsoVVL_DZPass(), 'pass_Mu17_TrkIsoVVL_Mu8_TrkIsoVVL_DZ', 'I')
             self.tree.add(lambda cands: self.event.Mu17_TrkIsoVVL_TkMu8_TrkIsoVVL_DZPass(), 'pass_Mu17_TrkIsoVVL_TkMu8_TrkIsoVVL_DZ', 'I')
             self.tree.add(lambda cands: self.event.Ele17_Ele12_CaloIdL_TrackIdL_IsoVL_DZPass(), 'pass_Ele17_Ele12_CaloIdL_TrackIdL_IsoVL_DZ', 'I')
+            self.tree.add(lambda cands: self.event.IsoMu20Pass(), 'pass_IsoMu20', 'I')
+            self.tree.add(lambda cands: self.event.IsoTkMu20Pass(), 'pass_IsoTkMu20', 'I')
+            self.tree.add(lambda cands: self.event.Ele23_WPLoose_GsfPass(), 'pass_Ele23_WPLoose_Gsf', 'I')
         else:
             self.tree.add(lambda cands: self.event.Mu17_TrkIsoVVL_Mu8_TrkIsoVVLPass(), 'pass_Mu17_TrkIsoVVL_Mu8_TrkIsoVVL', 'I')
             self.tree.add(lambda cands: self.event.Mu17_TrkIsoVVL_TkMu8_TrkIsoVVLPass(), 'pass_Mu17_TrkIsoVVL_TkMu8_TrkIsoVVL', 'I')
-            self.tree.add(lambda cands: self.event.Ele17_Ele12_CaloIdL_TrackIdL_IsoVLPass(), 'pass_Ele17_Ele12_CaloIdL_TrackIdL_IsoVL', 'I')
+            self.tree.add(lambda cands: self.event.Ele23_Ele12_CaloIdL_TrackIdL_IsoVL_DZPass(), 'pass_Ele23_Ele12_CaloIdL_TrackIdL_IsoVL_DZ', 'I')
+            self.tree.add(lambda cands: self.event.IsoMu22Pass(), 'pass_IsoMu22', 'I')
+            self.tree.add(lambda cands: self.event.IsoTkMu22Pass(), 'pass_IsoTkMu22', 'I')
+            self.tree.add(lambda cands: self.event.Ele25_WPTight_GsfPass(), 'pass_Ele25_WPTight_Gsf', 'I')
         self.tree.add(lambda cands: self.event.Mu8_TrkIsoVVL_Ele17_CaloIdL_TrackIdL_IsoVLPass(), 'pass_Mu8_TrkIsoVVL_Ele17_CaloIdL_TrackIdL_IsoVL', 'I')
         self.tree.add(lambda cands: self.event.Mu17_TrkIsoVVL_Ele12_CaloIdL_TrackIdL_IsoVLPass(), 'pass_Mu17_TrkIsoVVL_Ele12_CaloIdL_TrackIdL_IsoVL', 'I')
-        self.tree.add(lambda cands: self.event.IsoMu20Pass(), 'pass_IsoMu20', 'I')
-        self.tree.add(lambda cands: self.event.IsoTkMu20Pass(), 'pass_IsoTkMu20', 'I')
-        self.tree.add(lambda cands: self.event.Ele23_WPLoose_GsfPass(), 'pass_Ele23_WPLoose_Gsf', 'I')
         self.tree.add(self.triggerEfficiency, 'triggerEfficiency', 'F')
 
         ## vbf
@@ -197,7 +200,7 @@ class WZAnalysis(AnalysisBase):
         if cand.collName=='muons':
             return self.leptonScales.getScale('MediumIDLooseIso',cand)
         elif cand.collName=='electrons':
-            return self.leptonScales.getScale('CutbasedVeto',cand) # TODO, fix
+            return self.leptonScales.getScale('CutbasedVeto',cand) if self.version=='76X' else self.leptonScales.getScale('CutBasedIDVeto',cand) # TODO, fix
         else:
             return 1.
 
@@ -205,7 +208,7 @@ class WZAnalysis(AnalysisBase):
         if cand.collName=='muons':
             return self.leptonScales.getScale('MediumIDTightIso',cand)
         elif cand.collName=='electrons':
-            return self.leptonScales.getScale('CutbasedMedium',cand)
+            return self.leptonScales.getScale('CutbasedMedium',cand) if self.version=='76X' else self.leptonScales.getScale('CutBasedIDMedium',cand)
         else:
             return 1.
 
@@ -213,7 +216,7 @@ class WZAnalysis(AnalysisBase):
         if cand.collName=='muons':
             return self.leptonScales.getScale('MediumIDTightIso',cand)
         elif cand.collName=='electrons':
-            return self.leptonScales.getScale('CutbasedTight',cand)
+            return self.leptonScales.getScale('CutbasedTight',cand) if self.version=='76X' else self.leptonScales.getScale('CutBasedIDTight',cand)
         else:
             return 1.
 
@@ -295,27 +298,48 @@ class WZAnalysis(AnalysisBase):
     def trigger(self,cands):
         # accept MC, check trigger for data
         if self.event.isData()<0.5: return True
-        triggerNames = {
-            'DoubleMuon'     : [
-                'Mu17_TrkIsoVVL_Mu8_TrkIsoVVL_DZ',
-                'Mu17_TrkIsoVVL_TkMu8_TrkIsoVVL_DZ',
-            ],
-            'DoubleEG'       : [
-                'Ele17_Ele12_CaloIdL_TrackIdL_IsoVL_DZ',
-            ],
-            'MuonEG'         : [
-                'Mu8_TrkIsoVVL_Ele17_CaloIdL_TrackIdL_IsoVL',
-                'Mu17_TrkIsoVVL_Ele12_CaloIdL_TrackIdL_IsoVL',
-            ],
-            'SingleMuon'     : [
-                'IsoMu20',
-                'IsoTkMu20',
-                'IsoMu27',
-            ],
-            'SingleElectron' : [
-                'Ele23_WPLoose_Gsf',
-            ],
-        }
+        if self.version=='76X':
+            triggerNames = {
+                'DoubleMuon'     : [
+                    'Mu17_TrkIsoVVL_Mu8_TrkIsoVVL_DZ',
+                    'Mu17_TrkIsoVVL_TkMu8_TrkIsoVVL_DZ',
+                ],
+                'DoubleEG'       : [
+                    'Ele17_Ele12_CaloIdL_TrackIdL_IsoVL_DZ',
+                ],
+                'MuonEG'         : [
+                    'Mu8_TrkIsoVVL_Ele17_CaloIdL_TrackIdL_IsoVL',
+                    'Mu17_TrkIsoVVL_Ele12_CaloIdL_TrackIdL_IsoVL',
+                ],
+                'SingleMuon'     : [
+                    'IsoMu20',
+                    'IsoTkMu20',
+                ],
+                'SingleElectron' : [
+                    'Ele23_WPLoose_Gsf',
+                ],
+            }
+        else:
+            triggerNames = {
+                'DoubleMuon'     : [
+                    'Mu17_TrkIsoVVL_Mu8_TrkIsoVVL',
+                    'Mu17_TrkIsoVVL_TkMu8_TrkIsoVVL',
+                ],
+                'DoubleEG'       : [
+                    'Ele23_Ele12_CaloIdL_TrackIdL_IsoVL_DZ',
+                ],
+                'MuonEG'         : [
+                    'Mu8_TrkIsoVVL_Ele23_CaloIdL_TrackIdL_IsoVL',
+                    'Mu23_TrkIsoVVL_Ele12_CaloIdL_TrackIdL_IsoVL',
+                ],
+                'SingleMuon'     : [
+                    'IsoMu22',
+                    'IsoTkMu22',
+                ],
+                'SingleElectron' : [
+                    'Ele25_WPTight_Gsf',
+                ],
+            }
         # the order here defines the heirarchy
         # first dataset, any trigger passes
         # second dataset, if a trigger in the first dataset is found, reject event
@@ -347,7 +371,7 @@ class WZAnalysis(AnalysisBase):
 
     def triggerEfficiency(self,cands):
         candList = [cands[c] for c in ['z1','z2','w1']]
-        triggerList = ['IsoMu20_OR_IsoTkMu20','Ele23_WPLoose','Mu17_Mu8','Ele17_Ele12']
+        triggerList = ['IsoMu20_OR_IsoTkMu20','Ele23_WPLoose','Mu17_Mu8','Ele17_Ele12'] if self.version=='76X' else ['IsoMu22ORIsoTkMu22','Ele25WPTight','Mu17Mu8','Ele23Ele12']
         return self.triggerScales.getDataEfficiency(triggerList,candList)
 
 

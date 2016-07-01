@@ -39,7 +39,7 @@ def main(argv=None):
     args = parse_command_line(argv)
 
     if args.verbose and args.analysis:
-        table = PrettyTable(['Sample','xsec [pb]','entries','ratio neg.','lumi. [/pb]'])
+        table = PrettyTable(['Sample','xsec [pb]','entries','ratio neg.','lumi. [/pb]','eff. entries'])
     else:
         table = PrettyTable(['Sample','xsec [pb]'])
     table.align = 'r'
@@ -64,18 +64,21 @@ def main(argv=None):
                 tree.Add('/hdfs'+f)
             numEntries = tree.GetEntries(args.selection)
             weightedEntries = 0.
-            negevents = 0
+            negevents = 0.
             seltree = tree.CopyTree(args.selection)
             for row in seltree:
-                if not data:
-                    weightedEntries += row.genWeight/summedWeights if summedWeights else 0.
+                if data:
+                    weightedEntries += 1.
+                else:
+                    weightedEntries += row.genWeight
                     if row.genWeight<0.: negevents += 1
             if data:
                 sampleLumi = getLumi()
             else:
                 sampleLumi = float(summedWeights)/xsec if xsec else 0.
             negratio = float(negevents)/numEntries if numEntries else 0.
-            table.add_row([name,'{0:.6}'.format(float(xsec)),numEntries,'{0:.3}'.format(float(negratio)),'{0:.3}'.format(float(sampleLumi))])
+            effevents = weightedEntries*getLumi()/sampleLumi if sampleLumi else 0.
+            table.add_row([name,'{0:.6f}'.format(float(xsec)),numEntries,'{0:.3}'.format(float(negratio)),'{0:.6f}'.format(float(sampleLumi)),'{0:.3f}'.format(float(effevents))])
         else:
             table.add_row([name,xsec])
 

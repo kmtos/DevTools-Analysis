@@ -203,15 +203,15 @@ class Hpp4lAnalysis(AnalysisBase):
                 if dr<0.02: keep = False
                 if m<12.: keep = False
             if not keep: continue
-            # require lead e/m pt > 20, if all taus, lead 2 pt>35
+            # require lead e/m pt > 25, if all taus, lead 2 pt>40
             ems = [cand for cand in quad if cand.collName in ['electrons','muons']]
             ts = [cand for cand in quad if cand.collName in ['taus']]
             if len(ems)>0:
                 pts_ems = [cand.pt() for cand in ems]
-                if max(pts_ems)<20.: continue
+                if max(pts_ems)<25.: continue
             else:
                 pts_ts = [cand.pt() for cand in ts]
-                if sorted(pts_ts)[-2]<35.: continue
+                if sorted(pts_ts)[-2]<40.: continue
             # allow at most 2 fake taus (Z)
             numFake = 0
             for t in ts:

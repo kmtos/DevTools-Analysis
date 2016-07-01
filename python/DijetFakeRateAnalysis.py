@@ -215,7 +215,7 @@ class DijetFakeRateAnalysis(AnalysisBase):
         pt = cands['l1'].pt()
         if isinstance(cands['l1'],Electron):
             if pt<30:
-                triggerList = ['Ele17_Ele12Leg2'] if self.verson=='76X' else ['Ele23Ele12Leg2']
+                triggerList = ['Ele17_Ele12Leg2'] if self.version=='76X' else ['Ele23Ele12Leg2']
             else:
                 triggerList = ['Ele17_Ele12Leg1'] if self.version=='76X' else ['Ele23Ele12Leg1'] # cheat a little, use Ele23 and choose pt on plateau
         else:

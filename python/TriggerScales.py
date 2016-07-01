@@ -296,9 +296,13 @@ class TriggerScales(object):
                     return hist.GetBinContent(hist.FindBin(pt,eta))
         elif cand.collName=='taus':
             if self.version=='76X':
-                return self.__crystalball_fit(pt,mode)
+                eff = self.__crystalball_fit(pt,mode)
+                if eff > 1.: eff = 1.
+                return eff
             elif self.version=='80X':
-                return self.__crystalball_fit(pt,rootName)
+                eff = self.__crystalball_fit(pt,rootName)
+                if eff > 1.: eff = 1.
+                return eff
         return 0.
 
     def __getLeadEfficiency(self,rootNames,mode,cand):
@@ -353,6 +357,10 @@ class TriggerScales(object):
                 return self.__getEfficiency('Ele25Eta2p1',mode,cand)
             elif 'Ele25Tight' in rootNames:
                 return self.__getEfficiency('Ele25Tight',mode,cand)
+            elif 'Ele23Ele12Leg1' in rootNames:
+                return self.__getEfficiency('Ele23Ele12Leg1',mode,cand)
+            elif 'Ele23Ele12Leg2' in rootNames:
+                return self.__getEfficiency('Ele23Ele12Leg2',mode,cand)
         elif cand.collName=='muons':
             if 'IsoMu20_OR_IsoTkMu20' in rootNames:
                 return self.__getEfficiency('IsoMu20_OR_IsoTkMu20',mode,cand)
@@ -366,6 +374,10 @@ class TriggerScales(object):
                 return self.__getEfficiency('Mu17_Mu8Leg2',mode,cand)
             elif 'IsoMu22ORIsoTkMu22' in rootNames:
                 return self.__getEfficiency('IsoMu22ORIsoTkMu22',mode,cand)
+            elif 'Mu17Mu8Leg1' in rootNames:
+                return self.__getEfficiency('Mu17Mu8Leg1',mode,cand)
+            elif 'Mu17Mu8Leg2' in rootNames:
+                return self.__getEfficiency('Mu17Mu8Leg2',mode,cand)
         elif cand.collName=='taus':
             return 0.
         return 0.
@@ -447,11 +459,24 @@ class TriggerScales(object):
     def getMCEfficiency(self,triggers,cands):
         '''Get the efficiency for a set of triggers for a list of candidates in MC'''
         if self.version=='80X': return 1
+        if eff<0.:
+            logging.warning('Trigger efficiency < 0.')
+            logging.warning('Triggers: {0}'.format(' '.join(triggers)))
+            for cand in cands:
+                logging.warning('pt: {0}; eta: {1}'.format(cand.pt(), cand.eta()))
+            eff = 1.
         return self.__getTriggerEfficiency(triggers,cands,'MC')
 
     def getDataEfficiency(self,triggers,cands):
         '''Get the efficiency for a set of triggers for a list of candidates in DATA'''
-        return self.__getTriggerEfficiency(triggers,cands,'DATA')
+        eff = self.__getTriggerEfficiency(triggers,cands,'DATA')
+        if eff<0.:
+            logging.warning('Trigger efficiency < 0.')
+            logging.warning('Triggers: {0}'.format(' '.join(triggers)))
+            for cand in cands:
+                logging.warning('pt: {0}; eta: {1}'.format(cand.pt(), cand.eta()))
+            eff = 1.
+        return eff
 
     def getRatio(self,triggers,cands):
         '''Get the scale to apply to MC (eff_data/eff_mc)'''
