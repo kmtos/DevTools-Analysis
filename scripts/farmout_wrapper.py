@@ -13,6 +13,7 @@ from DevTools.Analyzer.runHpp3lAnalysis import main as runHpp3l
 from DevTools.Analyzer.runHpp4lAnalysis import main as runHpp4l
 from DevTools.Analyzer.runDijetFakeRateAnalysis import main as runDijetFakeRate
 from DevTools.Analyzer.runWTauFakeRateAnalysis import main as runWTauFakeRate
+from DevTools.Analyzer.runWFakeRateAnalysis import main as runWFakeRate
 from DevTools.Analyzer.runElectronAnalysis import main as runElectron
 from DevTools.Analyzer.runMuonAnalysis import main as runMuon
 from DevTools.Analyzer.runTauAnalysis import main as runTau
@@ -20,7 +21,7 @@ from DevTools.Analyzer.runTauAnalysis import main as runTau
 def parse_command_line(argv):
     parser = argparse.ArgumentParser(description='Submit analyzers')
 
-    parser.add_argument('analysis', type=str, choices=['WZ', 'DY', 'Charge', 'TauCharge', 'Hpp3l', 'Hpp4l', 'Electron', 'Muon','Tau', 'DijetFakeRate', 'WTauFakeRate'], help='Analysis to submit')
+    parser.add_argument('analysis', type=str, choices=['WZ', 'DY', 'Charge', 'TauCharge', 'Hpp3l', 'Hpp4l', 'Electron', 'Muon','Tau', 'DijetFakeRate', 'WTauFakeRate', 'WFakeRate'], help='Analysis to submit')
 
     return parser.parse_args(argv)
 
@@ -52,6 +53,8 @@ def main(argv=None):
         status = runDijetFakeRate(argv)
     elif args.analysis=='WTauFakeRate':
         status = runWTauFakeRate(argv)
+    elif args.analysis=='WFakeRate':
+        status = runWFakeRate(argv)
     elif args.analysis=='Electron':
         status = runElectron(argv)
     elif args.analysis=='Muon':

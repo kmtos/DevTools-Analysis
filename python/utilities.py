@@ -41,6 +41,7 @@ def getTestFiles(sample,n=1):
         #'dy'  : 'DYJetsToLL_M-50_TuneCUETP8M1_13TeV-amcatnloFXFX-pythia8',
         'dy'  : 'DYJetsToLL_M-50_TuneCUETP8M1_13TeV-madgraphMLM-pythia8',
         'w'   : 'WJetsToLNu_TuneCUETP8M1_13TeV-amcatnloFXFX-pythia8',
+        'SingleMuon': 'SingleMuon',
     }
 
     if sample not in sampleMap: return []

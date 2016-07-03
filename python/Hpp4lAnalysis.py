@@ -60,7 +60,12 @@ class Hpp4lAnalysis(AnalysisBase):
             self.tree.add(lambda cands: self.event.Ele23_Ele12_CaloIdL_TrackIdL_IsoVL_DZPass(), 'pass_Ele23_Ele12_CaloIdL_TrackIdL_IsoVL_DZ', 'I')
             self.tree.add(lambda cands: self.event.IsoMu22Pass(), 'pass_IsoMu22', 'I')
             self.tree.add(lambda cands: self.event.IsoTkMu22Pass(), 'pass_IsoTkMu22', 'I')
-            self.tree.add(lambda cands: self.event.Ele25_WPTight_GsfPass(), 'pass_Ele25_WPTight_Gsf', 'I')
+            self.tree.add(lambda cands: self.event.Mu45_eta2p1Pass(), 'pass_Mu45_eta2p1', 'I')
+            self.tree.add(lambda cands: self.event.Mu50Pass(), 'pass_Mu50', 'I')
+            self.tree.add(lambda cands: self.event.Ele25_eta2p1_WPTight_GsfPass(), 'pass_Ele25_eta2p1_WPTight_Gsf', 'I')
+            self.tree.add(lambda cands: self.event.Ele27_WPTight_GsfPass(), 'pass_Ele27_WPTight_Gsf', 'I')
+            self.tree.add(lambda cands: self.event.Ele27_eta2p1_WPLoose_GsfPass(), 'pass_Ele27_eta2p1_WPLoose_Gsf', 'I')
+            self.tree.add(lambda cands: self.event.Ele45_WPLoose_GsfPass(), 'pass_Ele45_WPLoose_Gsf', 'I')
         self.tree.add(lambda cands: self.event.Mu8_TrkIsoVVL_Ele17_CaloIdL_TrackIdL_IsoVLPass(), 'pass_Mu8_TrkIsoVVL_Ele17_CaloIdL_TrackIdL_IsoVL', 'I')
         self.tree.add(lambda cands: self.event.Mu17_TrkIsoVVL_Ele12_CaloIdL_TrackIdL_IsoVLPass(), 'pass_Mu17_TrkIsoVVL_Ele12_CaloIdL_TrackIdL_IsoVL', 'I')
         self.tree.add(lambda cands: self.event.DoubleMediumIsoPFTau35_Trk1_eta2p1_RegPass(), 'pass_DoubleMediumIsoPFTau35_Trk1_eta2p1_Reg', 'I')
@@ -207,8 +212,10 @@ class Hpp4lAnalysis(AnalysisBase):
             ems = [cand for cand in quad if cand.collName in ['electrons','muons']]
             ts = [cand for cand in quad if cand.collName in ['taus']]
             if len(ems)>0:
-                pts_ems = [cand.pt() for cand in ems]
-                if max(pts_ems)<25.: continue
+                pts_ems = sorted([cand.pt() for cand in ems])
+                if pts_ems[-1]<30.: continue
+                if len(ems)>1:
+                    if pts_ems[-2]<20.: continue
             else:
                 pts_ts = [cand.pt() for cand in ts]
                 if sorted(pts_ts)[-2]<40.: continue
@@ -435,9 +442,14 @@ class Hpp4lAnalysis(AnalysisBase):
                 'SingleMuon'     : [
                     'IsoMu22',
                     'IsoTkMu22',
+                    'Mu45_eta2p1',
+                    'Mu50',
                 ],
                 'SingleElectron' : [
-                    'Ele25_WPTight_Gsf',
+                    'Ele25_eta2p1_WPTight_Gsf',
+                    'Ele27_WPTight_Gsf',
+                    'Ele27_eta2p1_WPLoose_Gsf',
+                    'Ele45_WPLoose_Gsf',
                 ],
                 'Tau' : [
                     'DoubleMediumIsoPFTau35_Trk1_eta2p1_Reg',
@@ -477,11 +489,11 @@ class Hpp4lAnalysis(AnalysisBase):
         candList = [cands[c] for c in ['hpp1','hpp2','hmm1','hmm2']]
         numTaus = [c.collName for c in candList].count('taus')
         if numTaus<2:
-            triggerList = ['IsoMu20_OR_IsoTkMu20','Ele23_WPLoose','Mu17_Mu8','Ele17_Ele12'] if self.version=='76X' else ['IsoMu22ORIsoTkMu22','Ele25WPTight','Mu17Mu8','Ele23Ele12']
+            triggerList = ['IsoMu20_OR_IsoTkMu20','Ele23_WPLoose','Mu17_Mu8','Ele17_Ele12'] if self.version=='76X' else ['SingleMuSoup','SingleEleSoup','Mu17Mu8','Ele23Ele12']
         elif numTaus==2:
-            triggerList = ['IsoMu20_OR_IsoTkMu20','Ele23_WPLoose','Mu17_Mu8','Ele17_Ele12','DoublePFTau35'] if self.version=='76X' else ['IsoMu22ORIsoTkMu22','Ele25WPTight','Mu17Mu8','Ele23Ele12','DoublePFTau35']
+            triggerList = ['IsoMu20_OR_IsoTkMu20','Ele23_WPLoose','Mu17_Mu8','Ele17_Ele12','DoublePFTau35'] if self.version=='76X' else ['SingleMuSoup','SingleEleSoup','Mu17Mu8','Ele23Ele12','DoublePFTau35']
         elif numTaus==3:
-            triggerList = ['IsoMu20_OR_IsoTkMu20','Ele23_WPLoose','DoublePFTau35'] if self.version=='76X' else ['IsoMu22ORIsoTkMu22','Ele25WPTight','DoublePFTau35']
+            triggerList = ['IsoMu20_OR_IsoTkMu20','Ele23_WPLoose','DoublePFTau35'] if self.version=='76X' else ['SingleMuSoup','SingleEleSoup','DoublePFTau35']
         else:
             triggerList = ['DoublePFTau35']
         return self.triggerScales.getDataEfficiency(triggerList,candList)

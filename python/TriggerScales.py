@@ -102,9 +102,11 @@ class TriggerScales(object):
             'Ele23Ele12Leg1'       : 'passingHLTEle23Ele12Leg1/probe_sc_pt_probe_sc_eta_PLOT',
             'Ele23Ele12Leg2'       : 'passingHLTEle23Ele12Leg2/probe_sc_pt_probe_sc_eta_PLOT_tag_passingEle23Ele12Leg1_true',
             'Ele24Tau20LegSingleL1': 'passingHLTEle24Tau20LegSingleL1/probe_sc_pt_probe_sc_eta_PLOT',
-            'Ele25Eta2p1'          : 'passingHLTEle25Eta2p1/probe_sc_pt_probe_sc_eta_PLOT',
-            'Ele25Tight'           : 'passingHLTEle25Tight/probe_sc_pt_probe_sc_eta_PLOT',
-            'Ele35'                : 'passingHLTEle35/probe_sc_pt_probe_sc_eta_PLOT',
+            'Ele25Eta2p1Tight'     : 'passingHLTEle25Eta2p1Tight/probe_sc_pt_probe_sc_eta_PLOT',
+            'Ele27Tight'           : 'passingHLTEle27Tight/probe_sc_pt_probe_sc_eta_PLOT',
+            'Ele27Eta2p1'          : 'passingHLTEle27Eta2p1/probe_sc_pt_probe_sc_eta_PLOT',
+            'Ele45'                : 'passingHLTEle45/probe_sc_pt_probe_sc_eta_PLOT',
+            'SingleEleSoup'        : 'passingHLTSingleEleSoup/probe_sc_pt_probe_sc_eta_PLOT',
         }
         for trig in trigMap:
             self.private_electron_80X[trig] = self.private_electron_80X_rootfile.Get(trigMap[trig])
@@ -115,6 +117,9 @@ class TriggerScales(object):
         self.private_muon_80X_rootfile = ROOT.TFile(path)
         trigMap = {
             'IsoMu22ORIsoTkMu22'  : 'passingIsoMu22ORIsoTkMu22/probe_pt_probe_eta_PLOT',
+            'Mu45Eta2p1'          : 'passingMu45Eta2p1/probe_pt_probe_eta_PLOT',
+            'Mu50'                : 'passingMu50/probe_pt_probe_eta_PLOT',
+            'SingleMuSoup'        : 'passingSingleMuSoup/probe_pt_probe_eta_PLOT',
             'Mu17Mu8Leg1'         : 'passingMu17/probe_pt_probe_eta_PLOT',
             'Mu17Mu8Leg2'         : 'passingMu8/probe_pt_probe_eta_PLOT_tag_passingMu17_true',
             'Mu19Tau20LegSingleL1': 'passingMu19Tau20MLegSingleL1/probe_pt_probe_eta_PLOT',
@@ -126,8 +131,8 @@ class TriggerScales(object):
         # define supported triggers
         if self.version=='80X':
             self.singleTriggers = {
-                'muons'    : ['IsoMu22ORIsoTkMu22','Mu17Mu8Leg1','Mu17Mu8Leg2'],
-                'electrons': ['Ele25Eta2p1','Ele25Tight','Ele35','Ele23Ele12Leg1','Ele23Ele12Leg2'],
+                'muons'    : ['IsoMu22ORIsoTkMu22','Mu17Mu8Leg1','Mu17Mu8Leg2','Mu45_eta2p1','Mu50','SingleMuSoup'],
+                'electrons': ['Ele25Eta2p1Tight','Ele27Tight','Ele27Eta2p1','Ele45','Ele23Ele12Leg1','Ele23Ele12Leg2','SingleEleSoup'],
                 'taus'     : [],
             }
             self.doubleTriggers = {
@@ -298,10 +303,12 @@ class TriggerScales(object):
             if self.version=='76X':
                 eff = self.__crystalball_fit(pt,mode)
                 if eff > 1.: eff = 1.
+                if eff < 0.: eff = 0.
                 return eff
             elif self.version=='80X':
                 eff = self.__crystalball_fit(pt,rootName)
                 if eff > 1.: eff = 1.
+                if eff < 0.: eff = 0.
                 return eff
         return 0.
 
@@ -353,10 +360,16 @@ class TriggerScales(object):
                 return self.__getEfficiency('Ele17_Ele12Leg1',mode,cand)
             elif 'Ele17_Ele12Leg2' in rootNames:
                 return self.__getEfficiency('Ele17_Ele12Leg2',mode,cand)
-            elif 'Ele25Eta2p1' in rootNames:
-                return self.__getEfficiency('Ele25Eta2p1',mode,cand)
-            elif 'Ele25Tight' in rootNames:
-                return self.__getEfficiency('Ele25Tight',mode,cand)
+            elif 'Ele25Eta2p1Tight' in rootNames:
+                return self.__getEfficiency('Ele25Eta2p1Tight',mode,cand)
+            elif 'Ele27Tight' in rootNames:
+                return self.__getEfficiency('Ele27Tight',mode,cand)
+            elif 'Ele27Eta2p1' in rootNames:
+                return self.__getEfficiency('Ele27Eta2p1',mode,cand)
+            elif 'Ele45' in rootNames:
+                return self.__getEfficiency('Ele45',mode,cand)
+            elif 'SingleEleSoup' in rootNames:
+                return self.__getEfficiency('SingleEleSoup',mode,cand)
             elif 'Ele23Ele12Leg1' in rootNames:
                 return self.__getEfficiency('Ele23Ele12Leg1',mode,cand)
             elif 'Ele23Ele12Leg2' in rootNames:
@@ -374,6 +387,12 @@ class TriggerScales(object):
                 return self.__getEfficiency('Mu17_Mu8Leg2',mode,cand)
             elif 'IsoMu22ORIsoTkMu22' in rootNames:
                 return self.__getEfficiency('IsoMu22ORIsoTkMu22',mode,cand)
+            elif 'Mu45Eta2p1' in rootNames:
+                return self.__getEfficiency('Mu45Eta2p1',mode,cand)
+            elif 'Mu50' in rootNames:
+                return self.__getEfficiency('Mu50',mode,cand)
+            elif 'SingleMuSoup' in rootNames:
+                return self.__getEfficiency('SingleMuSoup',mode,cand)
             elif 'Mu17Mu8Leg1' in rootNames:
                 return self.__getEfficiency('Mu17Mu8Leg1',mode,cand)
             elif 'Mu17Mu8Leg2' in rootNames:
