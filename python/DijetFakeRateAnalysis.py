@@ -32,17 +32,6 @@ class DijetFakeRateAnalysis(AnalysisBase):
         # chan string
         self.tree.add(self.getChannelString, 'channel', ['C',2])
 
-        # event counts
-        self.tree.add(lambda cands: self.numJets('isLoose',30), 'numJetsLoose30', 'I')
-        self.tree.add(lambda cands: self.numJets('isTight',30), 'numJetsTight30', 'I')
-        self.tree.add(lambda cands: self.numJets('passCSVv2T',30), 'numBjetsTight30', 'I')
-        self.tree.add(lambda cands: len(self.getCands(self.electrons,self.passLoose)), 'numLooseElectrons', 'I')
-        self.tree.add(lambda cands: len(self.getCands(self.electrons,self.passMedium)), 'numMediumElectrons', 'I')
-        self.tree.add(lambda cands: len(self.getCands(self.electrons,self.passTight)), 'numTightElectrons', 'I')
-        self.tree.add(lambda cands: len(self.getCands(self.muons,self.passLoose)), 'numLooseMuons', 'I')
-        self.tree.add(lambda cands: len(self.getCands(self.muons,self.passMedium)), 'numMediumMuons', 'I')
-        self.tree.add(lambda cands: len(self.getCands(self.muons,self.passTight)), 'numTightMuons', 'I')
-
         # trigger
         self.tree.add(lambda cands: self.event.Mu8_TrkIsoVVLPass(), 'pass_Mu8_TrkIsoVVL', 'I')
         self.tree.add(lambda cands: self.event.Mu17_TrkIsoVVLPass(), 'pass_Mu17_TrkIsoVVL', 'I')
@@ -147,14 +136,6 @@ class DijetFakeRateAnalysis(AnalysisBase):
         for coll in [self.electrons,self.muons]:
             cands += self.getCands(coll,passMode)
         return cands
-
-    def numJets(self,mode,pt):
-        jetColl = self.getCands(
-            self.jets,
-            lambda cand: getattr(cand,mode)()>0.5 and cand.pt()>pt
-        )
-        lepColl = self.getPassingCands('Medium')
-        return len(self.cleanCands(jetColl,lepColl,0.4))
 
 
     ######################

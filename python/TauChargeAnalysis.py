@@ -31,11 +31,6 @@ class TauChargeAnalysis(AnalysisBase):
         # chan string
         self.tree.add(self.getChannelString, 'channel', ['C',3])
 
-        # event counts
-        self.tree.add(lambda cands: self.numJets('isLoose',30), 'numJetsLoose30', 'I')
-        self.tree.add(lambda cands: self.numJets('isTight',30), 'numJetsTight30', 'I')
-        self.tree.add(lambda cands: self.numJets('passCSVv2T',30), 'numBjetsTight30', 'I')
-
         # trigger
         if self.version=='76X':
             self.tree.add(lambda cands: self.event.IsoMu20Pass(), 'pass_IsoMu20', 'I')
@@ -167,14 +162,6 @@ class TauChargeAnalysis(AnalysisBase):
         for coll in [self.muons,self.taus]:
             cands += self.getCands(coll,passMode)
         return cands
-
-    def numJets(self,mode,pt):
-        jetColl = self.getCands(
-            self.jets,
-            lambda cand: getattr(cand,mode)()>0.5 and cand.pt()>pt
-        )
-        lepColl = self.getPassingCands('Medium')
-        return len(self.cleanCands(jetColl,lepColl,0.4))
 
 
     ######################

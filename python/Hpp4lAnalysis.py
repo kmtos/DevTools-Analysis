@@ -36,9 +36,9 @@ class Hpp4lAnalysis(AnalysisBase):
         self.tree.add(self.getZChannelString, 'zChannel', ['C',3])
 
         # event counts
-        self.tree.add(lambda cands: self.numJets('isLoose',30), 'numJetsLoose30', 'I')
-        self.tree.add(lambda cands: self.numJets('isTight',30), 'numJetsTight30', 'I')
-        self.tree.add(lambda cands: self.numJets('passCSVv2T',30), 'numBjetsTight30', 'I')
+        self.tree.add(lambda cands: self.numJets(cands['cleanJets'],'isLoose',30), 'numJetsLoose30', 'I')
+        self.tree.add(lambda cands: self.numJets(cands['cleanJets'],'isTight',30), 'numJetsTight30', 'I')
+        self.tree.add(lambda cands: self.numJets(cands['cleanJets'],'passCSVv2T',30), 'numBjetsTight30', 'I')
         self.tree.add(lambda cands: len(self.getCands(self.electrons,self.passLoose)), 'numLooseElectrons', 'I')
         self.tree.add(lambda cands: len(self.getCands(self.electrons,self.passTight)), 'numTightElectrons', 'I')
         self.tree.add(lambda cands: len(self.getCands(self.muons,self.passLoose)), 'numLooseMuons', 'I')
@@ -185,6 +185,7 @@ class Hpp4lAnalysis(AnalysisBase):
             #'leadJet' : (),
             #'subleadJet' : (),
             'met': self.pfmet,
+            'cleanJets' : [],
         }
 
         # get leptons
@@ -260,14 +261,17 @@ class Hpp4lAnalysis(AnalysisBase):
         # get invariant masses
         bestZ = ()
         bestMassdiff = 99999
-        for zpair in itertools.combinations(leps,2):
-            if zpair[0].collName!=zpair[1].collName: continue # SF
-            if zpair[0].charge()==zpair[1].charge(): continue # OS
-            z = DiCandidate(*zpair)
+        for zzquad in itertools.combinations(leps,4):
+            if zzquad[0].collName!=zzquad[1].collName: continue # SF
+            if zzquad[0].charge()==zzquad[1].charge(): continue # OS
+            z = DiCandidate(*zzquad[:2])
             massdiff = abs(z.M()-ZMASS)
             if massdiff<bestMassdiff:
-                bestZ = zpair
+                bestZ = zzquad
                 bestMassdiff = massdiff
+
+        # clean the jets
+        candidate['cleanJets'] = self.cleanCands(self.jets,medLeps,0.4)
 
         if not bestZ: return candidate # need a z candidate
 
@@ -344,13 +348,12 @@ class Hpp4lAnalysis(AnalysisBase):
             cands += self.getCands(coll,passMode)
         return cands
 
-    def numJets(self,mode,pt):
+    def numJets(self,cleanJets,mode,pt):
         jetColl = self.getCands(
-            self.jets,
+            cleanJets,
             lambda cand: getattr(cand,mode)()>0.5 and cand.pt()>pt
         )
-        lepColl = self.getPassingCands('Medium')
-        return len(self.cleanCands(jetColl,lepColl,0.4))
+        return len(jetColl)
 
 
     ######################

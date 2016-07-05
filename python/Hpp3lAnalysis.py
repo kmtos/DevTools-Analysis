@@ -37,9 +37,9 @@ class Hpp3lAnalysis(AnalysisBase):
         self.tree.add(self.getWZChannelString, 'wzChannel', ['C',4])
 
         # event counts
-        self.tree.add(lambda cands: self.numJets('isLoose',30), 'numJetsLoose30', 'I')
-        self.tree.add(lambda cands: self.numJets('isTight',30), 'numJetsTight30', 'I')
-        self.tree.add(lambda cands: self.numJets('passCSVv2T',30), 'numBjetsTight30', 'I')
+        self.tree.add(lambda cands: self.numJets(cands['cleanJets'],'isLoose',30), 'numJetsLoose30', 'I')
+        self.tree.add(lambda cands: self.numJets(cands['cleanJets'],'isTight',30), 'numJetsTight30', 'I')
+        self.tree.add(lambda cands: self.numJets(cands['cleanJets'],'passCSVv2T',30), 'numBjetsTight30', 'I')
         self.tree.add(lambda cands: len(self.getCands(self.electrons,self.passLoose)), 'numLooseElectrons', 'I')
         self.tree.add(lambda cands: len(self.getCands(self.electrons,self.passTight)), 'numTightElectrons', 'I')
         self.tree.add(lambda cands: len(self.getCands(self.muons,self.passLoose)), 'numLooseMuons', 'I')
@@ -174,6 +174,7 @@ class Hpp3lAnalysis(AnalysisBase):
             #'leadJet' : (),
             #'subleadJet' : (),
             'met': self.pfmet,
+            'cleanJets' : [],
         }
 
         # get leptons
@@ -260,6 +261,9 @@ class Hpp3lAnalysis(AnalysisBase):
                 bestZ = zpair
                 bestMassdiff = massdiff
 
+        # clean the jets
+        candidate['cleanJets'] = self.cleanCands(self.jets,medLeps,0.4)
+
         if not bestZ: return candidate # no z
 
         # and sort pt of Z
@@ -335,13 +339,12 @@ class Hpp3lAnalysis(AnalysisBase):
             cands += self.getCands(coll,passMode)
         return cands
 
-    def numJets(self,mode,pt):
+    def numJets(self,cleanJets,mode,pt):
         jetColl = self.getCands(
-            self.jets,
+            cleanJets,
             lambda cand: getattr(cand,mode)()>0.5 and cand.pt()>pt
         )
-        lepColl = self.getPassingCands('Medium')
-        return len(self.cleanCands(jetColl,lepColl,0.4))
+        return len(jetColl)
 
 
     ######################

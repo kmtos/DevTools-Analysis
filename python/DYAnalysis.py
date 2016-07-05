@@ -52,9 +52,9 @@ class DYAnalysis(AnalysisBase):
         self.tree.add(self.getChannelString, 'channel', ['C',3])
 
         # event counts
-        self.tree.add(lambda cands: self.numJets('isLoose',30), 'numJetsLoose30', 'I')
-        self.tree.add(lambda cands: self.numJets('isTight',30), 'numJetsTight30', 'I')
-        self.tree.add(lambda cands: self.numJets('passCSVv2T',30), 'numBjetsTight30', 'I')
+        self.tree.add(lambda cands: self.numJets(cands['cleanJets'],'isLoose',30), 'numJetsLoose30', 'I')
+        self.tree.add(lambda cands: self.numJets(cands['cleanJets'],'isTight',30), 'numJetsTight30', 'I')
+        self.tree.add(lambda cands: self.numJets(cands['cleanJets'],'passCSVv2T',30), 'numBjetsTight30', 'I')
         self.tree.add(lambda cands: len(self.getCands(self.electrons,self.passLoose)), 'numLooseElectrons', 'I')
         self.tree.add(lambda cands: len(self.getCands(self.electrons,self.passMedium)), 'numMediumElectrons', 'I')
         self.tree.add(lambda cands: len(self.getCands(self.electrons,self.passTight)), 'numTightElectrons', 'I')
@@ -108,6 +108,7 @@ class DYAnalysis(AnalysisBase):
             'z2' : None,
             'z' : None,
             'met': self.pfmet,
+            'cleanJets': [],
         }
 
         # get leptons
@@ -133,6 +134,8 @@ class DYAnalysis(AnalysisBase):
         candidate['z1'] = z[0]
         candidate['z2'] = z[1]
         candidate['z'] = DiCandidate(z[0],z[1])
+
+        candidate['cleanJets'] = self.cleanCands(self.jets,medLeps,0.4)
 
         return candidate
 
@@ -177,14 +180,12 @@ class DYAnalysis(AnalysisBase):
             cands += self.getCands(coll,passMode)
         return cands
 
-    def numJets(self,mode,pt):
+    def numJets(self,cleanJets,mode,pt):
         jetColl = self.getCands(
-            self.jets,
+            cleanJets,
             lambda cand: getattr(cand,mode)()>0.5 and cand.pt()>pt
         )
-        lepColl = self.getPassingCands('Medium')
-        return len(self.cleanCands(jetColl,lepColl,0.4))
-
+        return len(jetColl)
 
     ######################
     ### channel string ###
