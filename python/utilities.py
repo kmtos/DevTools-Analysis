@@ -35,6 +35,7 @@ def getTestFiles(sample,n=1):
 
     sampleMap = {
         'wz'  : 'WZTo3LNu_TuneCUETP8M1_13TeV-powheg-pythia8',
+        'zz'  : 'ZZTo4L_13TeV_powheg_pythia8',
         'data': 'DoubleMuon',
         #'hpp' : 'HPlusPlusHMinusMinusHTo4L_M-500_13TeV-pythia8',
         'hpp' : 'HPlusPlusHMinusMinusHTo4L_M-500_TuneCUETP8M1_13TeV_pythia8',

@@ -6,6 +6,7 @@ import os
 
 # import run script
 from DevTools.Analyzer.runWZAnalysis import main as runWZ
+from DevTools.Analyzer.runZZAnalysis import main as runZZ
 from DevTools.Analyzer.runDYAnalysis import main as runDY
 from DevTools.Analyzer.runChargeAnalysis import main as runCharge
 from DevTools.Analyzer.runTauChargeAnalysis import main as runTauCharge
@@ -21,7 +22,7 @@ from DevTools.Analyzer.runTauAnalysis import main as runTau
 def parse_command_line(argv):
     parser = argparse.ArgumentParser(description='Submit analyzers')
 
-    parser.add_argument('analysis', type=str, choices=['WZ', 'DY', 'Charge', 'TauCharge', 'Hpp3l', 'Hpp4l', 'Electron', 'Muon','Tau', 'DijetFakeRate', 'WTauFakeRate', 'WFakeRate'], help='Analysis to submit')
+    parser.add_argument('analysis', type=str, choices=['ZZ', 'WZ', 'DY', 'Charge', 'TauCharge', 'Hpp3l', 'Hpp4l', 'Electron', 'Muon','Tau', 'DijetFakeRate', 'WTauFakeRate', 'WFakeRate'], help='Analysis to submit')
 
     return parser.parse_args(argv)
 
@@ -39,6 +40,8 @@ def main(argv=None):
     # run the analyzer
     if args.analysis=='WZ':
         status = runWZ(argv)
+    elif args.analysis=='ZZ':
+        status = runZZ(argv)
     elif args.analysis=='DY':
         status = runDY(argv)
     elif args.analysis=='Charge':
