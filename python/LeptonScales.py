@@ -60,7 +60,7 @@ class LeptonScales(object):
         self.private_muon_80X = {}
         path = '{0}/src/DevTools/Analyzer/data/scalefactors_muon_2016.root'.format(os.environ['CMSSW_BASE'])
         self.private_muon_80X_rootfile = ROOT.TFile(path)
-        for idName in ['LooseID','LooseIsoFromLooseID','MediumID','LooseIsoFromMediumID','TightIsoFromMediumID','TightID','TightIsoFromTightID']:
+        for idName in ['LooseID','LooseIsoFromLooseID','MediumID','LooseIsoFromMediumID','TightIsoFromMediumID','MediumIDICHEP','LooseIsoFromMediumIDICHEP','TightIsoFromMediumIDICHEP','TightID','TightIsoFromTightID']:
             self.private_muon_80X[idName] = self.private_muon_80X_rootfile.Get(idName)
 
     def __exit__(self, type, value, traceback):
@@ -149,9 +149,9 @@ class LeptonScales(object):
             if leptonId == 'TightIDTightIso':
                 idname, isoname = ('TightID', 'TightRelIsoTightID') if self.version=='76X' else ('TightID', 'TightIsoFromTightID')
             elif leptonId == 'MediumIDTightIso':
-                idname, isoname = ('MediumID', 'TightRelIsoMediumID') if self.version=='76X' else ('MediumID', 'TightIsoFromMediumID')
+                idname, isoname = ('MediumID', 'TightRelIsoMediumID') if self.version=='76X' else ('MediumIDICHEP', 'TightIsoFromMediumIDICHEP')
             elif leptonId == 'MediumIDLooseIso':
-                idname, isoname = ('MediumID', 'LooseRelIsoMediumID') if self.version=='76X' else ('MediumID', 'LooseIsoFromMediumID')
+                idname, isoname = ('MediumID', 'LooseRelIsoMediumID') if self.version=='76X' else ('MediumIDICHEP', 'LooseIsoFromMediumIDICHEP')
             else:
                 idname, isoname = '', ''
             if idname and isoname:

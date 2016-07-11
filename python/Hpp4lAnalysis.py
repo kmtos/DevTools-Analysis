@@ -160,6 +160,9 @@ class Hpp4lAnalysis(AnalysisBase):
         # met
         self.addMet('met')
 
+        # other event
+        self.tree.add(lambda cands: sum([x.pt() for x in cands['cleanJets']]), 'ht', 'F')
+
     ############################
     ### select 4l candidates ###
     ############################
@@ -220,11 +223,11 @@ class Hpp4lAnalysis(AnalysisBase):
             else:
                 pts_ts = [cand.pt() for cand in ts]
                 if sorted(pts_ts)[-2]<40.: continue
-            # allow at most 2 fake taus (Z)
-            numFake = 0
-            for t in ts:
-                if t in leps and t not in medLeps: numFake += 1
-            if numFake>2: continue
+            ## allow at most 2 fake taus (Z)
+            #numFake = 0
+            #for t in ts:
+            #    if t in leps and t not in medLeps: numFake += 1
+            #if numFake>2: continue
             # its a good candidate
             hppCands += [quad]
         if not hppCands: return candidate

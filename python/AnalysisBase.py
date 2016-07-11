@@ -124,6 +124,7 @@ class AnalysisBase(object):
         self.tree.add(lambda cands: self.event.isData(), 'isData', 'I')
         self.tree.add(lambda cands: self.event.genWeight(), 'genWeight', 'I')
         self.tree.add(lambda cands: self.event.numGenJets(), 'numGenJets', 'I')
+        self.tree.add(lambda cands: self.event.genHT(), 'genHT', 'I')
         # scale shifts
         weightMap = {
             0: {'muR':1.0, 'muF':1.0},

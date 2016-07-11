@@ -151,6 +151,9 @@ class Hpp3lAnalysis(AnalysisBase):
         # met
         self.addMet('met')
 
+        # other event
+        self.tree.add(lambda cands: sum([x.pt() for x in cands['cleanJets']]), 'ht', 'F')
+
     ############################
     ### select 3l candidates ###
     ############################
@@ -211,11 +214,11 @@ class Hpp3lAnalysis(AnalysisBase):
             else:
                 pts_ts = sorted([cand.pt() for cand in ts])
                 if pts_ts[-2]<40.: continue
-            # allow at most 1 fake tau (Z)
-            numFake = 0
-            for t in ts:
-                if t in leps and t not in medLeps: numFake += 1
-            if numFake>1: continue
+            ## allow at most 1 fake tau (Z)
+            #numFake = 0
+            #for t in ts:
+            #    if t in leps and t not in medLeps: numFake += 1
+            #if numFake>1: continue
             # its a good candidate
             hppCands += [trio]
         if not hppCands: return candidate

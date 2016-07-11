@@ -133,6 +133,9 @@ class ZZAnalysis(AnalysisBase):
         # met
         self.addMet('met')
 
+        # other event
+        self.tree.add(lambda cands: sum([x.pt() for x in cands['cleanJets']]), 'ht', 'F')
+
     ############################
     ### select 4l candidates ###
     ############################

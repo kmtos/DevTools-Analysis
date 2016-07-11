@@ -99,6 +99,9 @@ class DYAnalysis(AnalysisBase):
         # met
         self.addMet('met')
 
+        # other event
+        self.tree.add(lambda cands: sum([x.pt() for x in cands['cleanJets']]), 'ht', 'F')
+
     ############################
     ### select DY candidates ###
     ############################
@@ -135,6 +138,7 @@ class DYAnalysis(AnalysisBase):
         candidate['z2'] = z[1]
         candidate['z'] = DiCandidate(z[0],z[1])
 
+        medLeps = self.getPassingCands('Medium')
         candidate['cleanJets'] = self.cleanCands(self.jets,medLeps,0.4)
 
         return candidate

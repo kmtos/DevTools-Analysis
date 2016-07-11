@@ -115,6 +115,9 @@ class WZAnalysis(AnalysisBase):
         # met
         self.addMet('met')
 
+        # other event
+        self.tree.add(lambda cands: sum([x.pt() for x in cands['cleanJets']]), 'ht', 'F')
+
     ############################
     ### select WZ candidates ###
     ############################
