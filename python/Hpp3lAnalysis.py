@@ -386,6 +386,23 @@ class Hpp3lAnalysis(AnalysisBase):
                         if hasDecay:
                             chanString += pdgMap[abs(l1)]
                             chanString += pdgMap[abs(l2)]
+        elif 'HPlusPlusHMinusHTo3L' in self.fileNames[0]: # h++h- signal sample
+            for s in [-1,1]:
+                h = -1*s*9900041                     # h++ in pythia8
+                for l1 in [s*11, s*13, s*15]:        # lepton 1
+                    for l2 in [s*11, s*13, s*15]:    # lepton 2
+                        if abs(l2)<abs(l1): continue # skip double counting
+                        hasDecay = self.findDecay(h,l1,l2)
+                        if hasDecay:
+                            chanString += pdgMap[abs(l1)]
+                            chanString += pdgMap[abs(l2)]
+            for s in [-1,1]:
+                h = s*37                             # h+ in pythia8
+                for l1 in [-1*s*11, -1*s*13, -1*s*15]:        # lepton 1
+                    for l2 in [s*12, s*14, s*16]:    # neutrino
+                        hasDecay = self.findDecay(h,l1,l2)
+                        if hasDecay:
+                            chanString += pdgMap[abs(l1)]
         else:
             chanString = 'a'
         return chanString
