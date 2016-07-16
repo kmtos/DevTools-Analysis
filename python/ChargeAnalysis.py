@@ -44,7 +44,12 @@ class ChargeAnalysis(AnalysisBase):
             self.tree.add(lambda cands: self.event.Ele23_Ele12_CaloIdL_TrackIdL_IsoVL_DZPass(), 'pass_Ele23_Ele12_CaloIdL_TrackIdL_IsoVL_DZ', 'I')
             self.tree.add(lambda cands: self.event.IsoMu22Pass(), 'pass_IsoMu22', 'I')
             self.tree.add(lambda cands: self.event.IsoTkMu22Pass(), 'pass_IsoTkMu22', 'I')
-            self.tree.add(lambda cands: self.event.Ele25_WPTight_GsfPass(), 'pass_Ele25_WPTight_Gsf', 'I')
+            self.tree.add(lambda cands: self.event.Mu45_eta2p1Pass(), 'pass_Mu45_eta2p1', 'I')
+            self.tree.add(lambda cands: self.event.Mu50Pass(), 'pass_Mu50', 'I')
+            self.tree.add(lambda cands: self.event.Ele25_eta2p1_WPTight_GsfPass(), 'pass_Ele25_eta2p1_WPTight_Gsf', 'I')
+            self.tree.add(lambda cands: self.event.Ele27_WPTight_GsfPass(), 'pass_Ele27_WPTight_Gsf', 'I')
+            self.tree.add(lambda cands: self.event.Ele27_eta2p1_WPLoose_GsfPass(), 'pass_Ele27_eta2p1_WPLoose_Gsf', 'I')
+            self.tree.add(lambda cands: self.event.Ele45_WPLoose_GsfPass(), 'pass_Ele45_WPLoose_Gsf', 'I')
         self.tree.add(self.triggerEfficiency, 'triggerEfficiency', 'F')
 
         # z leptons
@@ -192,9 +197,14 @@ class ChargeAnalysis(AnalysisBase):
                 'SingleMuon'     : [
                     'IsoMu22',
                     'IsoTkMu22',
+                    'Mu45_eta2p1',
+                    'Mu50',
                 ],
                 'SingleElectron' : [
-                    'Ele25_WPTight_Gsf',
+                    'Ele25_eta2p1_WPTight_Gsf',
+                    'Ele27_WPTight_Gsf',
+                    'Ele27_eta2p1_WPLoose_Gsf',
+                    'Ele45_WPLoose_Gsf',
                 ],
             }
         # the order here defines the heirarchy
@@ -234,10 +244,9 @@ class ChargeAnalysis(AnalysisBase):
     def triggerEfficiency(self,cands):
         candList = [cands[c] for c in ['z1','z2']]
         if isinstance(candList[0],Electron):
-            triggerList = ['Ele23_WPLoose','Ele17_Ele12'] if self.version=='76X' else ['Ele25Tight','Ele23Ele12']
+            triggerList = ['Ele23_WPLoose','Ele17_Ele12'] if self.version=='76X' else ['SingleEleSoup','Ele23Ele12']
         else:
-            triggerList = ['IsoMu20_OR_IsoTkMu20','Mu17_Mu8'] if self.version=='76X' else ['IsoMu22ORIsoTkMu22','Mu17Mu8']
-
+            triggerList = ['IsoMu20_OR_IsoTkMu20','Mu17_Mu8'] if self.version=='76X' else ['SingleMuSoup','Mu17Mu8']
         return self.triggerScales.getDataEfficiency(triggerList,candList)
 
 

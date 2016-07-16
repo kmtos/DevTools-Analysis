@@ -38,6 +38,8 @@ class TauChargeAnalysis(AnalysisBase):
         else:
             self.tree.add(lambda cands: self.event.IsoMu22Pass(), 'pass_IsoMu22', 'I')
             self.tree.add(lambda cands: self.event.IsoTkMu22Pass(), 'pass_IsoTkMu22', 'I')
+            self.tree.add(lambda cands: self.event.Mu45_eta2p1Pass(), 'pass_Mu45_eta2p1', 'I')
+            self.tree.add(lambda cands: self.event.Mu50Pass(), 'pass_Mu50', 'I')
         self.tree.add(self.triggerEfficiency, 'triggerEfficiency', 'F')
 
         # z leptons
@@ -195,6 +197,8 @@ class TauChargeAnalysis(AnalysisBase):
                 'SingleMuon'     : [
                     'IsoMu22',
                     'IsoTkMu22',
+                    'Mu45_eta2p1',
+                    'Mu50',
                 ],
             }
 
@@ -225,7 +229,7 @@ class TauChargeAnalysis(AnalysisBase):
 
     def triggerEfficiency(self,cands):
         candList = [cands['m']]
-        triggerList = ['IsoMu20_OR_IsoTkMu20'] if self.version=='76X' else ['IsoMu22ORIsoTkMu22']
+        triggerList = ['IsoMu20_OR_IsoTkMu20'] if self.version=='76X' else ['SingleMuSoup']
         return self.triggerScales.getDataEfficiency(triggerList,candList)
 
 
