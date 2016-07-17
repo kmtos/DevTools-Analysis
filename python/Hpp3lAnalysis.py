@@ -194,6 +194,7 @@ class Hpp3lAnalysis(AnalysisBase):
         for trio in itertools.permutations(leps,3):
             # require ++-/--+
             if trio[0].charge()!=trio[1].charge(): continue
+            if trio[0].charge()==trio[2].charge(): continue
             # require deltaR seperation of 0.02
             keep = True
             for i,j in itertools.combinations(range(3),2):
@@ -203,7 +204,7 @@ class Hpp3lAnalysis(AnalysisBase):
                 if dr<0.02: keep = False
                 if m<12.: keep = False
             if not keep: continue
-            # require lead e/m pt > 25, if all taus, lead 2 pt>40
+            # require lead e/m pt > 30/20, if all taus, lead 2 pt>40
             ems = [cand for cand in trio if cand.collName in ['electrons','muons']]
             ts = [cand for cand in trio if cand.collName in ['taus']]
             if len(ems)>0:
