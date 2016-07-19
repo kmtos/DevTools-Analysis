@@ -1,6 +1,9 @@
-# ZZAnalysis.py
-# for zz control region
+#!/usr/bin/env python
+import argparse
+import logging
+import sys
 
+from DevTools.Analyzer.utilities import getTestFiles
 from AnalysisBase import AnalysisBase
 from utilities import ZMASS, deltaPhi, deltaR
 from leptonId import passWZLoose, passWZMedium, passWZTight, passHppLoose, passHppMedium, passHppTight, passHZZLoose, passHZZTight
@@ -12,6 +15,10 @@ import itertools
 import operator
 
 import ROOT
+
+logger = logging.getLogger("ZZAnalysis")
+logging.basicConfig(level=logging.INFO, stream=sys.stderr,format='%(asctime)s.%(msecs)03d %(levelname)s %(name)s: %(message)s', datefmt='%Y-%m-%d %H:%M:%S')
+
 
 class ZZAnalysis(AnalysisBase):
     '''
@@ -422,4 +429,38 @@ class ZZAnalysis(AnalysisBase):
 
 
 
+def parse_command_line(argv):
+    parser = argparse.ArgumentParser(description='Run analyzer')
 
+    parser.add_argument('--inputFiles', type=str, nargs='*', default=getTestFiles('zz'), help='Input files')
+    parser.add_argument('--inputFileList', type=str, default='', help='Input file list')
+    parser.add_argument('--outputFile', type=str, default='zzTree.root', help='Output file')
+
+    return parser.parse_args(argv)
+
+def main(argv=None):
+    if argv is None:
+        argv = sys.argv[1:]
+
+    args = parse_command_line(argv)
+
+    zzAnalysis = ZZAnalysis(
+        outputFileName=args.outputFile,
+        outputTreeName='ZZTree',
+        inputFileNames=args.inputFileList if args.inputFileList else args.inputFiles,
+        inputTreeName='MiniTree',
+        inputLumiName='LumiTree',
+        inputTreeDirectory='miniTree',
+    )
+
+    try:
+       zzAnalysis.analyze()
+       zzAnalysis.finish()
+    except KeyboardInterrupt:
+       zzAnalysis.finish()
+
+    return 0
+
+if __name__ == "__main__":
+    status = main()
+    sys.exit(status)

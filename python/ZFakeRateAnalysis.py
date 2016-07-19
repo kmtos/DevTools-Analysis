@@ -1,15 +1,21 @@
-# ZFakeRateAnalysis.py
-# for ZFakeRate analysis
-
+#!/usr/bin/env python
 from AnalysisBase import AnalysisBase
 from utilities import ZMASS, deltaPhi, deltaR
 from leptonId import passWZLoose, passWZMedium, passWZTight, passHppLoose, passHppMedium, passHppTight
 from Candidates import *
+from DevTools.Analyzer.utilities import getTestFiles
 
 import itertools
 import operator
+import argparse
+import logging
+import sys
 
 import ROOT
+
+logger = logging.getLogger("ZFakeRateAnalysis")
+logging.basicConfig(level=logging.INFO, stream=sys.stderr, format='%(asctime)s.%(msecs)03d %(levelname)s %(name)s: %(message)s', datefmt='%Y-%m-%d %H:%M:%S')
+
 
 class ZFakeRateAnalysis(AnalysisBase):
     '''
@@ -20,7 +26,7 @@ class ZFakeRateAnalysis(AnalysisBase):
         outputFileName = kwargs.pop('outputFileName','dyTree.root')
         outputTreeName = kwargs.pop('outputTreeName','ZFakeRateTree')
         # setup a preselection
-        self.preselection = '(electrons_count>1 || muons_count>1)'
+        self.preselection = '(electrons_count+muons_count>2)'
         super(ZFakeRateAnalysis, self).__init__(outputFileName=outputFileName,outputTreeName=outputTreeName,**kwargs)
 
 
@@ -84,7 +90,8 @@ class ZFakeRateAnalysis(AnalysisBase):
         self.tree.add(lambda cands: self.mediumScale(cands['z2']), 'z2_mediumScale', 'F')
         self.tree.add(lambda cands: self.tightScale(cands['z2']), 'z2_tightScale', 'F')
 
-        # z leptons
+        # fake lepton
+        self.addLeptonMet('w')
         self.addLepton('l1')
         self.tree.add(lambda cands: self.passMedium(cands['l1']), 'l1_passMedium', 'I')
         self.tree.add(lambda cands: self.passTight(cands['l1']), 'l1_passTight', 'I')
@@ -103,10 +110,11 @@ class ZFakeRateAnalysis(AnalysisBase):
     ############################
     def selectCandidates(self):
         candidate = {
-            'z1' : None,
-            'z2' : None,
+            'z1': None,
+            'z2': None,
             'z' : None,
             'l1': None,
+            'w' : None,
             'met': self.pfmet,
             'cleanJets': [],
         }
@@ -138,6 +146,7 @@ class ZFakeRateAnalysis(AnalysisBase):
         candidate['z2'] = z[1]
         candidate['l1'] = zpair[2]
         candidate['z'] = DiCandidate(z[0],z[1])
+        candidate['w'] = MetCompositeCandidate(self.pfmet,zpair[2])
 
         medLeps = self.getPassingCands('Medium')
         candidate['cleanJets'] = self.cleanCands(self.jets,medLeps,0.4)
@@ -297,4 +306,38 @@ class ZFakeRateAnalysis(AnalysisBase):
 
 
 
+def parse_command_line(argv):
+    parser = argparse.ArgumentParser(description='Run analyzer')
 
+    parser.add_argument('--inputFiles', type=str, nargs='*', default=getTestFiles('dy'), help='Input files')
+    parser.add_argument('--inputFileList', type=str, default='', help='Input file list')
+    parser.add_argument('--outputFile', type=str, default='zFakeRateTree.root', help='Output file')
+
+    return parser.parse_args(argv)
+
+def main(argv=None):
+    if argv is None:
+        argv = sys.argv[1:]
+
+    args = parse_command_line(argv)
+
+    zFakeRateAnalysis = ZFakeRateAnalysis(
+        outputFileName=args.outputFile,
+        outputTreeName='ZFakeRateTree',
+        inputFileNames=args.inputFileList if args.inputFileList else args.inputFiles,
+        inputTreeName='MiniTree',
+        inputLumiName='LumiTree',
+        inputTreeDirectory='miniTree',
+    )
+
+    try:
+       zFakeRateAnalysis.analyze()
+       zFakeRateAnalysis.finish()
+    except KeyboardInterrupt:
+       zFakeRateAnalysis.finish()
+
+    return 0
+
+if __name__ == "__main__":
+    status = main()
+    sys.exit(status)
