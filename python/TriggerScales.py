@@ -7,6 +7,8 @@ import ROOT
 
 import operator
 
+from DevTools.Utilities.utilities import *
+
 def product(iterable):
     if not iterable: return 0. # case of empty list
     return reduce(operator.mul, iterable, 1)
@@ -170,7 +172,7 @@ class TriggerScales(object):
                 }]
         return scales
 
-    def __crystalball_fit(self,pt,mode):
+    def __crystalball_fit(self,pt,mode,shift=''):
         if self.version=='80X' and mode in self.tau_efficiencies_2016: # 2016
             m0    = self.tau_efficiencies_2016[mode]['val']['m0']
             sigma = self.tau_efficiencies_2016[mode]['val']['sigma']
@@ -178,11 +180,14 @@ class TriggerScales(object):
             n     = self.tau_efficiencies_2016[mode]['val']['n']
             norm  = self.tau_efficiencies_2016[mode]['val']['norm']
         elif self.version=='76X' and mode in self.doubleTau_efficiencies:
-            m0    = self.doubleTau_efficiencies[mode]['val']['m0']
-            sigma = self.doubleTau_efficiencies[mode]['val']['sigma']
-            alpha = self.doubleTau_efficiencies[mode]['val']['alpha']
-            n     = self.doubleTau_efficiencies[mode]['val']['n']
-            norm  = self.doubleTau_efficiencies[mode]['val']['norm']
+            key = 'val'
+            if shift=='up': key = 'errUp'
+            if shift=='down': key = 'errDown'
+            m0    = self.doubleTau_efficiencies[mode][key]['m0']
+            sigma = self.doubleTau_efficiencies[mode][key]['sigma']
+            alpha = self.doubleTau_efficiencies[mode][key]['alpha']
+            n     = self.doubleTau_efficiencies[mode][key]['n']
+            norm  = self.doubleTau_efficiencies[mode][key]['norm']
         else:
             return 0.
         x = pt
@@ -225,7 +230,7 @@ class TriggerScales(object):
         logging.warning('Unmatched triggers: {0}'.format(' '.join(triggers)))
         return 0.
 
-    def __getEfficiency(self,rootName,mode,cand):
+    def __getEfficiency(self,rootName,mode,cand,shift=''):
         pt = cand.pt()
         eta = cand.eta()
         if cand.collName=='muons':
@@ -238,13 +243,36 @@ class TriggerScales(object):
                     name1 = 'runD_{0}_HLTv4p3'.format(rootName)
                     hist0 = self.singleMu_efficiencies[name0][mode]
                     hist1 = self.singleMu_efficiencies[name1][mode]
-                    val0 = hist0.GetBinContent(hist0.FindBin(pt,abs(eta)))
-                    val1 = hist0.GetBinContent(hist1.FindBin(pt,abs(eta)))
-                    return (0.401*val0+1.899*val1)/2.3
+                    b0 = hist0.FindBin(pt,abs(eta))
+                    b1 = hist1.FindBin(pt,abs(eta))
+                    val0 = hist0.GetBinContent(b0)
+                    val1 = hist1.GetBinContent(b1)
+                    err0 = hist0.GetBinError(b0)
+                    err1 = hist1.GetBinError(b1)
+                    v0 = val0
+                    v1 = val1
+                    if shift=='up':
+                        v0 += err0
+                        v1 += err1
+                    if shift=='down':
+                        v0 -= err0
+                        v1 -= err1
+                    val = (0.401*v0+1.899*v1)/2.3
+                    if val<0: val = 0
+                    if val>1: val = 1
+                    return val
                 elif rootName in ['Mu50', 'Mu45_eta2p1']:
                     if pt>120: pt = 119
                     hist = self.singleMu_efficiencies['runD_{0}'.format(rootName)][mode]
-                    return hist.GetBinContent(hist.FindBin(pt,abs(eta)))
+                    b = hist.FindBin(pt,abs(eta))
+                    val = hist.GetBinContent(b)
+                    err = hist.GetBinError(b)
+                    if shift=='up':
+                        return min([val+err,1.])
+                    elif shift=='down':
+                        return max([val-err,0.])
+                    else:
+                        return val
                 # HWW
                 elif rootName=='Mu17_Mu8Leg1':
                     if pt>200: pt = 199
@@ -253,7 +281,12 @@ class TriggerScales(object):
                            and eta<=row['etamax']
                            and pt>=row['ptmin']
                            and pt<=row['ptmax']):
-                           return row['eff']
+                           if shift=='up':
+                               return min([row['eff']+row['errup'],1.])
+                           elif shift=='down':
+                               return max([row['eff']-row['errdown'],0.])
+                           else:
+                               return row['eff']
                 elif rootName=='Mu17_Mu8Leg2':
                     if pt>200: pt = 199
                     for row in self.hww_doubleMuLeg2_efficiencies:
@@ -261,12 +294,25 @@ class TriggerScales(object):
                            and eta<=row['etamax']
                            and pt>=row['ptmin']
                            and pt<=row['ptmax']):
-                           return row['eff']
+                           if shift=='up':
+                               return min([row['eff']+row['errup'],1.])
+                           elif shift=='down':
+                               return max([row['eff']-row['errdown'],0.])
+                           else:
+                               return row['eff']
             elif self.version=='80X':
                 if rootName in self.private_muon_80X:
                     if pt>1000: pt = 999
                     hist = self.private_muon_80X[rootName]
-                    return hist.GetBinContent(hist.FindBin(pt,eta))
+                    b = hist.FindBin(pt,eta)
+                    val = hist.GetBinContent(b)
+                    err = hist.GetBinError(b)
+                    if shift=='up':
+                        return min([val+err,1.])
+                    elif shift=='down':
+                        return max([val-err,0.])
+                    else:
+                        return val
         elif cand.collName=='electrons':
             if self.version=='76X':
                 # HWW
@@ -277,7 +323,12 @@ class TriggerScales(object):
                            and eta<=row['etamax']
                            and pt>=row['ptmin']
                            and pt<=row['ptmax']):
-                           return row['eff']
+                           if shift=='up':
+                               return min([row['eff']+row['errup'],1.])
+                           elif shift=='down':
+                               return max([row['eff']-row['errdown'],0.])
+                           else:
+                               return row['eff']
                 elif rootName=='Ele17_Ele12Leg1':
                     if pt>100: pt = 99
                     for row in self.hww_doubleELeg1_efficiencies:
@@ -285,7 +336,12 @@ class TriggerScales(object):
                            and eta<=row['etamax']
                            and pt>=row['ptmin']
                            and pt<=row['ptmax']):
-                           return row['eff']
+                           if shift=='up':
+                               return min([row['eff']+row['errup'],1.])
+                           elif shift=='down':
+                               return max([row['eff']-row['errdown'],0.])
+                           else:
+                               return row['eff']
                 elif rootName=='Ele17_Ele12Leg2':
                     if pt>100: pt = 99
                     for row in self.hww_doubleELeg2_efficiencies:
@@ -293,110 +349,123 @@ class TriggerScales(object):
                            and eta<=row['etamax']
                            and pt>=row['ptmin']
                            and pt<=row['ptmax']):
-                           return row['eff']
+                           if shift=='up':
+                               return min([row['eff']+row['errup'],1.])
+                           elif shift=='down':
+                               return max([row['eff']-row['errdown'],0.])
+                           else:
+                               return row['eff']
             elif self.version=='80X':
                 if rootName in self.private_electron_80X:
                     if pt>1000: pt = 999
                     hist = self.private_electron_80X[rootName]
-                    return hist.GetBinContent(hist.FindBin(pt,eta))
+                    b = hist.FindBin(pt,eta)
+                    val = hist.GetBinContent(b)
+                    err = hist.GetBinError(b)
+                    if shift=='up':
+                        return min([val+err,1.])
+                    elif shift=='down':
+                        return max([val-err,0.])
+                    else:
+                        return val
         elif cand.collName=='taus':
             if self.version=='76X':
-                eff = self.__crystalball_fit(pt,mode)
+                eff = self.__crystalball_fit(pt,mode,shift=shift)
                 if eff > 1.: eff = 1.
                 if eff < 0.: eff = 0.
                 return eff
             elif self.version=='80X':
-                eff = self.__crystalball_fit(pt,rootName)
+                eff = self.__crystalball_fit(pt,rootName,shift=shift)
                 if eff > 1.: eff = 1.
                 if eff < 0.: eff = 0.
                 return eff
         return 0.
 
-    def __getLeadEfficiency(self,rootNames,mode,cand):
+    def __getLeadEfficiency(self,rootNames,mode,cand,shift=''):
         if cand.collName=='electrons':
             if 'Ele17_Ele12' in rootNames:
-                return self.__getEfficiency('Ele17_Ele12Leg1',mode,cand)
+                return self.__getEfficiency('Ele17_Ele12Leg1',mode,cand,shift=shift)
             if 'Ele23Ele12' in rootNames:
-                return self.__getEfficiency('Ele23Ele12Leg1',mode,cand)
+                return self.__getEfficiency('Ele23Ele12Leg1',mode,cand,shift=shift)
             if 'Ele24Tau20SingleL1' in rootNames:
-                return self.__getEfficiency('Ele24Tau20LegSingleL1',mode,cand)
+                return self.__getEfficiency('Ele24Tau20LegSingleL1',mode,cand,shift=shift)
         elif cand.collName=='muons':
             if 'Mu17_Mu8' in rootNames:
-                return self.__getEfficiency('Mu17_Mu8Leg1',mode,cand)
+                return self.__getEfficiency('Mu17_Mu8Leg1',mode,cand,shift=shift)
             if 'Mu17Mu8' in rootNames:
-                return self.__getEfficiency('Mu17Mu8Leg1',mode,cand)
+                return self.__getEfficiency('Mu17Mu8Leg1',mode,cand,shift=shift)
             if 'Mu19Tau20SingleL1' in rootNames:
-                return self.__getEfficiency('Mu19Tau20LegSingleL1',mode,cand)
+                return self.__getEfficiency('Mu19Tau20LegSingleL1',mode,cand,shift=shift)
         elif cand.collName=='taus':
             if 'DoublePFTau35' in rootNames:
-                return self.__getEfficiency('MediumIsoPFTau35_Trk_eta2p1',mode,cand)
+                return self.__getEfficiency('MediumIsoPFTau35_Trk_eta2p1',mode,cand,shift=shift)
         return 0.
 
-    def __getTrailEfficiency(self,rootNames,mode,cand):
+    def __getTrailEfficiency(self,rootNames,mode,cand,shift=''):
         if cand.collName=='electrons':
             if 'Ele17_Ele12' in rootNames:
-                return self.__getEfficiency('Ele17_Ele12Leg2',mode,cand)
+                return self.__getEfficiency('Ele17_Ele12Leg2',mode,cand,shift=shift)
             if 'Ele23Ele12' in rootNames:
-                return self.__getEfficiency('Ele23Ele12Leg2',mode,cand)
+                return self.__getEfficiency('Ele23Ele12Leg2',mode,cand,shift=shift)
         elif cand.collName=='muons':
             if 'Mu17_Mu8' in rootNames:
-                return self.__getEfficiency('Mu17_Mu8Leg2',mode,cand)
+                return self.__getEfficiency('Mu17_Mu8Leg2',mode,cand,shift=shift)
             if 'Mu17Mu8' in rootNames:
-                return self.__getEfficiency('Mu17Mu8Leg2',mode,cand)
+                return self.__getEfficiency('Mu17Mu8Leg2',mode,cand,shift=shift)
         elif cand.collName=='taus':
             if 'DoublePFTau35' in rootNames:
-                return self.__getEfficiency('MediumIsoPFTau35_Trk_eta2p1',mode,cand)
+                return self.__getEfficiency('MediumIsoPFTau35_Trk_eta2p1',mode,cand,shift=shift)
             if 'Ele24Tau20SingleL1' in rootNames:
-                return self.__getEfficiency('LooseIsoPFTau20_SingleL1',mode,cand)
+                return self.__getEfficiency('LooseIsoPFTau20_SingleL1',mode,cand,shift=shift)
             if 'Mu19Tau20SingleL1' in rootNames:
-                return self.__getEfficiency('LooseIsoPFTau20_SingleL1',mode,cand)
+                return self.__getEfficiency('LooseIsoPFTau20_SingleL1',mode,cand,shift=shift)
         return 0.
 
-    def __getSingleEfficiency(self,rootNames,mode,cand):
+    def __getSingleEfficiency(self,rootNames,mode,cand,shift=''):
         if cand.collName=='electrons':
             if 'Ele23_WPLoose' in rootNames:
-                return self.__getEfficiency('Ele23_WPLoose',mode,cand)
+                return self.__getEfficiency('Ele23_WPLoose',mode,cand,shift=shift)
             elif 'Ele17_Ele12Leg1' in rootNames:
-                return self.__getEfficiency('Ele17_Ele12Leg1',mode,cand)
+                return self.__getEfficiency('Ele17_Ele12Leg1',mode,cand,shift=shift)
             elif 'Ele17_Ele12Leg2' in rootNames:
-                return self.__getEfficiency('Ele17_Ele12Leg2',mode,cand)
+                return self.__getEfficiency('Ele17_Ele12Leg2',mode,cand,shift=shift)
             elif 'Ele25Eta2p1Tight' in rootNames:
-                return self.__getEfficiency('Ele25Eta2p1Tight',mode,cand)
+                return self.__getEfficiency('Ele25Eta2p1Tight',mode,cand,shift=shift)
             elif 'Ele27Tight' in rootNames:
-                return self.__getEfficiency('Ele27Tight',mode,cand)
+                return self.__getEfficiency('Ele27Tight',mode,cand,shift=shift)
             elif 'Ele27Eta2p1' in rootNames:
-                return self.__getEfficiency('Ele27Eta2p1',mode,cand)
+                return self.__getEfficiency('Ele27Eta2p1',mode,cand,shift=shift)
             elif 'Ele45' in rootNames:
-                return self.__getEfficiency('Ele45',mode,cand)
+                return self.__getEfficiency('Ele45',mode,cand,shift=shift)
             elif 'SingleEleSoup' in rootNames:
-                return self.__getEfficiency('SingleEleSoup',mode,cand)
+                return self.__getEfficiency('SingleEleSoup',mode,cand,shift=shift)
             elif 'Ele23Ele12Leg1' in rootNames:
-                return self.__getEfficiency('Ele23Ele12Leg1',mode,cand)
+                return self.__getEfficiency('Ele23Ele12Leg1',mode,cand,shift=shift)
             elif 'Ele23Ele12Leg2' in rootNames:
-                return self.__getEfficiency('Ele23Ele12Leg2',mode,cand)
+                return self.__getEfficiency('Ele23Ele12Leg2',mode,cand,shift=shift)
         elif cand.collName=='muons':
             if 'IsoMu20_OR_IsoTkMu20' in rootNames:
-                return self.__getEfficiency('IsoMu20_OR_IsoTkMu20',mode,cand)
+                return self.__getEfficiency('IsoMu20_OR_IsoTkMu20',mode,cand,shift=shift)
             elif 'Mu45_eta2p1' in rootNames:
-                return self.__getEfficiency('Mu45_eta2p1',mode,cand)
+                return self.__getEfficiency('Mu45_eta2p1',mode,cand,shift=shift)
             elif 'Mu50' in rootNames:
-                return self.__getEfficiency('Mu50',mode,cand)
+                return self.__getEfficiency('Mu50',mode,cand,shift=shift)
             elif 'Mu17_Mu8Leg1' in rootNames:
-                return self.__getEfficiency('Mu17_Mu8Leg1',mode,cand)
+                return self.__getEfficiency('Mu17_Mu8Leg1',mode,cand,shift=shift)
             elif 'Mu17_Mu8Leg2' in rootNames:
-                return self.__getEfficiency('Mu17_Mu8Leg2',mode,cand)
+                return self.__getEfficiency('Mu17_Mu8Leg2',mode,cand,shift=shift)
             elif 'IsoMu22ORIsoTkMu22' in rootNames:
-                return self.__getEfficiency('IsoMu22ORIsoTkMu22',mode,cand)
+                return self.__getEfficiency('IsoMu22ORIsoTkMu22',mode,cand,shift=shift)
             elif 'Mu45Eta2p1' in rootNames:
-                return self.__getEfficiency('Mu45Eta2p1',mode,cand)
+                return self.__getEfficiency('Mu45Eta2p1',mode,cand,shift=shift)
             elif 'Mu50' in rootNames:
-                return self.__getEfficiency('Mu50',mode,cand)
+                return self.__getEfficiency('Mu50',mode,cand,shift=shift)
             elif 'SingleMuSoup' in rootNames:
-                return self.__getEfficiency('SingleMuSoup',mode,cand)
+                return self.__getEfficiency('SingleMuSoup',mode,cand,shift=shift)
             elif 'Mu17Mu8Leg1' in rootNames:
-                return self.__getEfficiency('Mu17Mu8Leg1',mode,cand)
+                return self.__getEfficiency('Mu17Mu8Leg1',mode,cand,shift=shift)
             elif 'Mu17Mu8Leg2' in rootNames:
-                return self.__getEfficiency('Mu17Mu8Leg2',mode,cand)
+                return self.__getEfficiency('Mu17Mu8Leg2',mode,cand,shift=shift)
         elif cand.collName=='taus':
             return 0.
         return 0.
@@ -412,7 +481,7 @@ class TriggerScales(object):
         return False
 
 
-    def __getTriggerEfficiency(self,triggers,cands,mode):
+    def __getTriggerEfficiency(self,triggers,cands,mode,shift=''):
         '''Get an efficiency'''
 
         #######################
@@ -420,7 +489,7 @@ class TriggerScales(object):
         #######################
         if ((len(triggers)==1 and (self.__hasSingle(triggers,'electrons') or self.__hasSingle(triggers,'muons'))) or
             (len(triggers)==2 and (self.__hasSingle(triggers,'electrons') and self.__hasSingle(triggers,'muons')))):
-            val = 1-product([1-self.__getSingleEfficiency(triggers,mode,cand) for cand in cands])
+            val = 1-product([1-self.__getSingleEfficiency(triggers,mode,cand,shift=shift) for cand in cands])
         
 
         #######################
@@ -431,10 +500,10 @@ class TriggerScales(object):
               (len(triggers)==2 and (self.__hasDouble(triggers,'electrons') and self.__hasDouble(triggers,'muons')))): # ee/mm
             val = 1-(
                 # none pass lead
-                product([1-self.__getLeadEfficiency(triggers,mode,cand) for cand in cands])
+                product([1-self.__getLeadEfficiency(triggers,mode,cand,shift=shift) for cand in cands])
                 # one pass lead, none pass trail
-                +sum([self.__getLeadEfficiency(triggers,mode,lead)
-                      *product([1-self.__getTrailEfficiency(triggers,mode,trail) if trail!=lead else 1. for trail in cands if trail.collName==lead.collName]) for lead in cands])
+                +sum([self.__getLeadEfficiency(triggers,mode,lead,shift=shift)
+                      *product([1-self.__getTrailEfficiency(triggers,mode,trail,shift=shift) if trail!=lead else 1. for trail in cands if trail.collName==lead.collName]) for lead in cands])
                 # TODO: DZ not included ???
                 # one pass lead, one pass trail, fail dz
                 # one pass lead, two pass trail, both fail dz
@@ -454,13 +523,13 @@ class TriggerScales(object):
                                      self.__hasDouble(triggers,'taus')))):
             val = 1-(
                 # none pass single
-                product([1-self.__getSingleEfficiency(triggers,mode,cand) for cand in cands if cand.collName in ['electrons','muons']]) # only electron/muon single triggers
+                product([1-self.__getSingleEfficiency(triggers,mode,cand,shift=shift) for cand in cands if cand.collName in ['electrons','muons']]) # only electron/muon single triggers
             )*(
                 # none pass lead
-                product([1-self.__getLeadEfficiency(triggers,mode,cand) for cand in cands])
+                product([1-self.__getLeadEfficiency(triggers,mode,cand,shift=shift) for cand in cands])
                 # one pass lead, none pass trail
-                +sum([self.__getLeadEfficiency(triggers,mode,lead)
-                      *product([1-self.__getTrailEfficiency(triggers,mode,trail) if trail!=lead else 1. for trail in cands if (
+                +sum([self.__getLeadEfficiency(triggers,mode,lead,shift=shift)
+                      *product([1-self.__getTrailEfficiency(triggers,mode,trail,shift=shift) if trail!=lead else 1. for trail in cands if (
                                        (trail.collName=='taus' and lead.collName=='taus') or                                # no cross trigger with taus
                                        (trail.collName in ['electrons','muons'] and lead.collName in ['electrons','muons']) # allow cross triggers with e/m
                                    )
@@ -475,32 +544,45 @@ class TriggerScales(object):
 
         return val
 
-    def getMCEfficiency(self,triggers,cands):
+    def getMCEfficiency(self,triggers,cands,doError=False):
         '''Get the efficiency for a set of triggers for a list of candidates in MC'''
         if self.version=='80X': return 1
+        eff = self.__getTriggerEfficiency(triggers,cands,'MC')
+        eff_up = self.__getTriggerEfficiency(triggers,cands,'MC',shift='up')
+        eff_down = self.__getTriggerEfficiency(triggers,cands,'MC',shift='down')
         if eff<0.:
             logging.warning('Trigger efficiency < 0.')
             logging.warning('Triggers: {0}'.format(' '.join(triggers)))
             for cand in cands:
                 logging.warning('pt: {0}; eta: {1}'.format(cand.pt(), cand.eta()))
             eff = 1.
-        return self.__getTriggerEfficiency(triggers,cands,'MC')
+            eff_up = 1.
+            eff_down = 1.
+        return (eff,eff_up,eff_down) if doError else eff
 
-    def getDataEfficiency(self,triggers,cands):
+    def getDataEfficiency(self,triggers,cands,doError=False):
         '''Get the efficiency for a set of triggers for a list of candidates in DATA'''
         eff = self.__getTriggerEfficiency(triggers,cands,'DATA')
+        eff_up = self.__getTriggerEfficiency(triggers,cands,'DATA',shift='up')
+        eff_down = self.__getTriggerEfficiency(triggers,cands,'DATA',shift='down')
         if eff<0.:
             logging.warning('Trigger efficiency < 0.')
             logging.warning('Triggers: {0}'.format(' '.join(triggers)))
             for cand in cands:
                 logging.warning('pt: {0}; eta: {1}'.format(cand.pt(), cand.eta()))
             eff = 1.
-        return eff
+            eff_up = 1.
+            eff_down = 1.
+        return (eff,eff_up,eff_down) if doError else eff
 
-    def getRatio(self,triggers,cands):
+    def getRatio(self,triggers,cands,doError=False):
         '''Get the scale to apply to MC (eff_data/eff_mc)'''
         if self.version=='80X': return 1
-        eff_data = self.getDataEfficiency(triggers,cands)
-        eff_mc = self.getMCEfficiency(triggers,cands)
-        if eff_mc: return eff_data/eff_mc
-        return 1.
+        eff_data, eff_data_up, eff_data_down = self.getDataEfficiency(triggers,cands,doError=doError)
+        eff_mc, eff_mc_up, eff_mc_down = self.getMCEfficiency(triggers,cands,doError=doError)
+        if eff_mc:
+            val = eff_data/eff_mc
+            val_up = eff_data_up/eff_mc_up
+            val_down = eff_data_down/eff_mc_down
+            return (val,val_up,val_down) if doError else val
+        return [1.,1.,1.] if doError else 1.

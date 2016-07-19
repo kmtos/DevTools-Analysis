@@ -88,12 +88,16 @@ class LeptonScales(object):
                 if pt<10: pt = 11.
                 if 'Trig' in leptonId and pt<15: pt = 16.
                 hist = self.egamma_pog_scales[leptonId]
-                val = hist.GetBinContent(hist.FindBin(abs(eta),pt))
+                b = hist.FindBin(abs(eta),pt)
+                val = hist.GetBinContent(b)
+                err = hist.GetBinError(b)
             elif leptonId in self.electron_hzz_scales:
                 if pt>200: pt = 199
                 if pt<7: pt = 8
                 hist = self.electron_hzz_scales[leptonId]
-                val = hist.GetBinContent(hist.FindBin(pt,eta))
+                b = hist.FindBin(pt,eta)
+                val = hist.GetBinContent(b)
+                err = hist.GetBinError(b)
             else:
                 val = 1.
         elif self.version=='80X':
@@ -101,12 +105,16 @@ class LeptonScales(object):
                 if pt>200: pt = 199.
                 if pt<10: pt = 11.
                 hist = self.private_electron_80X[leptonId]
-                val = hist.GetBinContent(hist.FindBin(pt,eta))
+                b = hist.FindBin(pt,eta)
+                val = hist.GetBinContent(b)
+                err = hist.GetBinError(b)
             else:
                 val = 1.
+                err = 0.
         else:
             val = 1.
-        return val
+            err = 0.
+        return val, err
 
     def __getMuonScale(self,leptonId,cand):
         pt  = cand.pt()
@@ -116,35 +124,44 @@ class LeptonScales(object):
                 if pt>120: pt = 119.
                 if pt<20: pt = 21.
                 hist = self.muon_pog_scales[leptonId]
-                val = hist.GetBinContent(hist.FindBin(abs(eta),pt))
+                b = hist.FindBin(abs(eta),pt)
+                val = hist.GetBinContent(b)
+                err = hist.GetBinError(b)
             elif leptonId in self.muon_hzz_scales:
                 if pt>80: pt = 79
                 if pt<5: pt = 6
                 hist = self.muon_hzz_scales[leptonId]
-                val = hist.GetBinContent(hist.FindBin(eta,pt))
+                b = hist.FindBin(pt,eta)
+                val = hist.GetBinContent(b)
+                err = hist.GetBinError(b)
             else:
                 val = 1.
+                err = 0.
         elif self.version=='80X':
             if leptonId in self.private_muon_80X:
                 if pt>200: pt = 199.
                 if pt<10: pt = 11.
                 hist = self.private_muon_80X[leptonId]
-                val = hist.GetBinContent(hist.FindBin(pt,eta))
+                b = hist.FindBin(pt,eta)
+                val = hist.GetBinContent(b)
+                err = hist.GetBinError(b)
             else:
                 val = 1.
+                err = 0.
         else:
             val = 1.
-        return val
+            err = 0.
+        return val, err
 
     def __getTauScale(self,leptonId,cand):
         #pt  = cand.pt()
         #eta = cand.eta()
-        return 1. # simple recommendation, 6% error
+        return 1., 0. # simple recommendation, 6% error
 
-    def getScale(self,leptonId,cand):
+    def getScale(self,leptonId,cand,doError=False):
         '''Get the scale to apply to MC (eff_data/eff_mc)'''
         if cand.collName=='electrons':
-            val = self.__getElectronScale(leptonId,cand)
+            val, err = self.__getElectronScale(leptonId,cand)
         elif cand.collName=='muons':
             if leptonId == 'TightIDTightIso':
                 idname, isoname = ('TightID', 'TightRelIsoTightID') if self.version=='76X' else ('TightID', 'TightIsoFromTightID')
@@ -157,11 +174,11 @@ class LeptonScales(object):
             if idname and isoname:
                 idval = self.__getMuonScale(idname,cand)
                 isoval = self.__getMuonScale(isoname,cand)
-                val = idval*isoval
+                val, err = idval*isoval
             else:
-                val = self.__getMuonScale(leptonId,cand)
+                val, err = self.__getMuonScale(leptonId,cand)
         elif cand.collName=='taus':
-            val = self.__getTauScale(leptonId,cand)
+            val, err = self.__getTauScale(leptonId,cand)
         else:
-            val = 1.
-        return val
+            val, err = 1., 0.
+        return (val, val+err, max([0.,val-err])) if doError else val

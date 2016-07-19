@@ -24,6 +24,7 @@ def parse_command_line(argv):
     parser = argparse.ArgumentParser(description='Submit analyzers')
 
     parser.add_argument('analysis', type=str, choices=['ZZ', 'WZ', 'DY', 'ZFakeRate', 'Charge', 'TauCharge', 'Hpp3l', 'Hpp4l', 'Electron', 'Muon','Tau', 'DijetFakeRate', 'WTauFakeRate', 'WFakeRate'], help='Analysis to submit')
+    parser.add_argument('--shift', type=str, default='', choices=['','ElectronEnUp','ElectronEnDown','MuonEnUp','MuonEnDown','TauEnUp','TauEnDown','JetEnUp','JetEnDown','JetResUp','JetResDown','UnclusteredEnUp','UnclusteredEnDown'], help='Energy shift')
 
     return parser.parse_args(argv)
 
@@ -40,38 +41,40 @@ def main(argv=None):
 
     # run the analyzer
     if args.analysis=='WZ':
-        status = runWZ(argv)
+        func = runWZ
     elif args.analysis=='ZZ':
-        status = runZZ(argv)
+        func = runZZ
     elif args.analysis=='DY':
-        status = runDY(argv)
+        func = runDY
     elif args.analysis=='ZFakeRate':
-        status = runZFakeRate(argv)
+        func = runZFakeRate
     elif args.analysis=='Charge':
-        status = runCharge(argv)
+        func = runCharge
     elif args.analysis=='TauCharge':
-        status = runTauCharge(argv)
+        func = runTauCharge
     elif args.analysis=='Hpp3l':
-        status = runHpp3l(argv)
+        func = runHpp3l
     elif args.analysis=='Hpp4l':
-        status = runHpp4l(argv)
+        func = runHpp4l
     elif args.analysis=='DijetFakeRate':
-        status = runDijetFakeRate(argv)
+        func = runDijetFakeRate
     elif args.analysis=='WTauFakeRate':
-        status = runWTauFakeRate(argv)
+        func = runWTauFakeRate
     elif args.analysis=='WFakeRate':
-        status = runWFakeRate(argv)
+        func = runWFakeRate
     elif args.analysis=='Electron':
-        status = runElectron(argv)
+        func = runElectron
     elif args.analysis=='Muon':
-        status = runMuon(argv)
+        func = runMuon
     elif args.analysis=='Tau':
-        status = runTau(argv)
+        func = runTau
     else:
-        status = 0
+        return 0
+
+    status = func(argv,shift=self.shift)
 
     return status
 
 if __name__ == "__main__":
-    status = main()
-    sys.exit(status)
+    func = main()
+    sys.exit(func)

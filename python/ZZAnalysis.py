@@ -435,6 +435,7 @@ def parse_command_line(argv):
     parser.add_argument('--inputFiles', type=str, nargs='*', default=getTestFiles('zz'), help='Input files')
     parser.add_argument('--inputFileList', type=str, default='', help='Input file list')
     parser.add_argument('--outputFile', type=str, default='zzTree.root', help='Output file')
+    parser.add_argument('--shift', type=str, default='', choices=['','ElectronEnUp','ElectronEnDown','MuonEnUp','MuonEnDown','TauEnUp','TauEnDown','JetEnUp','JetEnDown','JetResUp','JetResDown','UnclusteredEnUp','UnclusteredEnDown'], help='Energy shift')
 
     return parser.parse_args(argv)
 
@@ -451,6 +452,7 @@ def main(argv=None):
         inputTreeName='MiniTree',
         inputLumiName='LumiTree',
         inputTreeDirectory='miniTree',
+        shift = args.shift,
     )
 
     try:

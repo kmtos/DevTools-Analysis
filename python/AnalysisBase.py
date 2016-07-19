@@ -42,6 +42,7 @@ class AnalysisBase(object):
         inputLumiName = kwargs.pop('inputTreeName','LumiTree')
         outputFileName = kwargs.pop('outputFileName','analysisTree.root')
         outputTreeName = kwargs.pop('outputTreeName','AnalysisTree')
+        self.shift = kwargs.pop('shift','')
         self.outputTreeName = outputTreeName
         if hasProgress:
             self.pbar = kwargs.pop('progressbar',ProgressBar(widgets=['{0}: '.format(outputTreeName),' ',SimpleProgress(),' events ',Percentage(),' ',Bar(),' ',ETA()]))
@@ -199,12 +200,12 @@ class AnalysisBase(object):
                     # load objects
                     self.event     = Event(tree)
                     if not self.event.isData(): self.gen = [GenParticle(tree,entry=i) for i in range(tree.genParticles_count)]
-                    self.electrons = [Electron(tree,entry=i) for i in range(tree.electrons_count)]
-                    self.muons     = [Muon(tree,entry=i) for i in range(tree.muons_count)]
-                    self.taus      = [Tau(tree,entry=i) for i in range(tree.taus_count)]
-                    self.photons   = [Photon(tree,entry=i) for i in range(tree.photons_count)]
-                    self.jets      = [Jet(tree,entry=i) for i in range(tree.jets_count)]
-                    self.pfmet     = Met(tree)
+                    self.electrons = [Electron(tree,entry=i,shift=self.shift) for i in range(tree.electrons_count)]
+                    self.muons     = [Muon(tree,entry=i,shift=self.shift) for i in range(tree.muons_count)]
+                    self.taus      = [Tau(tree,entry=i,shift=self.shift) for i in range(tree.taus_count)]
+                    self.photons   = [Photon(tree,entry=i,shift=self.shift) for i in range(tree.photons_count)]
+                    self.jets      = [Jet(tree,entry=i,shift=self.shift) for i in range(tree.jets_count)]
+                    self.pfmet     = Met(tree,shift=self.shift)
                     # call per row action
                     self.perRowAction()
                 tfile.Close('R')

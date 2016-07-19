@@ -62,7 +62,8 @@ class FakeRates(object):
         pt = cand.pt()
         eta = cand.eta()
         if pt > 100.: pt = 99.
-        return hist.GetBinContent(hist.FindBin(pt,abs(eta)))
+        b = hist.FindBin(pt,abs(eta))
+        return hist.GetBinContent(b), hist.GetBinError(b)
 
     def __get_fakerate_mc(self,cand,num,denom):
         if cand.collName not in self.fakehists_mc: return 0.
@@ -72,13 +73,15 @@ class FakeRates(object):
         pt = cand.pt()
         eta = cand.eta()
         if pt > 100.: pt = 99.
-        return hist.GetBinContent(hist.FindBin(pt,abs(eta)))
+        b = hist.FindBin(pt,abs(eta))
+        return hist.GetBinContent(b), hist.GetBinError(b)
 
-    def getFakeRate(self,cand,num,denom):
+    def getFakeRate(self,cand,num,denom,doError=False):
         if not cand: return 0 # not defined
-        return self.__get_fakerate(cand,num,denom)
+        val, err = self.__get_fakerate(cand,num,denom)
+        return (val,min([1.,val+err]),max([0.,val-err])) if doError else val
 
-    def getFakeRateMC(self,cand,num,denom):
+    def getFakeRateMC(self,cand,num,denom,doError=False):
         if not cand: return 0 # not defined
-        return self.__get_fakerate_mc(cand,num,denom)
-
+        val, err = self.__get_fakerate_mc(cand,num,denom)
+        return (val,min([1.,val+err]),max([0.,val-err])) if doError else val
