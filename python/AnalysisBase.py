@@ -208,6 +208,7 @@ class AnalysisBase(object):
                     # call per row action
                     self.perRowAction()
                 tfile.Close('R')
+            self.pbar.update(self.totalEntries)
         else:
             total = 0
             for f, fName in enumerate(self.fileNames):
