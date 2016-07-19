@@ -100,7 +100,8 @@ class Electron(Candidate):
 
     def eta(self):
         var = 'eta'
-        if self.shift=='ElectronEnUp': var = 'eta_electronEnUp'
+        #if self.shift=='ElectronEnUp': var = 'eta_electronEnUp'
+        if self.shift=='ElectronEnUp': var = 'eta_electornEnUp'
         if self.shift=='ElectronEnDown': var = 'eta_electronEnDown'
         return self.get(var)
 

@@ -4,6 +4,8 @@ import logging
 
 import ROOT
 
+from DevTools.Utilities.utilities import *
+
 class LeptonScales(object):
     '''Class to access the lepton scales for a given ID.'''
 
@@ -174,7 +176,7 @@ class LeptonScales(object):
             if idname and isoname:
                 idval = self.__getMuonScale(idname,cand)
                 isoval = self.__getMuonScale(isoname,cand)
-                val, err = idval*isoval
+                val, err = prodWithError(idval,isoval)
             else:
                 val, err = self.__getMuonScale(leptonId,cand)
         elif cand.collName=='taus':

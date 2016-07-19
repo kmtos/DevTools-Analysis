@@ -55,9 +55,9 @@ class FakeRates(object):
         self.fake_tau_rootfile.Close()
 
     def __get_fakerate(self,cand,num,denom):
-        if cand.collName not in self.fakehists: return 0.
+        if cand.collName not in self.fakehists: return 0., 0.
         key = self.fakekey.format(num=num,denom=denom)
-        if key not in self.fakehists[cand.collName]: return 0.
+        if key not in self.fakehists[cand.collName]: return 0., 0.
         hist = self.fakehists[cand.collName][key]
         pt = cand.pt()
         eta = cand.eta()
@@ -66,9 +66,9 @@ class FakeRates(object):
         return hist.GetBinContent(b), hist.GetBinError(b)
 
     def __get_fakerate_mc(self,cand,num,denom):
-        if cand.collName not in self.fakehists_mc: return 0.
+        if cand.collName not in self.fakehists_mc: return 0., 0.
         key = self.fakekey.format(num=num,denom=denom)
-        if key not in self.fakehists_mc[cand.collName]: return 0.
+        if key not in self.fakehists_mc[cand.collName]: return 0., 0.
         hist = self.fakehists_mc[cand.collName][key]
         pt = cand.pt()
         eta = cand.eta()
