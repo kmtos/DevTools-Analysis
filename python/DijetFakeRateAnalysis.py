@@ -168,11 +168,11 @@ class DijetFakeRateAnalysis(AnalysisBase):
         triggerNames = {
             'DoubleMuon'     : [
                 ['Mu8_TrkIsoVVL', 0],
-                ['Mu17_TrkIsoVVL', 20],
+                #['Mu17_TrkIsoVVL', 20],
             ],
             'DoubleEG'       : [
                 ['Ele12_CaloIdL_TrackIdL_IsoVL', 0],
-                ['Ele17_CaloIdL_TrackIdL_IsoVL', 30],
+                #['Ele17_CaloIdL_TrackIdL_IsoVL', 30],
             ],
         }
         # here we need to accept only a specific trigger after a certain pt threshold
@@ -196,29 +196,33 @@ class DijetFakeRateAnalysis(AnalysisBase):
         # select via pt and flavor
         pt = cands['l1'].pt()
         if isinstance(cands['l1'],Electron):
-            if pt<30:
-                triggerList = ['Ele17_Ele12Leg2'] if self.version=='76X' else ['Ele23Ele12Leg2']
-            else:
-                triggerList = ['Ele17_Ele12Leg1'] if self.version=='76X' else ['Ele23Ele12Leg1'] # cheat a little, use Ele23 and choose pt on plateau
+            triggerList = ['Ele17_Ele12Leg2'] if self.version=='76X' else ['Ele23Ele12Leg2']
+            #if pt<30:
+            #    triggerList = ['Ele17_Ele12Leg2'] if self.version=='76X' else ['Ele23Ele12Leg2']
+            #else:
+            #    triggerList = ['Ele17_Ele12Leg1'] if self.version=='76X' else ['Ele23Ele12Leg1'] # cheat a little, use Ele23 and choose pt on plateau
         else:
-            if pt<20:
-                triggerList = ['Mu17_Mu8Leg2'] if self.version=='76X' else ['Mu17Mu8Leg2']
-            else:
-                triggerList = ['Mu17_Mu8Leg1'] if self.version=='76X' else ['Mu17Mu8Leg1']
+            triggerList = ['Mu17_Mu8Leg2'] if self.version=='76X' else ['Mu17Mu8Leg2']
+            #if pt<20:
+            #    triggerList = ['Mu17_Mu8Leg2'] if self.version=='76X' else ['Mu17Mu8Leg2']
+            #else:
+            #    triggerList = ['Mu17_Mu8Leg1'] if self.version=='76X' else ['Mu17Mu8Leg1']
         return self.triggerScales.getDataEfficiency(triggerList,candList)
 
     def triggerPrescale(self,cands):
         # select via pt and flavor
         pt = cands['l1'].pt()
         if isinstance(cands['l1'],Electron):
-            if pt<20:
-                trigger = 'Ele17_Ele12Leg2'
-            else:
-                trigger = 'Ele17_Ele12Leg1'
+            trigger = 'Ele17_Ele12Leg2'
+            #if pt<20:
+            #    trigger = 'Ele17_Ele12Leg2'
+            #else:
+            #    trigger = 'Ele17_Ele12Leg1'
         else:
-            if pt<20:
-                trigger = 'Mu17_Mu8Leg2'
-            else:
-                trigger = 'Mu17_Mu8Leg1'
+            trigger = 'Mu17_Mu8Leg2'
+            #if pt<20:
+            #    trigger = 'Mu17_Mu8Leg2'
+            #else:
+            #    trigger = 'Mu17_Mu8Leg1'
         return self.triggerPrescales.getPrescale(trigger)
 
