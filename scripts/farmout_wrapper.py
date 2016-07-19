@@ -24,7 +24,7 @@ def parse_command_line(argv):
     parser = argparse.ArgumentParser(description='Submit analyzers')
 
     parser.add_argument('analysis', type=str, choices=['ZZ', 'WZ', 'DY', 'ZFakeRate', 'Charge', 'TauCharge', 'Hpp3l', 'Hpp4l', 'Electron', 'Muon','Tau', 'DijetFakeRate', 'WTauFakeRate', 'WFakeRate'], help='Analysis to submit')
-    parser.add_argument('--shift', type=str, default='', choices=['','ElectronEnUp','ElectronEnDown','MuonEnUp','MuonEnDown','TauEnUp','TauEnDown','JetEnUp','JetEnDown','JetResUp','JetResDown','UnclusteredEnUp','UnclusteredEnDown'], help='Energy shift')
+    parser.add_argument('shift', type=str, nargs='?', default='', choices=['','ElectronEnUp','ElectronEnDown','MuonEnUp','MuonEnDown','TauEnUp','TauEnDown','JetEnUp','JetEnDown','JetResUp','JetResDown','UnclusteredEnUp','UnclusteredEnDown'], help='Energy shift')
 
     return parser.parse_args(argv)
 
@@ -37,7 +37,7 @@ def main(argv=None):
     args = parse_command_line(argv)
 
     # add on the input and output
-    argv = ['--inputFileList',os.environ['INPUT'],'--outputFile',os.environ['OUTPUT']]
+    argv = ['--inputFileList',os.environ['INPUT'],'--outputFile',os.environ['OUTPUT'],'--shift',args.shift]
 
     # run the analyzer
     if args.analysis=='WZ':
@@ -71,7 +71,7 @@ def main(argv=None):
     else:
         return 0
 
-    status = func(argv,shift=self.shift)
+    status = func(argv)
 
     return status
 
