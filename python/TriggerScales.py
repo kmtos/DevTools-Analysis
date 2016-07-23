@@ -100,15 +100,15 @@ class TriggerScales(object):
         path = '{0}/src/DevTools/Analyzer/data/trigger_efficiencies_electron_2016.root'.format(os.environ['CMSSW_BASE'])
         self.private_electron_80X_rootfile = ROOT.TFile(path)
         trigMap = {
-            'Ele23Ele12DZ'         : 'passingHLTEle23Ele12DZ/probe_sc_pt_probe_sc_eta_PLOT_passingHLTEle23Ele12Leg2_true_&_tag_passingEle23Ele12Leg1_true',
-            'Ele23Ele12Leg1'       : 'passingHLTEle23Ele12Leg1/probe_sc_pt_probe_sc_eta_PLOT',
-            'Ele23Ele12Leg2'       : 'passingHLTEle23Ele12Leg2/probe_sc_pt_probe_sc_eta_PLOT_tag_passingEle23Ele12Leg1_true',
-            'Ele24Tau20LegSingleL1': 'passingHLTEle24Tau20LegSingleL1/probe_sc_pt_probe_sc_eta_PLOT',
-            'Ele25Eta2p1Tight'     : 'passingHLTEle25Eta2p1Tight/probe_sc_pt_probe_sc_eta_PLOT',
-            'Ele27Tight'           : 'passingHLTEle27Tight/probe_sc_pt_probe_sc_eta_PLOT',
-            'Ele27Eta2p1'          : 'passingHLTEle27Eta2p1/probe_sc_pt_probe_sc_eta_PLOT',
-            'Ele45'                : 'passingHLTEle45/probe_sc_pt_probe_sc_eta_PLOT',
-            'SingleEleSoup'        : 'passingHLTSingleEleSoup/probe_sc_pt_probe_sc_eta_PLOT',
+            'Ele23Ele12DZ'         : 'passingHLTEle23Ele12DZ/probe_Ele_pt_probe_Ele_eta_PLOT_passingHLTEle23Ele12Leg2_true_&_tag_passingEle23Ele12Leg1_true',
+            'Ele23Ele12Leg1'       : 'passingHLTEle23Ele12Leg1/probe_Ele_pt_probe_Ele_eta_PLOT',
+            'Ele23Ele12Leg2'       : 'passingHLTEle23Ele12Leg2/probe_Ele_pt_probe_Ele_eta_PLOT_tag_passingEle23Ele12Leg1_true',
+            'Ele24Tau20LegSingleL1': 'passingHLTEle24Tau20LegSingleL1/probe_Ele_pt_probe_Ele_eta_PLOT',
+            'Ele25Eta2p1Tight'     : 'passingHLTEle25Eta2p1Tight/probe_Ele_pt_probe_Ele_eta_PLOT',
+            'Ele27Tight'           : 'passingHLTEle27Tight/probe_Ele_pt_probe_Ele_eta_PLOT',
+            'Ele27Eta2p1'          : 'passingHLTEle27Eta2p1/probe_Ele_pt_probe_Ele_eta_PLOT',
+            'Ele45'                : 'passingHLTEle45/probe_Ele_pt_probe_Ele_eta_PLOT',
+            'SingleEleSoup'        : 'passingHLTSingleEleSoup/probe_Ele_pt_probe_Ele_eta_PLOT',
         }
         for trig in trigMap:
             self.private_electron_80X[trig] = self.private_electron_80X_rootfile.Get(trigMap[trig])
@@ -498,7 +498,7 @@ class TriggerScales(object):
         elif ((len(triggers)==1 and (self.__hasDouble(triggers,'electrons') or self.__hasDouble(triggers,'muons') or   # ee, mm, tt
                   self.__hasDouble(triggers,'taus'))) or
               (len(triggers)==2 and (self.__hasDouble(triggers,'electrons') and self.__hasDouble(triggers,'muons')))): # ee/mm
-            val = 1-(
+            val = 1-min([
                 # none pass lead
                 product([1-self.__getLeadEfficiency(triggers,mode,cand,shift=shift) for cand in cands])
                 # one pass lead, none pass trail
@@ -507,7 +507,7 @@ class TriggerScales(object):
                 # TODO: DZ not included ???
                 # one pass lead, one pass trail, fail dz
                 # one pass lead, two pass trail, both fail dz
-            )
+            ,1])
 
         ################################
         ### single + double triggers ###
@@ -524,7 +524,7 @@ class TriggerScales(object):
             val = 1-(
                 # none pass single
                 product([1-self.__getSingleEfficiency(triggers,mode,cand,shift=shift) for cand in cands if cand.collName in ['electrons','muons']]) # only electron/muon single triggers
-            )*(
+            )*min([
                 # none pass lead
                 product([1-self.__getLeadEfficiency(triggers,mode,cand,shift=shift) for cand in cands])
                 # one pass lead, none pass trail
@@ -537,7 +537,7 @@ class TriggerScales(object):
                 # TODO: DZ not included ???
                 # one pass lead, one pass trail, fail dz
                 # one pass lead, two pass trail, both fail dz
-            )
+            ,1])
 
         else:
             val = 1
@@ -568,6 +568,7 @@ class TriggerScales(object):
         if eff<0.:
             logging.warning('Trigger efficiency < 0.')
             logging.warning('Triggers: {0}'.format(' '.join(triggers)))
+            logging.warning('Efficiencies: {0} {1} {2}'.format(eff,eff_up,eff_down))
             for cand in cands:
                 logging.warning('pt: {0}; eta: {1}'.format(cand.pt(), cand.eta()))
             eff = 1.

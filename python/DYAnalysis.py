@@ -37,6 +37,11 @@ class DYAnalysis(AnalysisBase):
         # setup analysis tree
 
         # alt pileupweights
+        self.tree.add(lambda cands: self.pileupWeights.alt_weight(self.event,60000), 'pileupWeight_60000', 'F')
+        self.tree.add(lambda cands: self.pileupWeights.alt_weight(self.event,61000), 'pileupWeight_61000', 'F')
+        self.tree.add(lambda cands: self.pileupWeights.alt_weight(self.event,62000), 'pileupWeight_62000', 'F')
+        self.tree.add(lambda cands: self.pileupWeights.alt_weight(self.event,63000), 'pileupWeight_63000', 'F')
+        self.tree.add(lambda cands: self.pileupWeights.alt_weight(self.event,64000), 'pileupWeight_64000', 'F')
         self.tree.add(lambda cands: self.pileupWeights.alt_weight(self.event,65000), 'pileupWeight_65000', 'F')
         self.tree.add(lambda cands: self.pileupWeights.alt_weight(self.event,66000), 'pileupWeight_66000', 'F')
         self.tree.add(lambda cands: self.pileupWeights.alt_weight(self.event,67000), 'pileupWeight_67000', 'F')

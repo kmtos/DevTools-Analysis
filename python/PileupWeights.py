@@ -29,7 +29,7 @@ class PileupWeights(object):
         hist_scale = rootfile.Get('pileup_scale_down')
         for b in range(hist_scale.GetNbinsX()):
             self.scale_down[b] = hist_scale.GetBinContent(b+1)
-        for xsec in [65000,66000,67000,68000,69000,70000,71000,72000,73000,74000,75000,76000,77000,78000,79000,80000]:
+        for xsec in [60000,61000,62000,63000,64000,65000,66000,67000,68000,69000,70000,71000,72000,73000,74000,75000,76000,77000,78000,79000,80000]:
             self.alt_scales[xsec] = {}
             hist_scale = rootfile.Get('pileup_scale_{0}'.format(xsec))
             for b in range(hist_scale.GetNbinsX()):

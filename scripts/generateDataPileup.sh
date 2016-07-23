@@ -16,7 +16,7 @@ mkdir -p pileup
 maxBins=90
 
 # old pileup
-for xsec in 63000; do
+for xsec in 63800; do
     up=$(echo "$xsec*1.05" | bc)
     down=$(echo "$xsec*0.95" | bc)
     echo $xsec

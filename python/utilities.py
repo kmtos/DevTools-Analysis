@@ -22,7 +22,7 @@ def deltaR(eta0,phi0,eta1,phi1):
 
 latestNtuples = {
     '76X' : '2016-04-22_DevTools_76X_v1',
-    '80X' : '2016-06-22_DevTools_80X_v1',
+    '80X' : '2016-07-20_DevTools_80X_v1',
 }
 
 def getNtupleDirectory(version=None):
