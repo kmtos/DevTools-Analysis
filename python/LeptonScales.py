@@ -129,12 +129,13 @@ class LeptonScales(object):
     def __getElectronScale(self,leptonId,cand):
         pt  = cand.pt()
         eta = cand.eta()
+        sceta = cand.superClusterEta()
         if leptonId in self.egamma_pog_scales: # default to POG
             if pt>200: pt = 199.
             if pt<10: pt = 11.
             if 'Trig' in leptonId and pt<15: pt = 16.
             hist = self.egamma_pog_scales[leptonId]
-            b = hist.FindBin(abs(eta),pt)
+            b = hist.FindBin(abs(sceta),pt) if self.version=='76X' else hist.FindBin(sceta,pt)
             val = hist.GetBinContent(b)
             err = hist.GetBinError(b)
         elif self.version=='76X' and leptonId in self.electron_hzz_scales:
@@ -222,7 +223,12 @@ class LeptonScales(object):
         if cand.collName=='electrons':
             idval = self.__getElectronScale(leptonId,cand)
             trackval = self.__getElectronScale('GSFTracking',cand)
-            val, err = prodWithError(idval,trackval)
+            if cand.pt()< 20 and self.version=='80X':
+                # additional 3% uncertainty
+                # https://twiki.cern.ch/twiki/bin/view/CMS/EgammaIDRecipesRun2
+                val, err = prodWithError(idval,trackval,(1.,0.03))
+            else:
+                val, err = prodWithError(idval,trackval)
         elif cand.collName=='muons':
             if leptonId == 'TightIDTightIso':
                 idname, isoname = ('TightID', 'TightRelIsoTightID')# if self.version=='76X' else ('TightID', 'TightIsoFromTightID')
