@@ -218,7 +218,7 @@ class WZAnalysis(AnalysisBase):
         if cand.collName=='muons':
             return self.leptonScales.getScale('MediumIDLooseIso',cand)
         elif cand.collName=='electrons':
-            return self.leptonScales.getScale('CutbasedVeto',cand) if self.version=='76X' else self.leptonScales.getScale('CutBasedIDVeto',cand) # TODO, fix
+            return self.leptonScales.getScale('CutbasedVeto',cand)
         else:
             return 1.
 
@@ -226,7 +226,7 @@ class WZAnalysis(AnalysisBase):
         if cand.collName=='muons':
             return self.leptonScales.getScale('MediumIDTightIso',cand)
         elif cand.collName=='electrons':
-            return self.leptonScales.getScale('CutbasedMedium',cand) if self.version=='76X' else self.leptonScales.getScale('CutBasedIDMedium',cand)
+            return self.leptonScales.getScale('CutbasedMedium',cand)
         else:
             return 1.
 
@@ -234,7 +234,7 @@ class WZAnalysis(AnalysisBase):
         if cand.collName=='muons':
             return self.leptonScales.getScale('MediumIDTightIso',cand)
         elif cand.collName=='electrons':
-            return self.leptonScales.getScale('CutbasedTight',cand) if self.version=='76X' else self.leptonScales.getScale('CutBasedIDTight',cand)
+            return self.leptonScales.getScale('CutbasedTight',cand)
         else:
             return 1.
 

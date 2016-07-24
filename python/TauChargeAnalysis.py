@@ -131,7 +131,7 @@ class TauChargeAnalysis(AnalysisBase):
         if cand.collName=='muons':
             return self.leptonScales.getScale('MediumIDLooseIso',cand)
         elif cand.collName=='electrons':
-            return self.leptonScales.getScale('CutbasedVeto',cand) if self.version=='76X' else self.leptonScales.getScale('CutBasedIDVeto',cand)
+            return self.leptonScales.getScale('CutbasedVeto',cand)
         else:
             return 1.
 
@@ -139,7 +139,7 @@ class TauChargeAnalysis(AnalysisBase):
         if cand.collName=='muons':
             return self.leptonScales.getScale('MediumIDTightIso',cand)
         elif cand.collName=='electrons':
-            return self.leptonScales.getScale('CutbasedMedium',cand) if self.version=='76X' else self.leptonScales.getScale('CutBasedIDMedium',cand)
+            return self.leptonScales.getScale('CutbasedMedium',cand)
         else:
             return 1.
 
@@ -147,7 +147,7 @@ class TauChargeAnalysis(AnalysisBase):
         if cand.collName=='muons':
             return self.leptonScales.getScale('MediumIDTightIso',cand)
         elif cand.collName=='electrons':
-            return self.leptonScales.getScale('CutbasedTight',cand) if self.version=='76X' else self.leptonScales.getScale('CutBasedIDTight',cand)
+            return self.leptonScales.getScale('CutbasedTight',cand)
         else:
             return 1.
 
@@ -252,6 +252,7 @@ def parse_command_line(argv):
     parser.add_argument('--inputFiles', type=str, nargs='*', default=getTestFiles('dy'), help='Input files')
     parser.add_argument('--inputFileList', type=str, default='', help='Input file list')
     parser.add_argument('--outputFile', type=str, default='tauChargeTree.root', help='Output file')
+    parser.add_argument('--shift', type=str, default='', choices=['','ElectronEnUp','ElectronEnDown','MuonEnUp','MuonEnDown','TauEnUp','TauEnDown','JetEnUp','JetEnDown','JetResUp','JetResDown','UnclusteredEnUp','UnclusteredEnDown'], help='Energy shift')
 
     return parser.parse_args(argv)
 
@@ -268,6 +269,7 @@ def main(argv=None):
         inputTreeName='MiniTree',
         inputLumiName='LumiTree',
         inputTreeDirectory='miniTree',
+        shift = args.shift,
     )
 
     try:

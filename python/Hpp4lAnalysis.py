@@ -330,7 +330,7 @@ class Hpp4lAnalysis(AnalysisBase):
             return self.leptonScales.getScale('MediumIDLooseIso',cand,doError=True)
             #return self.leptonScales.getScale('None',cand,doError=True)
         elif cand.collName=='electrons':
-            return self.leptonScales.getScale('CutbasedVeto',cand,doError=True) if self.version=='76X' else self.leptonScales.getScale('CutBasedIDVeto',cand,doError=True)
+            return self.leptonScales.getScale('CutbasedVeto',cand,doError=True)
             #return self.leptonScales.getScale('None',cand,doError=True)
         else:
             return [1.,1.,1.]
@@ -340,7 +340,7 @@ class Hpp4lAnalysis(AnalysisBase):
             return self.leptonScales.getScale('MediumIDTightIso',cand,doError=True)
             #return self.leptonScales.getScale('HZZTight',cand,doError=True)
         elif cand.collName=='electrons':
-            return self.leptonScales.getScale('CutbasedMedium',cand,doError=True) if self.version=='76X' else self.leptonScales.getScale('CutBasedIDMedium',cand,doError=True)
+            return self.leptonScales.getScale('CutbasedMedium',cand,doError=True)
             #return self.leptonScales.getScale('HZZTight',cand,doError=True)
         else:
             return [1.,1.,1.]
@@ -350,7 +350,7 @@ class Hpp4lAnalysis(AnalysisBase):
             return self.leptonScales.getScale('MediumIDTightIso',cand,doError=True)
             #return self.leptonScales.getScale('HZZTight',cand,doError=True)
         elif cand.collName=='electrons':
-            return self.leptonScales.getScale('CutbasedTight',cand,doError=True) if self.version=='76X' else self.leptonScales.getScale('CutBasedIDTight',cand,doError=True)
+            return self.leptonScales.getScale('CutbasedTight',cand,doError=True)
             #return self.leptonScales.getScale('HZZTight',cand,doError=True)
         else:
             return [1.,1.,1.]

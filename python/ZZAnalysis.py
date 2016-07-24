@@ -265,7 +265,7 @@ class ZZAnalysis(AnalysisBase):
             return self.leptonScales.getScale('MediumIDLooseIso',cand)
             #return self.leptonScales.getScale('None',cand)
         elif cand.collName=='electrons':
-            return self.leptonScales.getScale('CutbasedVeto',cand) if self.version=='76X' else self.leptonScales.getScale('CutBasedIDVeto',cand)
+            return self.leptonScales.getScale('CutbasedVeto',cand)
             #return self.leptonScales.getScale('None',cand)
         else:
             return 1.
@@ -275,7 +275,7 @@ class ZZAnalysis(AnalysisBase):
             return self.leptonScales.getScale('MediumIDTightIso',cand)
             #return self.leptonScales.getScale('HZZTight',cand)
         elif cand.collName=='electrons':
-            return self.leptonScales.getScale('CutbasedMedium',cand) if self.version=='76X' else self.leptonScales.getScale('CutBasedIDMedium',cand)
+            return self.leptonScales.getScale('CutbasedMedium',cand)
             #return self.leptonScales.getScale('HZZTight',cand)
         else:
             return 1.
@@ -285,7 +285,7 @@ class ZZAnalysis(AnalysisBase):
             return self.leptonScales.getScale('MediumIDTightIso',cand)
             #return self.leptonScales.getScale('HZZTight',cand)
         elif cand.collName=='electrons':
-            return self.leptonScales.getScale('CutbasedTight',cand) if self.version=='76X' else self.leptonScales.getScale('CutBasedIDTight',cand)
+            return self.leptonScales.getScale('CutbasedTight',cand)
             #return self.leptonScales.getScale('HZZTight',cand)
         else:
             return 1.

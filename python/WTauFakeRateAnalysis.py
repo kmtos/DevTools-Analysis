@@ -133,17 +133,17 @@ class WTauFakeRateAnalysis(AnalysisBase):
 
     def looseScale(self,cand):
         if isinstance(cand,Muon):       return self.leptonScales.getScale('MediumIDLooseIso',cand)
-        elif isinstance(cand,Electron): return self.leptonScales.getScale('CutbasedVeto',cand) if self.version=='76X' else self.leptonScales.getScale('CutBasedIDVeto',cand)
+        elif isinstance(cand,Electron): return self.leptonScales.getScale('CutbasedVeto',cand)
         else:                           return 1.
 
     def mediumScale(self,cand):
         if isinstance(cand,Muon):       return self.leptonScales.getScale('MediumIDTightIso',cand)
-        elif isinstance(cand,Electron): return self.leptonScales.getScale('CutbasedMedium',cand) if self.version=='76X' else self.leptonScales.getScale('CutBasedIDMedium',cand)
+        elif isinstance(cand,Electron): return self.leptonScales.getScale('CutbasedMedium',cand)
         else:                           return 1.
 
     def tightScale(self,cand):
         if isinstance(cand,Muon):       return self.leptonScales.getScale('MediumIDTightIso',cand)
-        elif isinstance(cand,Electron): return self.leptonScales.getScale('CutbasedTight',cand) if self.version=='76X' else self.leptonScales.getScale('CutBasedIDTight',cand)
+        elif isinstance(cand,Electron): return self.leptonScales.getScale('CutbasedTight',cand)
         else:                           return 1.
 
     def getPassingCands(self,mode):
@@ -225,6 +225,7 @@ def parse_command_line(argv):
     parser.add_argument('--inputFiles', type=str, nargs='*', default=getTestFiles('w'), help='Input files')
     parser.add_argument('--inputFileList', type=str, default='', help='Input file list')
     parser.add_argument('--outputFile', type=str, default='wTauFakeRateTree.root', help='Output file')
+    parser.add_argument('--shift', type=str, default='', choices=['','ElectronEnUp','ElectronEnDown','MuonEnUp','MuonEnDown','TauEnUp','TauEnDown','JetEnUp','JetEnDown','JetResUp','JetResDown','UnclusteredEnUp','UnclusteredEnDown'], help='Energy shift')
 
     return parser.parse_args(argv)
 
@@ -241,6 +242,7 @@ def main(argv=None):
         inputTreeName='MiniTree',
         inputLumiName='LumiTree',
         inputTreeDirectory='miniTree',
+        shift = args.shift,
     )
 
     try:
