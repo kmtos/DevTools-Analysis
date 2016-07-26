@@ -244,7 +244,7 @@ def parse_command_line(argv):
     parser.add_argument('--outputFile', type=str, default='dijetFakeRateTree.root', help='Output file')
     parser.add_argument('--shift', type=str, default='', choices=['','ElectronEnUp','ElectronEnDown','MuonEnUp','MuonEnDown','TauEnUp','TauEnDown','JetEnUp','JetEnDown','JetResUp','JetResDown','UnclusteredEnUp','UnclusteredEnDown'], help='Energy shift')
 
-   # return parser.parse_args(argv)
+    return parser.parse_args(argv)
 
 def main(argv=None):
     if argv is None:
