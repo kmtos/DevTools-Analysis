@@ -25,7 +25,7 @@ class FakeRates(object):
         # H++ fakerates
         fake_path = '{0}/src/DevTools/Analyzer/data/fakerates_dijet_hpp_13TeV_Run2015D.root'.format(os.environ['CMSSW_BASE'])
         if self.version=='80X':
-            fake_path = '{0}/src/DevTools/Analyzer/data/fakerates_dijet_hpp_13TeV_Run2016BCD.root'.format(os.environ['CMSSW_BASE'])
+            fake_path = '{0}/src/DevTools/Analyzer/data/fakerates_dijet_hpp_13TeV_Run2016B.root'.format(os.environ['CMSSW_BASE'])
         self.fake_hpp_rootfile = ROOT.TFile(fake_path)
         self.fakehists['electrons'][self.fakekey.format(num='HppMedium',denom='HppLoose')] = self.fake_hpp_rootfile.Get('e/medium/fakeratePtEta')
         self.fakehists['electrons'][self.fakekey.format(num='HppTight',denom='HppLoose')] = self.fake_hpp_rootfile.Get('e/tight/fakeratePtEta')
@@ -34,7 +34,7 @@ class FakeRates(object):
         # tau fakerates
         fake_path = '{0}/src/DevTools/Analyzer/data/fakerates_w_tau_13TeV_Run2015D.root'.format(os.environ['CMSSW_BASE'])
         if self.version=='80X':
-            fake_path = '{0}/src/DevTools/Analyzer/data/fakerates_w_tau_13TeV_Run2016B.root'.format(os.environ['CMSSW_BASE'])
+            fake_path = '{0}/src/DevTools/Analyzer/data/fakerates_w_tau_13TeV_Run2016BCD.root'.format(os.environ['CMSSW_BASE'])
         self.fake_tau_rootfile = ROOT.TFile(fake_path)
         self.fakehists['taus'][self.fakekey.format(num='HppMedium',denom='HppLoose')] = self.fake_tau_rootfile.Get('medium_loose/fakeratePtEta')
         self.fakehists['taus'][self.fakekey.format(num='HppTight',denom='HppLoose')] = self.fake_tau_rootfile.Get('tight_loose/fakeratePtEta')
