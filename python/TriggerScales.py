@@ -83,9 +83,11 @@ class TriggerScales(object):
         ### 80X 2016 ###
         ################
         # tau https://indico.cern.ch/event/544712/contributions/2213574/attachments/1295299/1930984/htt_tau_trigger_17_6_2016.pdf
+        # https://github.com/rmanzoni/triggerSF/tree/diTauICHEP2016/di-tau
         self.tau_efficiencies_2016 = {
             'MediumIsoPFTau35_Trk_eta2p1': {
-                'val'    : {'m0' : 3.86506E+01, 'sigma' : 5.81155E+00, 'alpha' : 5.82783E+00, 'n' : 3.38903E+00, 'norm' : 9.33449E+00,}, # no iso
+                #'val'    : {'m0' : 3.86506E+01, 'sigma' : 5.81155E+00, 'alpha' : 5.82783E+00, 'n' : 3.38903E+00, 'norm' : 9.33449E+00,}, # no iso
+                'val'    : {'m0': 38.284513544375116, 'sigma': 5.325716928817435, 'alpha': 6.450107655090677, 'n': 1.6488772300498389, 'norm': 0.9999999971876338,}, # no iso
             },
             'LooseIsoPFTau20_SingleL1' : {
                 'val'    : {'m0' : 2.14111E+01, 'sigma' : 1.05522E+00, 'alpha' : 1.32782E+00, 'n' : 1.50352E+00, 'norm' : 9.96428E-01,}, # no iso
