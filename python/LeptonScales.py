@@ -245,7 +245,8 @@ class LeptonScales(object):
             else:
                 val, err = self.__getMuonScale(leptonId,cand)
             valTrack, errTrack = self.__getMuonTrackingScale(cand)
-            val, err = prodWithError((val,err),(valTrack,errTrack))
+            #val, err = prodWithError((val,err),(valTrack,errTrack))
+            val, err = prodWithError((val,err),(valTrack,0. if errTrack!=errTrack else errTrack)) # bug with error from tgraphasymm, check for NaN
         elif cand.collName=='taus':
             val, err = self.__getTauScale(leptonId,cand)
         else:
