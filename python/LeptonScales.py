@@ -134,7 +134,7 @@ class LeptonScales(object):
             if pt>200: pt = 199.
             if pt<10: pt = 11.
             if 'Trig' in leptonId and pt<15: pt = 16.
-            if 'GSFTracking' in leptonId and pt<20: pt = 20
+            if 'GSFTracking' in leptonId and pt<20: pt = 21
             hist = self.egamma_pog_scales[leptonId]
             b = hist.FindBin(abs(sceta),pt) if self.version=='76X' else hist.FindBin(sceta,pt)
             val = hist.GetBinContent(b)
