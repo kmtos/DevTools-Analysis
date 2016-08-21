@@ -19,6 +19,7 @@ from FakeRates import FakeRates
 from LeptonScales import LeptonScales
 from TriggerScales import TriggerScales
 from TriggerPrescales import TriggerPrescales
+from ZptGenWeight import ZptGenWeight
 
 from utilities import deltaR, deltaPhi
 from DevTools.Utilities.utilities import getCMSSWVersion
@@ -104,6 +105,7 @@ class AnalysisBase(object):
         self.leptonScales = LeptonScales(self.version)
         self.triggerScales = TriggerScales(self.version)
         self.triggerPrescales = TriggerPrescales(self.version)
+        self.zptGenWeight = ZptGenWeight(self.version)
         # tfile
         self.outfile = ROOT.TFile(outputFileName,"recreate")
         # cut tree
@@ -113,6 +115,17 @@ class AnalysisBase(object):
         self.eventsStored = 0
 
         # some things we always need:
+
+        dysamples = [
+            'DY1JetsToLL_M-50_TuneCUETP8M1_13TeV-madgraphMLM-pythia8',
+            'DY2JetsToLL_M-50_TuneCUETP8M1_13TeV-madgraphMLM-pythia8',
+            'DY3JetsToLL_M-50_TuneCUETP8M1_13TeV-madgraphMLM-pythia8',
+            'DY4JetsToLL_M-50_TuneCUETP8M1_13TeV-madgraphMLM-pythia8',
+            'DYJetsToLL_M-10to50_TuneCUETP8M1_13TeV-madgraphMLM-pythia8',
+            'DYJetsToLL_M-50_TuneCUETP8M1_13TeV-madgraphMLM-pythia8',
+        ]
+
+
         # pileup
         self.tree.add(lambda cands: self.pileupWeights.weight(self.event)[0], 'pileupWeight', 'F')
         self.tree.add(lambda cands: self.pileupWeights.weight(self.event)[1], 'pileupWeightUp', 'F')
@@ -123,7 +136,10 @@ class AnalysisBase(object):
         self.tree.add(lambda cands: self.event.nTrueVertices(), 'numTrueVertices', 'I')
         self.tree.add(lambda cands: self.event.NUP(), 'NUP', 'I')
         self.tree.add(lambda cands: self.event.isData(), 'isData', 'I')
-        self.tree.add(lambda cands: self.event.genWeight(), 'genWeight', 'I')
+        if any([x in fName for x in dysamples]):
+            self.tree.add(lambda cands: self.zptGenWeight.weight(self.gen), 'genWeight', 'F')
+        else:
+            self.tree.add(lambda cands: self.event.genWeight(), 'genWeight', 'F')
         self.tree.add(lambda cands: self.event.numGenJets(), 'numGenJets', 'I')
         self.tree.add(lambda cands: self.event.genHT(), 'genHT', 'I')
         # scale shifts
