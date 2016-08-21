@@ -27,7 +27,7 @@ from Candidates import *
 
 try:
     from progressbar import ProgressBar, ETA, Percentage, Bar, SimpleProgress
-    hasProgress = True
+    hasProgress = False
 except:
     hasProgress = False
 
@@ -68,17 +68,18 @@ class AnalysisBase(object):
         tchainLumi = ROOT.TChain('{0}/{1}'.format(inputTreeDirectory,inputLumiName))
         self.totalEntries = 0
         logging.info('Getting Lumi information')
-        self.skims = {}
+        #self.skims = {}
         for f,fName in enumerate(self.fileNames):
             if fName.startswith('/store'): fName = 'root://cmsxrootd.hep.wisc.edu//{0}'.format(fName)
             tfile = ROOT.TFile.Open(fName)
             tree = tfile.Get(self.treename)
-            skimName = 'skim{0}'.format(f)
-            tree.Draw('>>{0}'.format(skimName),self.preselection,'entrylist')
-            skimlist = ROOT.gDirectory.Get(skimName)
-            listEvents = skimlist.GetN()
-            self.skims[f] = skimlist
-            self.totalEntries += listEvents
+            #skimName = 'skim{0}'.format(f)
+            #tree.Draw('>>{0}'.format(skimName),self.preselection,'entrylist')
+            #skimlist = ROOT.gDirectory.Get(skimName)
+            #listEvents = skimlist.GetN()
+            #self.skims[f] = skimlist
+            #self.totalEntries += listEvents
+            self.totalEntries += tree.GetEntries()
             if not hasattr(self,'version'):
                 tree.GetEntry(1)
                 if hasattr(tree,'provenance'):
@@ -205,13 +206,14 @@ class AnalysisBase(object):
                 if fName.startswith('/store'): fName = 'root://cmsxrootd.hep.wisc.edu//{0}'.format(fName)
                 tfile = ROOT.TFile.Open(fName,'READ')
                 tree = tfile.Get(self.treename)
-                skimName = 'skim{0}'.format(f)
-                tree.Draw('>>{0}'.format(skimName),self.preselection,'entrylist')
-                skimlist = ROOT.gDirectory.Get(skimName)
-                listEvents = skimlist.GetN()
-                for r in xrange(listEvents):
+                #skimName = 'skim{0}'.format(f)
+                #tree.Draw('>>{0}'.format(skimName),self.preselection,'entrylist')
+                #skimlist = ROOT.gDirectory.Get(skimName)
+                #listEvents = skimlist.GetN()
+                #for r in xrange(listEvents):
+                for row in tree:
                     total += 1
-                    tree.GetEntry(skimlist.Next())
+                    #tree.GetEntry(skimlist.Next())
                     self.pbar.update(total)
                     # load objects
                     self.event     = Event(tree)
@@ -234,14 +236,15 @@ class AnalysisBase(object):
                 logging.info('Processing file {0} of {1}'.format(f+1, len(self.fileNames)))
                 tfile = ROOT.TFile.Open(fName,'READ')
                 tree = tfile.Get(self.treename)
-                skimName = 'skim{0}'.format(f)
-                tree.Draw('>>{0}'.format(skimName),self.preselection,'entrylist')
-                skimlist = ROOT.gDirectory.Get(skimName)
-                listEvents = skimlist.GetN()
-                for r in xrange(listEvents):
+                #skimName = 'skim{0}'.format(f)
+                #tree.Draw('>>{0}'.format(skimName),self.preselection,'entrylist')
+                #skimlist = ROOT.gDirectory.Get(skimName)
+                #listEvents = skimlist.GetN()
+                #for r in xrange(listEvents):
+                for row in tree:
                     total += 1
                     if total==2: start = time.time() # just ignore first event for timing
-                    tree.GetEntry(skimlist.Next())
+                    #tree.GetEntry(skimlist.Next())
                     if total % 1000 == 1:
                         cur = time.time()
                         elapsed = cur-start
