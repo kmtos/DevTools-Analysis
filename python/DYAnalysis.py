@@ -132,13 +132,14 @@ class DYAnalysis(AnalysisBase):
         }
 
         # get leptons
-        leps = self.getPassingCands('Loose')
-        if len(leps)<2: return candidate # need at least 2 leptons
+        #leps = self.getPassingCands('Loose')
+        medLeps = self.getPassingCands('Medium')
+        if len(medLeps)<2: return candidate # need at least 2 leptons
 
         # get invariant masses
         bestZ = ()
         bestMassdiff = 99999
-        for zpair in itertools.combinations(leps,2):
+        for zpair in itertools.combinations(medLeps,2):
             if zpair[0].collName!=zpair[1].collName: continue # SF
             if zpair[0].charge()==zpair[1].charge(): continue # OS
             z = DiCandidate(*zpair)
@@ -155,7 +156,6 @@ class DYAnalysis(AnalysisBase):
         candidate['z2'] = z[1]
         candidate['z'] = DiCandidate(z[0],z[1])
 
-        medLeps = self.getPassingCands('Medium')
         candidate['cleanJets'] = self.cleanCands(self.jets,medLeps,0.4)
 
         return candidate

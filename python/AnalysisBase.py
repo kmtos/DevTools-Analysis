@@ -63,14 +63,21 @@ class AnalysisBase(object):
             self.fileNames = inputFileNames # already a python list or a cms.untracked.vstring()
         if not isinstance(outputFileName, basestring): # its a cms.string(), get value
             outputFileName = outputFileName.value()
+        # test for hdfs
+        #self.hasHDFS = os.path.exists('/hdfs/store/user')
+        self.hasHDFS = False
         # input tchain
         self.treename = '{0}/{1}'.format(inputTreeDirectory,inputTreeName)
-        tchainLumi = ROOT.TChain('{0}/{1}'.format(inputTreeDirectory,inputLumiName))
+        luminame = '{0}/{1}'.format(inputTreeDirectory,inputLumiName)
+        #tchainLumi = ROOT.TChain(luminame)
         self.totalEntries = 0
+        self.numLumis = 0
+        self.numEvents = 0
+        self.summedWeights = 0
         logging.info('Getting Lumi information')
         #self.skims = {}
         for f,fName in enumerate(self.fileNames):
-            if fName.startswith('/store'): fName = 'root://cmsxrootd.hep.wisc.edu//{0}'.format(fName)
+            if fName.startswith('/store'): fName = '{0}/{1}'.format('/hdfs' if self.hasHDFS else 'root://cmsxrootd.hep.wisc.edu/',fName)
             tfile = ROOT.TFile.Open(fName)
             tree = tfile.Get(self.treename)
             #skimName = 'skim{0}'.format(f)
@@ -87,16 +94,21 @@ class AnalysisBase(object):
                     self.version = ''.join([ver[1],ver[2],'X'])
                 else:
                     self.version = getCMSSWVersion()
+            lumitree = tfile.Get(luminame)
+            for entry in lumitree:
+                self.numLumis += 1
+                self.numEvents += lumitree.nevents
+                self.summedWeights += lumitree.summedWeights
             tfile.Close('R')
-            tchainLumi.Add(fName)
+            #tchainLumi.Add(fName)
         # get the lumi info
-        self.numLumis = tchainLumi.GetEntries()
-        self.numEvents = 0
-        self.summedWeights = 0
-        for entry in xrange(self.numLumis):
-            tchainLumi.GetEntry(entry)
-            self.numEvents += tchainLumi.nevents
-            self.summedWeights += tchainLumi.summedWeights
+        #self.numLumis = tchainLumi.GetEntries()
+        #self.numEvents = 0
+        #self.summedWeights = 0
+        #for entry in xrange(self.numLumis):
+        #    tchainLumi.GetEntry(entry)
+        #    self.numEvents += tchainLumi.nevents
+        #    self.summedWeights += tchainLumi.summedWeights
         logging.info("Will process {0} lumi sections with {1} events ({2}).".format(self.numLumis,self.numEvents,self.summedWeights))
         self.flush()
         if not len(self.fileNames): raise Exception
@@ -203,7 +215,7 @@ class AnalysisBase(object):
             self.pbar.start()
             total = 0
             for f, fName in enumerate(self.fileNames):
-                if fName.startswith('/store'): fName = 'root://cmsxrootd.hep.wisc.edu//{0}'.format(fName)
+                if fName.startswith('/store'): fName = '{0}/{1}'.format('/hdfs' if self.hasHDFS else 'root://cmsxrootd.hep.wisc.edu/',fName)
                 tfile = ROOT.TFile.Open(fName,'READ')
                 tree = tfile.Get(self.treename)
                 #skimName = 'skim{0}'.format(f)
@@ -232,7 +244,7 @@ class AnalysisBase(object):
         else:
             total = 0
             for f, fName in enumerate(self.fileNames):
-                if fName.startswith('/store'): fName = 'root://cmsxrootd.hep.wisc.edu//{0}'.format(fName)
+                if fName.startswith('/store'): fName = '{0}/{1}'.format('/hdfs' if self.hasHDFS else 'root://cmsxrootd.hep.wisc.edu/',fName)
                 logging.info('Processing file {0} of {1}'.format(f+1, len(self.fileNames)))
                 tfile = ROOT.TFile.Open(fName,'READ')
                 tree = tfile.Get(self.treename)
