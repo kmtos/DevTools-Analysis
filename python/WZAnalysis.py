@@ -73,21 +73,21 @@ class WZAnalysis(AnalysisBase):
         self.tree.add(lambda cands: self.event.Mu17_TrkIsoVVL_Ele12_CaloIdL_TrackIdL_IsoVLPass(), 'pass_Mu17_TrkIsoVVL_Ele12_CaloIdL_TrackIdL_IsoVL', 'I')
         self.tree.add(self.triggerEfficiency, 'triggerEfficiency', 'F')
 
-        ## vbf
-        #self.addJet('leadJet')
-        #self.addJet('subleadJet')
-        #self.addDiJet('dijet','leadJet','subleadJet')
-        #self.tree.add(lambda cands: self.numCentralJets(cands,'isLoose',30), 'dijet_numCentralJetsLoose30', 'I')
-        #self.tree.add(lambda cands: self.numCentralJets(cands,'isTight',30), 'dijet_numCentralJetsTight30', 'I')
+        # vbf
+        self.addJet('leadJet')
+        self.addJet('subleadJet')
+        self.addDiJet('dijet')
+        self.tree.add(lambda cands: self.numCentralJets(cands['leadJet'],cands['subleadJet'],cands['cleanJets'],'isLoose',30), 'dijet_numCentralJetsLoose30', 'I')
+        self.tree.add(lambda cands: self.numCentralJets(cands['leadJet'],cands['subleadJet'],cands['cleanJets'],'isTight',30), 'dijet_numCentralJetsTight30', 'I')
 
         # 3 lepton
         self.addComposite('3l')
         self.addCompositeMet('3lmet')
-        #self.tree.add(lambda cands: self.zeppenfeld(cands,cands['z1'],cands['z2'],cands['w1']), '3l_zeppenfeld','F')
+        self.tree.add(lambda cands: self.zeppenfeld(cands['leadJet'],cands['subleadJet'],cands['z1'],cands['z2'],cands['w1']), '3l_zeppenfeld','F')
 
         # z leptons
         self.addDiLepton('z')
-        #self.tree.add(lambda cands: self.zeppenfeld(cands,cands['z1'],cands['z2']), 'z_zeppenfeld','F')
+        self.tree.add(lambda cands: self.zeppenfeld(cands['leadJet'],cands['subleadJet'],cands['z1'],cands['z2']), 'z_zeppenfeld','F')
         self.addLepton('z1')
         self.tree.add(lambda cands: self.passMedium(cands['z1']), 'z1_passMedium', 'I')
         self.tree.add(lambda cands: self.passTight(cands['z1']), 'z1_passTight', 'I')
@@ -96,7 +96,7 @@ class WZAnalysis(AnalysisBase):
         self.tree.add(lambda cands: self.tightScale(cands['z1']), 'z1_tightScale', 'F')
         self.tree.add(lambda cands: self.mediumFakeRate(cands['z1']), 'z1_mediumFakeRate', 'F')
         self.tree.add(lambda cands: self.tightFakeRate(cands['z1']), 'z1_tightFakeRate', 'F')
-        #self.tree.add(lambda cands: self.zeppenfeld(cands,cands['z1']), 'z1_zeppenfeld','F')
+        self.tree.add(lambda cands: self.zeppenfeld(cands['leadJet'],cands['subleadJet'],cands['z1']), 'z1_zeppenfeld','F')
         self.addLepton('z2')
         self.tree.add(lambda cands: self.passMedium(cands['z2']), 'z2_passMedium', 'I')
         self.tree.add(lambda cands: self.passTight(cands['z2']), 'z2_passTight', 'I')
@@ -105,7 +105,7 @@ class WZAnalysis(AnalysisBase):
         self.tree.add(lambda cands: self.tightScale(cands['z2']), 'z2_tightScale', 'F')
         self.tree.add(lambda cands: self.mediumFakeRate(cands['z2']), 'z2_mediumFakeRate', 'F')
         self.tree.add(lambda cands: self.tightFakeRate(cands['z2']), 'z2_tightFakeRate', 'F')
-        #self.tree.add(lambda cands: self.zeppenfeld(cands,cands['z2']), 'z2_zeppenfeld','F')
+        self.tree.add(lambda cands: self.zeppenfeld(cands['leadJet'],cands['subleadJet'],cands['z2']), 'z2_zeppenfeld','F')
 
         # w lepton
         self.addLeptonMet('w')
@@ -117,7 +117,7 @@ class WZAnalysis(AnalysisBase):
         self.tree.add(lambda cands: self.tightScale(cands['w1']), 'w1_tightScale', 'F')
         self.tree.add(lambda cands: self.mediumFakeRate(cands['w1']), 'w1_mediumFakeRate', 'F')
         self.tree.add(lambda cands: self.tightFakeRate(cands['w1']), 'w1_tightFakeRate', 'F')
-        #self.tree.add(lambda cands: self.zeppenfeld(cands,cands['w1']), 'w1_zeppenfeld','F')
+        self.tree.add(lambda cands: self.zeppenfeld(cands['leadJet'],cands['subleadJet'],cands['w1']), 'w1_zeppenfeld','F')
 
         # wrong combination
         self.addDiLepton('w1_z1')
@@ -145,6 +145,9 @@ class WZAnalysis(AnalysisBase):
             'w1_z2': None,
             'met': self.pfmet,
             'cleanJets': [],
+            'leadJet': None,
+            'subleadJet': None,
+            'dijet': DiCandidate(Candidate(None),Candidate(None)),
         }
 
         #TODO: Fix low efficiency
@@ -199,6 +202,9 @@ class WZAnalysis(AnalysisBase):
 
         medLeps = self.getPassingCands('Medium')
         candidate['cleanJets'] = self.cleanCands(self.jets,medLeps+[z1,z2,w1],0.4)
+        if len(candidate['cleanJets'])>0: candidate['leadJet'] = candidate['cleanJets'][0]
+        if len(candidate['cleanJets'])>1: candidate['subleadJet'] = candidate['cleanJets'][1]
+        if len(candidate['cleanJets'])>1: candidate['dijet'] = DiCandidate(candidate['leadJet'],candidate['subleadJet'])
 
         return candidate
 
@@ -264,6 +270,34 @@ class WZAnalysis(AnalysisBase):
             lambda cand: getattr(cand,mode)()>0.5 and cand.pt()>pt
         )
         return len(jetColl)
+
+    def numCentralJets(self,leadJet,subleadJet,cleanJets,mode,pt):
+        if not leadJet: return -1
+        if not subleadJet: return -1
+        eta1 = leadJet.eta()
+        eta2 = subleadJet.eta()
+        mineta = min(eta1,eta2)
+        maxeta = max(eta1,eta2)
+        return len(
+            self.getCands(
+                cleanJets,
+                lambda cand: getattr(cand,mode)()>0.5
+                             and cand.pt()>pt
+                             and cand.eta()>mineta
+                             and cand.eta()<maxeta
+            )
+        )
+    
+    def zeppenfeld(self,leadJet,subleadJet,*probeCands):
+        if not leadJet: return -10.
+        if not subleadJet: return -10.
+        eta1 = leadJet.eta()
+        eta2 = subleadJet.eta()
+        meaneta = (eta1+eta2)/2
+        composite = CompositeCandidate(*probeCands)
+        eta = composite.eta()
+        return eta-meaneta
+
 
     ######################
     ### channel string ###
