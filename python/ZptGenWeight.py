@@ -24,14 +24,6 @@ class ZptGenWeight(object):
     def __finish(self):
         self.rootfile.Close()
 
-
-    def _getZ(self,genParticles):
-        # first find leptons
-        for lep1 in genParticles:
-            if lep1.pdgId() not in [11,13,15]: continue
-            for lep2 in genParticles:
-                if lep2.pdgId() != -1 * lep1.pdgId(): continue
-
     def weight(self, genParticles):
         z = None
         w = 1.

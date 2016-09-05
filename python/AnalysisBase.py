@@ -149,10 +149,9 @@ class AnalysisBase(object):
         self.tree.add(lambda cands: self.event.nTrueVertices(), 'numTrueVertices', 'I')
         self.tree.add(lambda cands: self.event.NUP(), 'NUP', 'I')
         self.tree.add(lambda cands: self.event.isData(), 'isData', 'I')
+        self.tree.add(lambda cands: self.event.genWeight(), 'genWeight', 'F')
         if any([x in fName for x in dysamples]):
-            self.tree.add(lambda cands: self.zptGenWeight.weight(self.gen), 'genWeight', 'F')
-        else:
-            self.tree.add(lambda cands: self.event.genWeight(), 'genWeight', 'F')
+            self.tree.add(lambda cands: self.zptGenWeight.weight(self.gen), 'zPtWeight', 'F')
         self.tree.add(lambda cands: self.event.numGenJets(), 'numGenJets', 'I')
         self.tree.add(lambda cands: self.event.genHT(), 'genHT', 'I')
         # scale shifts
