@@ -276,7 +276,7 @@ class Hpp3lAnalysis(AnalysisBase):
                 bestMassdiff = massdiff
 
         # clean the jets
-        candidate['cleanJets'] = self.cleanCands(self.jets,medLeps,0.4)
+        candidate['cleanJets'] = self.cleanCands(self.jets,medLeps+[hpp1,hpp2,hm1],0.4)
 
         if not bestZ: return candidate # no z
 

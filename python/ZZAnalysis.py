@@ -241,7 +241,7 @@ class ZZAnalysis(AnalysisBase):
         candidate['z22_z12'] = DiCandidate(z22,z12)
 
         # clean the jets
-        candidate['cleanJets'] = self.cleanCands(self.jets,medLeps,0.4)
+        candidate['cleanJets'] = self.cleanCands(self.jets,medLeps+[z11,z12,z21,z22],0.4)
 
         return candidate
 

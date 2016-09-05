@@ -156,7 +156,7 @@ class DYAnalysis(AnalysisBase):
         candidate['z2'] = z[1]
         candidate['z'] = DiCandidate(z[0],z[1])
 
-        candidate['cleanJets'] = self.cleanCands(self.jets,medLeps,0.4)
+        candidate['cleanJets'] = self.cleanCands(self.jets,medLeps+[z[0],z[1]],0.4)
 
         return candidate
 

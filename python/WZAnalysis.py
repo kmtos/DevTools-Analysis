@@ -198,7 +198,7 @@ class WZAnalysis(AnalysisBase):
         candidate['w1_z2'] = DiCandidate(w1,z2)
 
         medLeps = self.getPassingCands('Medium')
-        candidate['cleanJets'] = self.cleanCands(self.jets,medLeps,0.4)
+        candidate['cleanJets'] = self.cleanCands(self.jets,medLeps+[z1,z2,w1],0.4)
 
         return candidate
 
