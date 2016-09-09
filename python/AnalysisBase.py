@@ -335,6 +335,7 @@ class AnalysisBase(object):
             for o in other:
                 if deltaR(s.eta(),s.phi(),o.eta(),o.phi())<dr:
                     keep = False
+                    break
             if keep:
                 cleaned += [s]
         return cleaned

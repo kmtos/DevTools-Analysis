@@ -145,8 +145,8 @@ class WZAnalysis(AnalysisBase):
             'w1_z2': None,
             'met': self.pfmet,
             'cleanJets': [],
-            'leadJet': None,
-            'subleadJet': None,
+            'leadJet': Candidate(None),
+            'subleadJet': Candidate(None),
             'dijet': DiCandidate(Candidate(None),Candidate(None)),
         }
 
