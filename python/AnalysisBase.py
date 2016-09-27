@@ -144,6 +144,7 @@ class AnalysisBase(object):
         self.tree.add(lambda cands: self.pileupWeights.weight(self.event)[1], 'pileupWeightUp', 'F')
         self.tree.add(lambda cands: self.pileupWeights.weight(self.event)[2], 'pileupWeightDown', 'F')
         self.tree.add(lambda cands: self.event.vertices_count(), 'numVertices', 'I')
+        self.tree.add(lambda cands: self.event.rho(), 'rho', 'F')
 
         # gen
         self.tree.add(lambda cands: self.event.nTrueVertices(), 'numTrueVertices', 'I')
