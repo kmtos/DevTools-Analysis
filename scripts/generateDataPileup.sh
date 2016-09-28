@@ -2,8 +2,10 @@
 version=`python -c "from DevTools.Utilities.utilities import getCMSSWVersion; print getCMSSWVersion()"`
 if [ "$version" == "76X" ]; then
     runPeriod="Collisions15"
+    central=69000
 else
     runPeriod="Collisions16"
+    central=69200
 fi
 lumimask=`python -c "from DevTools.Utilities.utilities import getJson; print getJson('$runPeriod')"`
 normtag=`python -c "from DevTools.Utilities.utilities import getNormtag; print getNormtag('$runPeriod')"`
@@ -16,7 +18,7 @@ mkdir -p pileup
 maxBins=90
 
 # old pileup
-for xsec in 69200; do
+for xsec in $central; do
     up=$(echo "$xsec*1.05" | bc)
     down=$(echo "$xsec*0.95" | bc)
     echo $xsec
