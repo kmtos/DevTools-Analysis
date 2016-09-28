@@ -31,15 +31,15 @@ def getNtupleDirectory(version=None):
     if version in latestNtuples:
         return os.path.join(baseDir,latestNtuples[version])
 
-def getTestFiles(sample,n=1):
+def getTestFiles(sample,n=1,version=None):
+    if not version: version = getCMSSWVersion()
 
     sampleMap = {
         'wz'    : 'WZTo3LNu_TuneCUETP8M1_13TeV-powheg-pythia8',
         'zz'    : 'ZZTo4L_13TeV_powheg_pythia8',
         'data'  : 'DoubleMuon',
-        #'hpp'   : 'HPlusPlusHMinusMinusHTo4L_M-500_13TeV-pythia8',
-        'hpp'   : 'HPlusPlusHMinusMinusHTo4L_M-500_TuneCUETP8M1_13TeV_pythia8',
-        'hpp4l' : 'HPlusPlusHMinusMinusHTo4L_M-500_TuneCUETP8M1_13TeV_pythia8',
+        'hpp'   : 'HPlusPlusHMinusMinusHTo4L_M-500_13TeV-pythia8' if version=='76X' else 'HPlusPlusHMinusMinusHTo4L_M-500_TuneCUETP8M1_13TeV_pythia8',
+        'hpp4l' : 'HPlusPlusHMinusMinusHTo4L_M-500_13TeV-pythia8' if version=='76X' else 'HPlusPlusHMinusMinusHTo4L_M-500_TuneCUETP8M1_13TeV_pythia8',
         'hpp3l' : 'HPlusPlusHMinusHTo3L_M-500_TuneCUETP8M1_13TeV_calchep-pythia8',
         'dy'    : 'DYJetsToLL_M-50_TuneCUETP8M1_13TeV-amcatnloFXFX-pythia8',
         #'dy'    : 'DYJetsToLL_M-50_TuneCUETP8M1_13TeV-madgraphMLM-pythia8',
