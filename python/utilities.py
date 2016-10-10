@@ -21,7 +21,7 @@ def deltaR(eta0,phi0,eta1,phi1):
     return ROOT.TMath.Sqrt(deta**2+dphi**2)
 
 latestNtuples = {
-    '76X' : '2016-09-27_DevTools_76X_v2',
+    '76X' : '2016-09-28_DevTools_76X_v1',
     '80X' : '2016-07-20_DevTools_80X_v1',
 }
 
