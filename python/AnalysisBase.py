@@ -20,6 +20,7 @@ from LeptonScales import LeptonScales
 from TriggerScales import TriggerScales
 from TriggerPrescales import TriggerPrescales
 from ZptGenWeight import ZptGenWeight
+from ZZGenWeight import ZZGenWeight
 
 from utilities import deltaR, deltaPhi
 from DevTools.Utilities.utilities import getCMSSWVersion
@@ -119,6 +120,7 @@ class AnalysisBase(object):
         self.triggerScales = TriggerScales(self.version)
         self.triggerPrescales = TriggerPrescales(self.version)
         self.zptGenWeight = ZptGenWeight(self.version)
+        self.zzGenWeight = ZZGenWeight(self.version)
         # tfile
         self.outfile = ROOT.TFile(outputFileName,"recreate")
         # cut tree
@@ -138,6 +140,10 @@ class AnalysisBase(object):
             'DYJetsToLL_M-50_TuneCUETP8M1_13TeV-madgraphMLM-pythia8',
         ]
 
+        qqzzsamples = [
+            'ZZTo4L_13TeV_powheg_pythia8',
+            'ZZTo4L_13TeV-amcatnloFXFX-pythia8',
+        ]
 
         # pileup
         self.tree.add(lambda cands: self.pileupWeights.weight(self.event)[0], 'pileupWeight', 'F')
@@ -153,6 +159,8 @@ class AnalysisBase(object):
         self.tree.add(lambda cands: self.event.genWeight(), 'genWeight', 'F')
         if any([x in fName for x in dysamples]):
             self.tree.add(lambda cands: self.zptGenWeight.weight(self.gen), 'zPtWeight', 'F')
+        if any([x in fName for x in qqzzsamples]):
+            self.tree.add(lambda cands: self.zzGenWeight.weight(self.gen), 'qqZZkfactor', 'F')
         self.tree.add(lambda cands: self.event.numGenJets(), 'numGenJets', 'I')
         self.tree.add(lambda cands: self.event.genHT(), 'genHT', 'I')
         # scale shifts
