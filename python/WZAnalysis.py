@@ -30,7 +30,7 @@ class WZAnalysis(AnalysisBase):
 
         # setup cut tree
         self.cutTree.add(self.threeLoose,'threeLooseLeptons')
-        #self.cutTree.add(self.vetoFourth,'noFourthMediumLepton')
+        self.cutTree.add(self.vetoFourth,'noFourthMediumLepton')
         self.cutTree.add(self.trigger,'trigger')
 
         # setup analysis tree
