@@ -89,7 +89,9 @@ class LeptonScales(object):
         self.private_muon_80X = {}
         path = '{0}/src/DevTools/Analyzer/data/scalefactors_muon_2016.root'.format(os.environ['CMSSW_BASE'])
         self.private_muon_80X_rootfile = ROOT.TFile(path)
-        for idName in ['LooseID','LooseIsoFromLooseID','MediumID','LooseIsoFromMediumID','TightIsoFromMediumID','MediumIDICHEP','LooseIsoFromMediumIDICHEP','TightIsoFromMediumIDICHEP','TightID','TightIsoFromTightID']:
+        for idName in ['LooseID','LooseIsoFromLooseID','MediumID','LooseIsoFromMediumID','TightIsoFromMediumID',
+                       'MediumIDICHEP','LooseIsoFromMediumIDICHEP','TightIsoFromMediumIDICHEP','TightID','TightIsoFromTightID',
+                       'HppLooseID','HppLooseIsoFromLooseID','HppMediumID','HppMediumIsoFromMediumID']:
             self.private_muon_80X[idName] = self.private_muon_80X_rootfile.Get(idName)
 
     def __exit__(self, type, value, traceback):
@@ -154,6 +156,7 @@ class LeptonScales(object):
             val = hist.GetBinContent(b)
             err = hist.GetBinError(b)
         else:
+            logging.warning('Unknown ID {0}'.format(leptonId))
             val = 1.
             err = 0.
         return val, err
@@ -183,6 +186,7 @@ class LeptonScales(object):
             val = hist.GetBinContent(b)
             err = hist.GetBinError(b)
         else:
+            logging.warning('Unknown ID {0}'.format(leptonId))
             val = 1.
             err = 0.
         return val, err
@@ -237,6 +241,10 @@ class LeptonScales(object):
                 idname, isoname = ('MediumID', 'TightRelIsoMediumID')# if self.version=='76X' else ('MediumIDICHEP', 'TightIsoFromMediumIDICHEP')
             elif leptonId == 'MediumIDLooseIso':
                 idname, isoname = ('MediumID', 'LooseRelIsoMediumID')# if self.version=='76X' else ('MediumIDICHEP', 'LooseIsoFromMediumIDICHEP')
+            elif leptonId == 'HppMediumIDMediumIso':
+                idname, isoname = ('HppMediumID', 'HppMediumIsoFromMediumID')
+            elif leptonId == 'HppLooseIDLooseIso':
+                idname, isoname = ('HppLooseID', 'HppLooseIsoFromLooseID')
             else:
                 idname, isoname = '', ''
             if idname and isoname:

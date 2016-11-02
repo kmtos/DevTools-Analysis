@@ -305,7 +305,8 @@ class Hpp3lAnalysis(AnalysisBase):
 
     def looseScale(self,cand):
         if cand.collName=='muons':
-            return self.leptonScales.getScale('MediumIDLooseIso',cand,doError=True)
+            #return self.leptonScales.getScale('MediumIDLooseIso',cand,doError=True)
+            return self.leptonScales.getScale('HppLooseIDLooseIso',cand,doError=True)
             #return self.leptonScales.getScale('None',cand,doError=True)
         elif cand.collName=='electrons':
             return self.leptonScales.getScale('CutbasedVeto',cand,doError=True)
@@ -315,7 +316,8 @@ class Hpp3lAnalysis(AnalysisBase):
 
     def mediumScale(self,cand):
         if cand.collName=='muons':
-            return self.leptonScales.getScale('MediumIDTightIso',cand,doError=True)
+            #return self.leptonScales.getScale('MediumIDTightIso',cand,doError=True)
+            return self.leptonScales.getScale('HppMediumIDMediumIso',cand,doError=True)
             #return self.leptonScales.getScale('HZZTight',cand,doError=True)
         elif cand.collName=='electrons':
             return self.leptonScales.getScale('CutbasedMedium',cand,doError=True)
@@ -325,7 +327,8 @@ class Hpp3lAnalysis(AnalysisBase):
 
     def tightScale(self,cand):
         if cand.collName=='muons':
-            return self.leptonScales.getScale('MediumIDTightIso',cand,doError=True)
+            #return self.leptonScales.getScale('MediumIDTightIso',cand,doError=True)
+            return self.leptonScales.getScale('HppMediumIDMediumIso',cand,doError=True)
             #return self.leptonScales.getScale('HZZTight',cand,doError=True)
         elif cand.collName=='electrons':
             return self.leptonScales.getScale('CutbasedTight',cand,doError=True)
