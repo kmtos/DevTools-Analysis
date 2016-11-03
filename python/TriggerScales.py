@@ -125,7 +125,7 @@ class TriggerScales(object):
             'Mu50'                : 'passingMu50/probe_pt_probe_eta_PLOT',
             'SingleMuSoup'        : 'passingSingleMuSoup/probe_pt_probe_eta_PLOT',
             'Mu17Mu8Leg1'         : 'passingMu17/probe_pt_probe_eta_PLOT',
-            'Mu17Mu8Leg2'         : 'passingMu8/probe_pt_probe_eta_PLOT_tag_passingMu17_true',
+            'Mu17Mu8Leg2'         : 'passingMu8ORTkMu8/probe_pt_probe_eta_PLOT_tag_passingMu17_true',
             'Mu19Tau20LegSingleL1': 'passingMu19Tau20MLegSingleL1/probe_pt_probe_eta_PLOT',
         }
         for trig in trigMap:

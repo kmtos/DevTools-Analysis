@@ -5,7 +5,7 @@ import sys
 
 from DevTools.Analyzer.utilities import getTestFiles
 from AnalysisBase import AnalysisBase
-from leptonId import passWZLoose, passWZMedium, passWZTight, passHppLoose, passHppMedium, passHppTight
+from leptonId import passWZ2017Loose, passWZ2017Medium, passWZ2017Tight, passHppLoose, passHppMedium, passHppTight
 from utilities import ZMASS, deltaPhi, deltaR
 from Candidates import *
 
@@ -110,13 +110,16 @@ class DijetFakeRateAnalysis(AnalysisBase):
     ### lepton IDs ###
     ##################
     def passLoose(self,cand):
-        return passHppLoose(cand)
+        #return passHppLoose(cand)
+        return passWZ2017Loose(cand)
 
     def passMedium(self,cand):
-        return passHppMedium(cand)
+        #return passHppMedium(cand)
+        return passWZ2017Medium(cand)
 
     def passTight(self,cand):
-        return passHppTight(cand)
+        #return passHppTight(cand)
+        return passWZ2017Tight(cand)
 
     def looseScale(self,cand):
         if isinstance(cand,Muon):       return self.leptonScales.getScale('MediumIDLooseIso',cand)
@@ -124,12 +127,12 @@ class DijetFakeRateAnalysis(AnalysisBase):
         else:                           return 1.
 
     def mediumScale(self,cand):
-        if isinstance(cand,Muon):       return self.leptonScales.getScale('MediumIDTightIso',cand)
+        if isinstance(cand,Muon):       return self.leptonScales.getScale('HppMediumIDMediumIso',cand)
         elif isinstance(cand,Electron): return self.leptonScales.getScale('CutbasedMedium',cand)
         else:                           return 1.
 
     def tightScale(self,cand):
-        if isinstance(cand,Muon):       return self.leptonScales.getScale('MediumIDTightIso',cand)
+        if isinstance(cand,Muon):       return self.leptonScales.getScale('HppMediumIDMediumIso',cand)
         elif isinstance(cand,Electron): return self.leptonScales.getScale('CutbasedTight',cand)
         else:                           return 1.
 

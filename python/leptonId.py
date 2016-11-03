@@ -203,3 +203,63 @@ def passHppTight(cand,version='80X'):
     if isinstance(cand,Muon):     return passHppMediumMuon(cand) if version=='76X' else passHppMediumMuonICHEP(cand)
     if isinstance(cand,Tau):      return passHppTightTau(cand)
     return False
+
+###############
+### WZ 2017 ###
+###############
+def passWZ2017LooseElectron(electron):
+    if electron.pt()<=10: return False
+    if abs(electron.eta())>=2.5: return False
+    if electron.cutBasedVeto()<0.5: return False
+    return True
+
+def passWZ2017LooseMuon(muon):
+    pt = muon.pt()
+    if pt<=10: return False
+    if abs(muon.eta())>=2.4: return False
+    if muon.isMediumMuonICHEP()<0.5: return False
+    if muon.trackIso()/pt>=0.4: return False
+    if muon.relPFIsoDeltaBetaR04()>=0.25: return False
+    return True
+
+def passWZ2017Loose(cand,version='80X'):
+    if isinstance(cand,Electron): return passWZ2017LooseElectron(cand)
+    if isinstance(cand,Muon):     return passWZ2017LooseMuon(cand)
+    return False
+
+
+def passWZ2017MediumElectron(electron):
+    if not passWZ2017LooseElectron(electron): return False
+    if electron.cutBasedMedium()<0.5: return False
+    return True
+
+def passWZ2017MediumMuon(muon):
+    if not passWZ2017LooseMuon(muon): return False
+    if abs(muon.dz())>=0.1: return False
+    pt = muon.pt()
+    dxy = muon.dB2D()
+    if abs(dxy)>=0.01 and pt<20: return False
+    if abs(dxy)>=0.02 and pt>=20: return False
+    if muon.relPFIsoDeltaBetaR04()>=0.15: return False
+    return True
+
+def passWZ2017Medium(cand,version='80X'):
+    if isinstance(cand,Electron): return passWZ2017MediumElectron(cand)
+    if isinstance(cand,Muon):     return passWZ2017MediumMuon(cand)
+    return False
+
+
+def passWZ2017TightElectron(electron):
+    if not passWZ2017MediumElectron(electron): return False
+    if electron.cutBasedTight()<0.5: return False
+    return True
+
+def passWZ2017TightMuon(muon):
+    return passWZ2017MediumMuon(muon)
+
+def passWZ2017Tight(cand,version='80X'):
+    if isinstance(cand,Electron): return passWZ2017TightElectron(cand)
+    if isinstance(cand,Muon):     return passWZ2017TightMuon(cand)
+    return False
+
+
