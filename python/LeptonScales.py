@@ -236,11 +236,11 @@ class LeptonScales(object):
                 val, err = prodWithError(idval,trackval)
         elif cand.collName=='muons':
             if leptonId == 'TightIDTightIso':
-                idname, isoname = ('TightID', 'TightRelIsoTightID')# if self.version=='76X' else ('TightID', 'TightIsoFromTightID')
+                idname, isoname = ('TightID', 'TightRelIsoTightID') if self.version=='76X' else ('TightID', 'TightIsoFromTightID')
             elif leptonId == 'MediumIDTightIso':
-                idname, isoname = ('MediumID', 'TightRelIsoMediumID')# if self.version=='76X' else ('MediumIDICHEP', 'TightIsoFromMediumIDICHEP')
+                idname, isoname = ('MediumID', 'TightRelIsoMediumID') if self.version=='76X' else ('MediumIDICHEP', 'TightIsoFromMediumIDICHEP')
             elif leptonId == 'MediumIDLooseIso':
-                idname, isoname = ('MediumID', 'LooseRelIsoMediumID')# if self.version=='76X' else ('MediumIDICHEP', 'LooseIsoFromMediumIDICHEP')
+                idname, isoname = ('MediumID', 'LooseRelIsoMediumID') if self.version=='76X' else ('MediumIDICHEP', 'LooseIsoFromMediumIDICHEP')
             elif leptonId == 'HppMediumIDMediumIso':
                 idname, isoname = ('HppMediumID', 'HppMediumIsoFromMediumID')
             elif leptonId == 'HppLooseIDLooseIso':

@@ -212,13 +212,13 @@ class WZAnalysis(AnalysisBase):
     ### lepton id ###
     #################
     def passLoose(self,cand):
-        return passWZLoose(cand)
+        return passWZLoose(cand,version=self.version)
 
     def passMedium(self,cand):
-        return passWZMedium(cand)
+        return passWZMedium(cand,version=self.version)
 
     def passTight(self,cand):
-        return passWZTight(cand)
+        return passWZTight(cand,version=self.version)
 
     def looseScale(self,cand):
         if cand.collName=='muons':

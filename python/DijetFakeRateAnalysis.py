@@ -110,19 +110,19 @@ class DijetFakeRateAnalysis(AnalysisBase):
     ### lepton IDs ###
     ##################
     def passLoose(self,cand):
-        #return passHppLoose(cand)
-        return passWZ2017Loose(cand)
+        return passHppLoose(cand)
+        #return passWZ2017Loose(cand)
 
     def passMedium(self,cand):
-        #return passHppMedium(cand)
-        return passWZ2017Medium(cand)
+        return passHppMedium(cand)
+        #return passWZ2017Medium(cand)
 
     def passTight(self,cand):
-        #return passHppTight(cand)
-        return passWZ2017Tight(cand)
+        return passHppTight(cand)
+        #return passWZ2017Tight(cand)
 
     def looseScale(self,cand):
-        if isinstance(cand,Muon):       return self.leptonScales.getScale('MediumIDLooseIso',cand)
+        if isinstance(cand,Muon):       return self.leptonScales.getScale('HppLooseIDLooseIso',cand)
         elif isinstance(cand,Electron): return self.leptonScales.getScale('CutbasedVeto',cand)
         else:                           return 1.
 
@@ -181,7 +181,7 @@ class DijetFakeRateAnalysis(AnalysisBase):
         triggerNames = {
             'DoubleMuon'     : [
                 ['Mu8_TrkIsoVVL', 0],
-                #['Mu17_TrkIsoVVL', 20],
+                ['Mu17_TrkIsoVVL', 30],
             ],
             'DoubleEG'       : [
                 ['Ele12_CaloIdL_TrackIdL_IsoVL', 0],
@@ -215,11 +215,11 @@ class DijetFakeRateAnalysis(AnalysisBase):
             #else:
             #    triggerList = ['Ele17_Ele12Leg1'] if self.version=='76X' else ['Ele23Ele12Leg1'] # cheat a little, use Ele23 and choose pt on plateau
         else:
-            triggerList = ['Mu17_Mu8Leg2'] if self.version=='76X' else ['Mu17Mu8Leg2']
-            #if pt<20:
-            #    triggerList = ['Mu17_Mu8Leg2'] if self.version=='76X' else ['Mu17Mu8Leg2']
-            #else:
-            #    triggerList = ['Mu17_Mu8Leg1'] if self.version=='76X' else ['Mu17Mu8Leg1']
+            #triggerList = ['Mu17_Mu8Leg2'] if self.version=='76X' else ['Mu17Mu8Leg2']
+            if pt<30:
+                triggerList = ['Mu17_Mu8Leg2'] if self.version=='76X' else ['Mu17Mu8Leg2']
+            else:
+                triggerList = ['Mu17_Mu8Leg1'] if self.version=='76X' else ['Mu17Mu8Leg1']
         return self.triggerScales.getDataEfficiency(triggerList,candList)
 
     def triggerPrescale(self,cands):
@@ -232,11 +232,11 @@ class DijetFakeRateAnalysis(AnalysisBase):
             #else:
             #    trigger = 'Ele17_Ele12Leg1'
         else:
-            trigger = 'Mu17_Mu8Leg2'
-            #if pt<20:
-            #    trigger = 'Mu17_Mu8Leg2'
-            #else:
-            #    trigger = 'Mu17_Mu8Leg1'
+            #trigger = 'Mu17_Mu8Leg2'
+            if pt<30:
+                trigger = 'Mu17_Mu8Leg2'
+            else:
+                trigger = 'Mu17_Mu8Leg1'
         return self.triggerPrescales.getPrescale(trigger)
 
 def parse_command_line(argv):

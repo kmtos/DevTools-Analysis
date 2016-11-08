@@ -63,33 +63,36 @@ def passHZZTight(cand):
 #########################
 ### SMP-16-002 WZ ids ###
 #########################
-def passWZLooseElectron(electron):
+def passWZLooseElectron(electron,version='80X'):
     if electron.pt()<=10: return False
     if abs(electron.eta())>=2.5: return False
     if electron.wwLoose()<0.5: return False
     return True
 
-def passWZLooseMuon(muon):
+def passWZLooseMuon(muon,version='80X'):
     pt = muon.pt()
     if pt<=10: return False
     if abs(muon.eta())>=2.4: return False
-    if muon.isMediumMuon()<0.5: return False
+    if version=='76X':
+        if muon.isMediumMuon()<0.5: return False
+    else:
+        if muon.isMediumMuonICHEP()<0.5: return False
     if muon.trackIso()/pt>=0.4: return False
     if muon.relPFIsoDeltaBetaR04()>=0.25: return False
     return True
 
-def passWZLoose(cand):
-    if isinstance(cand,Electron): return passWZLooseElectron(cand)
-    if isinstance(cand,Muon):     return passWZLooseMuon(cand)
+def passWZLoose(cand,version='80X'):
+    if isinstance(cand,Electron): return passWZLooseElectron(cand,version=version)
+    if isinstance(cand,Muon):     return passWZLooseMuon(cand,version=version)
     return False
 
-def passWZMediumElectron(electron):
-    if not passWZLooseElectron(electron): return False
+def passWZMediumElectron(electron,version='80X'):
+    if not passWZLooseElectron(electron,version=version): return False
     if electron.cutBasedMedium()<0.5: return False
     return True
 
-def passWZMediumMuon(muon):
-    if not passWZLooseMuon(muon): return False
+def passWZMediumMuon(muon,version='80X'):
+    if not passWZLooseMuon(muon,version=version): return False
     if abs(muon.dz())>=0.1: return False
     pt = muon.pt()
     dxy = muon.dB2D()
@@ -98,22 +101,22 @@ def passWZMediumMuon(muon):
     if muon.relPFIsoDeltaBetaR04()>=0.15: return False
     return True
 
-def passWZMedium(cand):
-    if isinstance(cand,Electron): return passWZMediumElectron(cand)
-    if isinstance(cand,Muon):     return passWZMediumMuon(cand)
+def passWZMedium(cand,version='80X'):
+    if isinstance(cand,Electron): return passWZMediumElectron(cand,version=version)
+    if isinstance(cand,Muon):     return passWZMediumMuon(cand,version=version)
     return False
 
-def passWZTightElectron(electron):
-    if not passWZLooseElectron(electron): return False
+def passWZTightElectron(electron,version='80X'):
+    if not passWZLooseElectron(electron,version=version): return False
     if electron.cutBasedTight()<0.5: return False
     return True
 
-def passWZTightMuon(muon):
-    return passWZMediumMuon(muon)
+def passWZTightMuon(muon,version='80X'):
+    return passWZMediumMuon(muon,version=version)
 
-def passWZTight(cand):
-    if isinstance(cand,Electron): return passWZTightElectron(cand)
-    if isinstance(cand,Muon):     return passWZTightMuon(cand)
+def passWZTight(cand,version='80X'):
+    if isinstance(cand,Electron): return passWZTightElectron(cand,version=version)
+    if isinstance(cand,Muon):     return passWZTightMuon(cand,version=version)
     return False
 
 ###############
