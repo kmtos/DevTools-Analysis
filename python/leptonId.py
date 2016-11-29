@@ -149,19 +149,23 @@ def passHppMediumMuonICHEP(muon):
     return True
 
 def passHppLooseElectron(electron):
+    pt = electron.pt()
+    if pt<=10: return False
     return electron.cutBasedVeto()>0.5
 
 def passHppLooseMuon(muon):
     return passWZLooseMuon(muon)
 
 def passHppLooseTau(tau):
-        if tau.decayModeFinding()<0.5: return False
-        if tau.againstMuonLoose3()<0.5: return False
-        if tau.againstElectronVLooseMVA6()<0.5: return False
-        # remove iso
-        # if tau.byLooseIsolationMVArun2v1DBoldDMwLT()<0.5: return False
-        if tau.byIsolationMVArun2v1DBoldDMwLTraw()<-0.8: return False # custom vvloose isolation
-        return True
+    pt = tau.pt()
+    if pt<=20: return False
+    if tau.decayModeFinding()<0.5: return False
+    if tau.againstMuonLoose3()<0.5: return False
+    if tau.againstElectronVLooseMVA6()<0.5: return False
+    # remove iso
+    # if tau.byLooseIsolationMVArun2v1DBoldDMwLT()<0.5: return False
+    if tau.byIsolationMVArun2v1DBoldDMwLTraw()<-0.8: return False # custom vvloose isolation
+    return True
 
 def passHppLoose(cand,version='80X'):
     if isinstance(cand,Electron): return passHppLooseElectron(cand)
@@ -195,6 +199,8 @@ def passHppTightElectron(electron):
     return electron.cutBasedTight()>0.5
 
 def passHppTightTau(tau):
+    pt = tau.pt()
+    if pt<=20: return False
     if tau.decayModeFinding()<0.5: return False
     if tau.againstMuonLoose3()<0.5: return False
     if tau.againstElectronVLooseMVA6()<0.5: return False

@@ -6,6 +6,7 @@ import sys
 from DevTools.Analyzer.utilities import getTestFiles
 from AnalysisBase import AnalysisBase
 from utilities import ZMASS, deltaPhi, deltaR
+from leptonId import passWZ2017Loose, passWZ2017Medium, passWZ2017Tight
 from leptonId import passWZLoose, passWZMedium, passWZTight
 
 from Candidates import *
@@ -190,6 +191,14 @@ class WZAnalysis(AnalysisBase):
         z2 = bestWZ[1] if bestWZ[0].pt()>bestWZ[1].pt() else bestWZ[0]
         w1 = bestWZ[2]
 
+        medLeps = self.getPassingCands('Medium')
+        remainingLeps = self.cleanCands(medLeps,[z1,z2,w1],0.02)
+
+        if remainingLeps:
+            #print '{0}:{1}:{2}'.format(self.event.run(),self.event.lumi(),self.event.event())
+            #print 'Veto based on remaining Leps', len(remainingLeps)
+            return candidate
+
         candidate['z1'] = z1
         candidate['z2'] = z2
         candidate['w1'] = w1
@@ -200,7 +209,6 @@ class WZAnalysis(AnalysisBase):
         candidate['w1_z1'] = DiCandidate(w1,z1)
         candidate['w1_z2'] = DiCandidate(w1,z2)
 
-        medLeps = self.getPassingCands('Medium')
         candidate['cleanJets'] = self.cleanCands(self.jets,medLeps+[z1,z2,w1],0.4)
         if len(candidate['cleanJets'])>0: candidate['leadJet'] = candidate['cleanJets'][0]
         if len(candidate['cleanJets'])>1: candidate['subleadJet'] = candidate['cleanJets'][1]
@@ -212,12 +220,15 @@ class WZAnalysis(AnalysisBase):
     ### lepton id ###
     #################
     def passLoose(self,cand):
+        #return passWZ2017Loose(cand,version=self.version)
         return passWZLoose(cand,version=self.version)
 
     def passMedium(self,cand):
+        #return passWZ2017Medium(cand,version=self.version)
         return passWZMedium(cand,version=self.version)
 
     def passTight(self,cand):
+        #return passWZ2017Tight(cand,version=self.version)
         return passWZTight(cand,version=self.version)
 
     def looseScale(self,cand):
