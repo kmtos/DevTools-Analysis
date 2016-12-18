@@ -19,7 +19,9 @@ def main(argv=None):
         pileupDist = [float(x) for x in mix.input.nbPileupEvents.probValue]
     else:
         # 80X sample with startup pileup
-        from SimGeneral.MixingModule.mix_2016_25ns_SpringMC_PUScenarioV1_PoissonOOTPU_cfi import mix
+        #from SimGeneral.MixingModule.mix_2016_25ns_SpringMC_PUScenarioV1_PoissonOOTPU_cfi import mix
+        # 80X moriond pileup
+        from SimGeneral.MixingModule.mix_2016_25ns_Moriond17MC_PoissonOOTPU_cfi import mix
         pileupDist = [float(x) for x in mix.input.nbPileupEvents.probValue]
 
     rootfile = ROOT.TFile(fileName,'recreate')
