@@ -14,7 +14,8 @@ class PileupWeights(object):
         if version == '76X':
             path = '{0}/src/DevTools/Analyzer/data/pileup_RunIIFall15MiniAODv2-PU25nsData2015v1_76X_mcRun2_asymptotic_v12.root'.format(os.environ['CMSSW_BASE'])
         else:
-            path = '{0}/src/DevTools/Analyzer/data/pileup_RunIISpring16MiniAODv2-PUSpring16_80X_mcRun2_asymptotic_2016_miniAODv2_v0.root'.format(os.environ['CMSSW_BASE'])
+            #path = '{0}/src/DevTools/Analyzer/data/pileup_RunIISpring16MiniAODv2-PUSpring16_80X_mcRun2_asymptotic_2016_miniAODv2_v0.root'.format(os.environ['CMSSW_BASE'])
+            path = '{0}/src/DevTools/Analyzer/data/pileup_RunIISummer16MiniAODv2-PUMoriond17_80X_mcRun2_asymptotic_2016_TrancheIV_v6.root'.format(os.environ['CMSSW_BASE'])
         self.scale = {}
         self.scale_up = {}
         self.scale_down = {}
