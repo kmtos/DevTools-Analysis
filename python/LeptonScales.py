@@ -13,19 +13,20 @@ class LeptonScales(object):
         self.version = version
 
         # EGamma POG
+        # https://twiki.cern.ch/twiki/bin/viewauth/CMS/EgammaIDRecipesRun2#Efficiencies_and_scale_factors
         self.egamma_pog_scales = {}
         self.egamma_pog_rootfiles = {}
         for cbid in ['Veto','Loose','Medium','Tight']:
             name = 'Cutbased{0}'.format(cbid)
             path = '{0}/src/DevTools/Analyzer/data/CutBasedID_{1}WP_76X_18Feb.txt_SF2D.root'.format(os.environ['CMSSW_BASE'],cbid)
             if self.version=='80X':
-                path = '{0}/src/DevTools/Analyzer/data/egammaEffi.txt_SF2D_CBID{1}_2016.root'.format(os.environ['CMSSW_BASE'],cbid)
+                path = '{0}/src/DevTools/Analyzer/data/egammaEffi.txt_EGM2D_Cutbased{1}.root'.format(os.environ['CMSSW_BASE'],cbid)
             self.egamma_pog_rootfiles[name] = ROOT.TFile(path)
             self.egamma_pog_scales[name] = self.egamma_pog_rootfiles[name].Get('EGamma_SF2D')
 
         if self.version=='80X':
             name = 'GSFTracking'
-            path = '{0}/src/DevTools/Analyzer/data/gsf_tracking_scalefactor_2016.root'.format(os.environ['CMSSW_BASE'])
+            path = '{0}/src/DevTools/Analyzer/data/egammaEffi.txt_EGM2D_reconstruction.root'.format(os.environ['CMSSW_BASE'])
             self.egamma_pog_rootfiles[name] = ROOT.TFile(path)
             self.egamma_pog_scales[name] = self.egamma_pog_rootfiles[name].Get('EGamma_SF2D')
 
@@ -228,10 +229,10 @@ class LeptonScales(object):
         if cand.collName=='electrons':
             idval = self.__getElectronScale(leptonId,cand)
             trackval = self.__getElectronScale('GSFTracking',cand)
-            if cand.pt()< 20 and self.version=='80X':
-                # additional 3% uncertainty
+            if (cand.pt()<20 or cand.pt()>80) and self.version=='80X':
+                # additional 1% uncertainty
                 # https://twiki.cern.ch/twiki/bin/view/CMS/EgammaIDRecipesRun2
-                val, err = prodWithError(idval,trackval,(1.,0.03))
+                val, err = prodWithError(idval,trackval,(1.,0.01))
             else:
                 val, err = prodWithError(idval,trackval)
         elif cand.collName=='muons':

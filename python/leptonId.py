@@ -66,7 +66,14 @@ def passHZZTight(cand):
 def passWZLooseElectron(electron,version='80X'):
     if electron.pt()<=10: return False
     if abs(electron.eta())>=2.5: return False
-    if electron.wwLoose()<0.5: return False
+    #if electron.wwLoose()<0.5: return False
+    if electron.cutBasedHLTPreselection()<0.5: return False
+    if abs(electron.superClusterEta())<1.479:
+        if electron.dxy()>=0.05: return False
+        if electron.dz()>=0.10: return False
+    else:
+        if electron.dxy()>=0.10: return False
+        if electron.dz()>=0.20: return False
     return True
 
 def passWZLooseMuon(muon,version='80X'):
@@ -79,6 +86,11 @@ def passWZLooseMuon(muon,version='80X'):
         if muon.isMediumMuonICHEP()<0.5: return False
     if muon.trackIso()/pt>=0.4: return False
     if muon.relPFIsoDeltaBetaR04()>=0.25: return False
+    if abs(muon.dz())>=0.1: return False
+    pt = muon.pt()
+    dxy = muon.dB2D()
+    if abs(dxy)>=0.01 and pt<20: return False
+    if abs(dxy)>=0.02 and pt>=20: return False
     return True
 
 def passWZLoose(cand,version='80X'):

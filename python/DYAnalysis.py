@@ -242,7 +242,6 @@ class DYAnalysis(AnalysisBase):
                 ],
                 'SingleMuon'     : [
                     'IsoMu20',
-A
                     'IsoTkMu20',
                 ],
                 'SingleElectron' : [

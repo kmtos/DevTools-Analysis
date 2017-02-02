@@ -242,7 +242,7 @@ class AnalysisBase(object):
                     self.electrons = [Electron(tree,entry=i,shift=self.shift) for i in range(tree.electrons_count)]
                     self.muons     = [Muon(tree,entry=i,shift=self.shift) for i in range(tree.muons_count)]
                     self.taus      = [Tau(tree,entry=i,shift=self.shift) for i in range(tree.taus_count)]
-                    self.photons   = [Photon(tree,entry=i,shift=self.shift) for i in range(tree.photons_count)]
+                    #self.photons   = [Photon(tree,entry=i,shift=self.shift) for i in range(tree.photons_count)]
                     self.jets      = [Jet(tree,entry=i,shift=self.shift) for i in range(tree.jets_count)]
                     self.pfmet     = Met(tree,shift=self.shift)
                     # call per row action
@@ -280,7 +280,7 @@ class AnalysisBase(object):
                     self.electrons = [Electron(tree,entry=i,shift=self.shift) for i in range(tree.electrons_count)]
                     self.muons     = [Muon(tree,entry=i,shift=self.shift) for i in range(tree.muons_count)]
                     self.taus      = [Tau(tree,entry=i,shift=self.shift) for i in range(tree.taus_count)]
-                    self.photons   = [Photon(tree,entry=i,shift=self.shift) for i in range(tree.photons_count)]
+                    #self.photons   = [Photon(tree,entry=i,shift=self.shift) for i in range(tree.photons_count)]
                     self.jets      = [Jet(tree,entry=i,shift=self.shift) for i in range(tree.jets_count)]
                     self.pfmet     = Met(tree,shift=self.shift)
                     # call per row action

@@ -63,11 +63,19 @@ class MuonAnalysis(AnalysisBase):
         '''Add detailed  variables'''
         self.addCandVar(label,'isLooseMuon','isLooseMuon','I')
         self.addCandVar(label,'isMediumMuon','isMediumMuon','I')
+        self.addCandVar(label,'isMediumMuonICHEP','isMediumMuonICHEP','I')
         self.addCandVar(label,'isTightMuon','isTightMuon','I')
         self.addCandVar(label,'isHighPtMuon','isHighPtMuon','I')
         self.addCandVar(label,'isPFMuon','isPFMuon','I')
         self.addCandVar(label,'isGlobalMuon','isGlobalMuon','I')
         self.addCandVar(label,'isTrackerMuon','isTrackerMuon','I')
+        self.addCandVar(label,'susyMVA','susyMVA','F')
+        self.addCandVar(label,'isSUSYMVAPreselection','isSUSYMVAPreselection','I')
+        self.addCandVar(label,'miniIsolation','miniIsolation','F')
+        self.addCandVar(label,'miniIsolationCharged','miniIsolationCharged','F')
+        self.addCandVar(label,'miniIsolationNeutral','miniIsolationNeutral','F')
+        self.addCandVar(label,'miniIsolationPhoton','miniIsolationPhoton','F')
+        self.addCandVar(label,'miniIsolationPileup','miniIsolationPileup','F')
         self.addCandVar(label,'muonBestTrackType','muonBestTrackType','I')
         self.addCandVar(label,'segmentCompatibility','segmentCompatibility','F')
         self.addCandVar(label,'isGoodMuon','isGoodMuon','I')
@@ -86,6 +94,10 @@ class MuonAnalysis(AnalysisBase):
         self.addCandVar(label,'relPFIsoDeltaBetaR03','relPFIsoDeltaBetaR03','F')
         self.addCandVar(label,'relPFIsoDeltaBetaR04','relPFIsoDeltaBetaR04','F')
         self.tree.add(lambda cands: cands[label].trackIso()/cands[label].pt(), '{0}_trackRelIso'.format(label), 'F')
+        self.addCandVar(label,'jetPtRatio','jetPtRatio','F')
+        self.addCandVar(label,'jetPtRel','jetPtRel','F')
+        self.addCandVar(label,'jetNumberOfChargedDaughters','jetNumberOfChargedDaughters','F')
+        self.addCandVar(label,'jetBtagCSV','jetBtagCSV','F')
 
 
 def parse_command_line(argv):
