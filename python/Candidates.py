@@ -35,6 +35,15 @@ class Candidate(object):
     def __getattr__(self,name):
         return lambda: self.get(name) # returns the attribute as a function
 
+    def __repr__(self):
+        return '<{0} {1} {2:.2f}:{3:.2f}:{4:.2f}>'.format(
+            self.collName,
+            self.entry,
+            self.pt(),
+            self.eta(),
+            self.phi(),
+        )
+
     def get(self,var):
         '''Default variable access from tree.'''
         if not self.tree: return 0

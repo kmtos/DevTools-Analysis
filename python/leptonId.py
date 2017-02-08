@@ -232,6 +232,14 @@ def passWZ2017LooseElectron(electron):
     if electron.pt()<=10: return False
     if abs(electron.eta())>=2.5: return False
     if electron.cutBasedVeto()<0.5: return False
+    dxy = electron.dxy()
+    dz = electron.dz()
+    if abs(electron.superClusterEta())<1.479:
+        if abs(dxy)>=0.05: return False
+        if abs(dz)>=0.10: return False
+    else:
+        if abs(dxy)>=0.10: return False
+        if abs(dz)>=0.20: return False
     return True
 
 def passWZ2017LooseMuon(muon):
@@ -240,6 +248,12 @@ def passWZ2017LooseMuon(muon):
     if abs(muon.eta())>=2.4: return False
     if muon.isMediumMuonICHEP()<0.5: return False
     if muon.trackIso()/pt>=0.4: return False
+    if abs(muon.dz())>=0.1: return False
+    pt = muon.pt()
+    #dxy = muon.dB2D()
+    dxy = muon.dxy()
+    if abs(dxy)>=0.01 and pt<20: return False
+    if abs(dxy)>=0.02 and pt>=20: return False
     if muon.relPFIsoDeltaBetaR04()>=0.25: return False
     return True
 
@@ -256,11 +270,6 @@ def passWZ2017MediumElectron(electron):
 
 def passWZ2017MediumMuon(muon):
     if not passWZ2017LooseMuon(muon): return False
-    if abs(muon.dz())>=0.1: return False
-    pt = muon.pt()
-    dxy = muon.dB2D()
-    if abs(dxy)>=0.01 and pt<20: return False
-    if abs(dxy)>=0.02 and pt>=20: return False
     if muon.relPFIsoDeltaBetaR04()>=0.15: return False
     return True
 

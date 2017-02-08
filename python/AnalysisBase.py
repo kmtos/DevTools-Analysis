@@ -253,7 +253,7 @@ class AnalysisBase(object):
             total = 0
             for f, fName in enumerate(self.fileNames):
                 if fName.startswith('/store'): fName = '{0}/{1}'.format('/hdfs' if self.hasHDFS else 'root://cmsxrootd.hep.wisc.edu/',fName)
-                logging.info('Processing file {0} of {1}'.format(f+1, len(self.fileNames)))
+                logging.info('Processing file {0} of {1}: {2}'.format(f+1, len(self.fileNames), fName))
                 tfile = ROOT.TFile.Open(fName,'READ')
                 tree = tfile.Get(self.treename)
                 #skimName = 'skim{0}'.format(f)
