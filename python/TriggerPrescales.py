@@ -25,15 +25,15 @@ class TriggerPrescales(object):
         }
         self.prescales['80X'] = {
             # HLT_Ele12_CaloIdL_TrackIdL_IsoVL_v*
-            'Ele17_Ele12Leg2': 12918.141/4.288,
+            'Ele17_Ele12Leg2': 36814.581/6.322,
             # HLT_Ele17_CaloIdL_TrackIdL_IsoVL_v*
-            'Ele17_Ele12Leg1': 12918.141/26.408,
+            'Ele17_Ele12Leg1': 36814.581/31.169,
             # HLT_Ele23_CaloIdL_TrackIdL_IsoVL_v*
-            'Ele23_Ele12Leg1': 12918.141/9.714,
+            'Ele23_Ele12Leg1': 36814.581/16.864,
             # HLT_Mu8_TrkIsoVVL_v*
-            'Mu17_Mu8Leg2':    12918.141/5.875,
+            'Mu17_Mu8Leg2':    36814.581/8.039,
             # HLT_Mu17_TrkIsoVVL_v*
-            'Mu17_Mu8Leg1':    12918.141/166.728,
+            'Mu17_Mu8Leg1':    36814.581/223.199,
         }
 
     def getPrescale(self,trigger):

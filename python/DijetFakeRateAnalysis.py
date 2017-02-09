@@ -47,6 +47,7 @@ class DijetFakeRateAnalysis(AnalysisBase):
         self.tree.add(lambda cands: self.event.Mu17_TrkIsoVVLPass(), 'pass_Mu17_TrkIsoVVL', 'I')
         self.tree.add(lambda cands: self.event.Ele12_CaloIdL_TrackIdL_IsoVLPass(), 'pass_Ele12_CaloIdL_TrackIdL_IsoVL', 'I')
         self.tree.add(lambda cands: self.event.Ele17_CaloIdL_TrackIdL_IsoVLPass(), 'pass_Ele17_CaloIdL_TrackIdL_IsoVL', 'I')
+        self.tree.add(lambda cands: self.event.Ele23_CaloIdL_TrackIdL_IsoVLPass(), 'pass_Ele23_CaloIdL_TrackIdL_IsoVL', 'I')
         self.tree.add(self.triggerEfficiency, 'triggerEfficiency', 'F')
         self.tree.add(self.triggerPrescale, 'triggerPrescale', 'F')
 
@@ -110,16 +111,16 @@ class DijetFakeRateAnalysis(AnalysisBase):
     ### lepton IDs ###
     ##################
     def passLoose(self,cand):
-        return passHppLoose(cand)
-        #return passWZ2017Loose(cand)
+        #return passHppLoose(cand)
+        return passWZ2017Loose(cand)
 
     def passMedium(self,cand):
-        return passHppMedium(cand)
-        #return passWZ2017Medium(cand)
+        #return passHppMedium(cand)
+        return passWZ2017Medium(cand)
 
     def passTight(self,cand):
-        return passHppTight(cand)
-        #return passWZ2017Tight(cand)
+        #return passHppTight(cand)
+        return passWZ2017Tight(cand)
 
     def looseScale(self,cand):
         if isinstance(cand,Muon):       return self.leptonScales.getScale('HppLooseIDLooseIso',cand)
@@ -181,11 +182,11 @@ class DijetFakeRateAnalysis(AnalysisBase):
         triggerNames = {
             'DoubleMuon'     : [
                 ['Mu8_TrkIsoVVL', 0],
-                ['Mu17_TrkIsoVVL', 30],
+                ['Mu17_TrkIsoVVL', 25],
             ],
             'DoubleEG'       : [
                 ['Ele12_CaloIdL_TrackIdL_IsoVL', 0],
-                #['Ele17_CaloIdL_TrackIdL_IsoVL', 30],
+                ['Ele17_CaloIdL_TrackIdL_IsoVL', 25],
             ],
         }
         # here we need to accept only a specific trigger after a certain pt threshold
@@ -209,14 +210,14 @@ class DijetFakeRateAnalysis(AnalysisBase):
         # select via pt and flavor
         pt = cands['l1'].pt()
         if isinstance(cands['l1'],Electron):
-            triggerList = ['Ele17_Ele12Leg2'] if self.version=='76X' else ['Ele23Ele12Leg2']
-            #if pt<30:
-            #    triggerList = ['Ele17_Ele12Leg2'] if self.version=='76X' else ['Ele23Ele12Leg2']
-            #else:
-            #    triggerList = ['Ele17_Ele12Leg1'] if self.version=='76X' else ['Ele23Ele12Leg1'] # cheat a little, use Ele23 and choose pt on plateau
+            #triggerList = ['Ele17_Ele12Leg2'] if self.version=='76X' else ['Ele23Ele12Leg2']
+            if pt<25:
+                triggerList = ['Ele17_Ele12Leg2'] if self.version=='76X' else ['Ele23Ele12Leg2']
+            else:
+                triggerList = ['Ele17_Ele12Leg1'] if self.version=='76X' else ['Ele23Ele12Leg1'] # cheat a little, use Ele23 and choose pt on plateau
         else:
             #triggerList = ['Mu17_Mu8Leg2'] if self.version=='76X' else ['Mu17Mu8Leg2']
-            if pt<30:
+            if pt<25:
                 triggerList = ['Mu17_Mu8Leg2'] if self.version=='76X' else ['Mu17Mu8Leg2']
             else:
                 triggerList = ['Mu17_Mu8Leg1'] if self.version=='76X' else ['Mu17Mu8Leg1']
@@ -226,14 +227,14 @@ class DijetFakeRateAnalysis(AnalysisBase):
         # select via pt and flavor
         pt = cands['l1'].pt()
         if isinstance(cands['l1'],Electron):
-            trigger = 'Ele17_Ele12Leg2'
-            #if pt<20:
-            #    trigger = 'Ele17_Ele12Leg2'
-            #else:
-            #    trigger = 'Ele17_Ele12Leg1'
+            #trigger = 'Ele17_Ele12Leg2'
+            if pt<25:
+                trigger = 'Ele17_Ele12Leg2'
+            else:
+                trigger = 'Ele17_Ele12Leg1'
         else:
             #trigger = 'Mu17_Mu8Leg2'
-            if pt<30:
+            if pt<25:
                 trigger = 'Mu17_Mu8Leg2'
             else:
                 trigger = 'Mu17_Mu8Leg1'
