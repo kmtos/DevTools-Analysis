@@ -430,7 +430,7 @@ class WZAnalysis(AnalysisBase):
 
     def triggerEfficiency(self,cands):
         candList = [cands[c] for c in ['z1','z2','w1']]
-        triggerList = ['IsoMu20_OR_IsoTkMu20','Ele23_WPLoose','Mu17_Mu8','Ele17_Ele12'] if self.version=='76X' else ['IsoMu24_OR_IsoTkMu24','SingleEleSoup','Mu17Mu8','Ele23Ele12']
+        triggerList = ['IsoMu20_OR_IsoTkMu20','Ele23_WPLoose','Mu17_Mu8','Ele17_Ele12'] if self.version=='76X' else ['IsoMu24ORIsoTkMu24','SingleEleSoup','Mu17Mu8','Ele23Ele12']
         return self.triggerScales.getDataEfficiency(triggerList,candList)
 
 

@@ -18,6 +18,10 @@ class TriggerScales(object):
 
     def __init__(self,version):
         self.version = version
+        ################
+        ### 76X 2015 ###
+        ################
+
         ####################
         ### POG APPROVED ###
         ####################
@@ -82,6 +86,24 @@ class TriggerScales(object):
         ################
         ### 80X 2016 ###
         ################
+        # https://twiki.cern.ch/twiki/bin/view/CMS/MuonWorkInProgressAndPagResults#Results_on_the_full_2016_data
+        singleMu_path_80X_BCDEF = '{0}/src/DevTools/Analyzer/data/EfficienciesAndSF_RunBtoF.root'.format(os.environ['CMSSW_BASE'])
+        singleMu_path_80X_GH = '{0}/src/DevTools/Analyzer/data/EfficienciesAndSF_RunGH.root'.format(os.environ['CMSSW_BASE'])
+        self.singleMu_rootfile_80X_BCDEF = ROOT.TFile(singleMu_path_80X_BCDEF)
+        self.singleMu_rootfile_80X_GH = ROOT.TFile(singleMu_path_80X_GH)
+        self.singleMu_efficiencies_80X_BCDEF = {}
+        self.singleMu_efficiencies_80X_GH = {}
+        for name in ['IsoMu24_OR_IsoTkMu24','Mu50_OR_TkMu50']:
+                directory = '{0}_PtEtaBins'.format(name)
+                self.singleMu_efficiencies_80X_BCDEF[name] = {
+                    'MC'   : self.singleMu_rootfile_80X_BCDEF.Get('{0}/efficienciesMC/pt_abseta_MC'.format(directory)),
+                    'DATA' : self.singleMu_rootfile_80X_BCDEF.Get('{0}/efficienciesDATA/pt_abseta_DATA'.format(directory)),
+                }
+                self.singleMu_efficiencies_80X_GH[name] = {
+                    'MC'   : self.singleMu_rootfile_80X_GH.Get('{0}/efficienciesMC/pt_abseta_MC'.format(directory)),
+                    'DATA' : self.singleMu_rootfile_80X_GH.Get('{0}/efficienciesDATA/pt_abseta_DATA'.format(directory)),
+                }
+
         # tau https://indico.cern.ch/event/544712/contributions/2213574/attachments/1295299/1930984/htt_tau_trigger_17_6_2016.pdf
         # https://github.com/rmanzoni/triggerSF/tree/diTauICHEP2016/di-tau
         self.tau_efficiencies_2016 = {
@@ -135,14 +157,14 @@ class TriggerScales(object):
         # define supported triggers
         if self.version=='80X':
             self.singleTriggers = {
-                'muons'    : ['IsoMu22ORIsoTkMu22','Mu17Mu8Leg1','Mu17Mu8Leg2','Mu45_eta2p1','Mu50','SingleMuSoup'],
-                'electrons': ['Ele25Eta2p1Tight','Ele27Tight','Ele27Eta2p1','Ele45','Ele23Ele12Leg1','Ele23Ele12Leg2','SingleEleSoup'],
+                'muons'    : ['IsoMu24ORIsoTkMu24','Mu17Mu8Leg1','Mu17Mu8Leg2','Mu50ORTkMu50'],
+                'electrons': ['Ele25Eta2p1Tight','Ele27Tight','Ele23Ele12Leg1','Ele23Ele12Leg2'],
                 'taus'     : [],
             }
             self.doubleTriggers = {
-                'muons'    : ['Mu17Mu8','Mu19Tau20SingleL1'],
-                'electrons': ['Ele23Ele12','Ele24Tau20SingleL1'],
-                'taus'     : ['DoublePFTau35','Ele24Tau20SingleL1','Mu19Tau20SingleL1'],
+                'muons'    : ['Mu17Mu8'],
+                'electrons': ['Ele23Ele12'],
+                'taus'     : ['DoublePFTau35'],
             }
 
     def __parse_hww(self,filename,fileType):
@@ -225,6 +247,8 @@ class TriggerScales(object):
 
     def __finish(self):
         self.singleMu_rootfile.Close()
+        self.singleMu_rootfile_80X_BCDEF.Close()
+        self.singleMu_rootfile_80X_GH.Close()
         self.private_electron_80X_rootfile.Close()
         self.private_muon_80X_rootfile.Close()
 
