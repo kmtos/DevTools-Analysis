@@ -68,24 +68,28 @@ class Muon(Candidate):
 
     def pt(self):
         var = 'rochesterPt'
+        var = 'pt'
         if self.shift=='MuonEnUp': var = 'pt_muonEnUp'
         if self.shift=='MuonEnDown': var = 'pt_muonEnDown'
         return self.get(var)
 
     def eta(self):
         var = 'rochesterEta'
+        var = 'eta'
         if self.shift=='MuonEnUp': var = 'eta_muonEnUp'
         if self.shift=='MuonEnDown': var = 'eta_muonEnDown'
         return self.get(var)
 
     def phi(self):
         var = 'rochesterPhi'
+        var = 'phi'
         if self.shift=='MuonEnUp': var = 'phi_muonEnUp'
         if self.shift=='MuonEnDown': var = 'phi_muonEnDown'
         return self.get(var)
 
     def energy(self):
         var = 'rochesterEnergy'
+        var = 'energy'
         if self.shift=='MuonEnUp': var = 'energy_muonEnUp'
         if self.shift=='MuonEnDown': var = 'energy_muonEnDown'
         return self.get(var)
