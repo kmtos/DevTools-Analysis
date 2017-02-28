@@ -173,7 +173,7 @@ def passHppLooseTau(tau):
     if pt<=20: return False
     if tau.decayModeFinding()<0.5: return False
     if tau.againstMuonLoose3()<0.5: return False
-    if tau.againstElectronVLooseMVA6()<0.5: return False
+    if tau.againstElectronLooseMVA6()<0.5: return False
     # remove iso
     # if tau.byLooseIsolationMVArun2v1DBoldDMwLT()<0.5: return False
     if tau.byIsolationMVArun2v1DBoldDMwLTraw()<-0.8: return False # custom vvloose isolation
@@ -196,7 +196,7 @@ def passHppMediumMuon(muon):
 def passHppMediumTau(tau):
     if tau.decayModeFinding()<0.5: return False
     if tau.againstMuonLoose3()<0.5: return False
-    if tau.againstElectronVLooseMVA6()<0.5: return False
+    if tau.againstElectronLooseMVA6()<0.5: return False
     if tau.byLooseIsolationMVArun2v1DBoldDMwLT()<0.5: return False
     return True
 
@@ -215,7 +215,7 @@ def passHppTightTau(tau):
     if pt<=20: return False
     if tau.decayModeFinding()<0.5: return False
     if tau.againstMuonLoose3()<0.5: return False
-    if tau.againstElectronVLooseMVA6()<0.5: return False
+    if tau.againstElectronLooseMVA6()<0.5: return False
     if tau.byVTightIsolationMVArun2v1DBoldDMwLT()<0.5: return False
     return True
 

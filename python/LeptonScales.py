@@ -54,16 +54,11 @@ class LeptonScales(object):
         # https://twiki.cern.ch/twiki/bin/view/CMS/MuonReferenceEffsRun2#Tracking_efficiency_provided_by
         self.tracking_pog_scales = {}
         if self.version=='80X':
-            scalepathless10 = '{0}/src/DevTools/Analyzer/data/muon_tracking_eff_2016_lesspt10.root'.format(os.environ['CMSSW_BASE'])
-            scalepathgreater10 = '{0}/src/DevTools/Analyzer/data/muon_tracking_eff_2016_greaterpt10.root'.format(os.environ['CMSSW_BASE'])
-            rootless = ROOT.TFile(scalepathless10)
-            rootgreater = ROOT.TFile(scalepathgreater10)
-            self.tracking_pog_scales['TrackingLessPt10NVtx']    = self.__parseAsymmErrors(rootless.Get('ratio_vtx'))
-            self.tracking_pog_scales['TrackingLessPt10Eta']     = self.__parseAsymmErrors(rootless.Get('ratio_eta'))
-            self.tracking_pog_scales['TrackingGreaterPt10NVtx'] = self.__parseAsymmErrors(rootgreater.Get('ratio_vtx'))
-            self.tracking_pog_scales['TrackingGreaterPt10Eta']  = self.__parseAsymmErrors(rootgreater.Get('ratio_eta'))
-            rootless.Close()
-            rootgreater.Close()
+            scalepath = '{0}/src/DevTools/Analyzer/data/Tracking_EfficienciesAndSF_BCDEFGH.root'.format(os.environ['CMSSW_BASE'])
+            rootfile = ROOT.TFile(scalepath)
+            self.tracking_pog_scales['TrackingVtx']    = self.__parseAsymmErrors(rootfile.Get('ratio_eff_vtx_dr030e030_corr'))
+            self.tracking_pog_scales['TrackingEta']    = self.__parseAsymmErrors(rootfile.Get('ratio_eff_eta3_dr030e030_corr'))
+            rootfile.Close()
         
 
         # HZZ
@@ -202,8 +197,8 @@ class LeptonScales(object):
         eta = cand.eta()
         nvtx = cand.tree.nTrueVertices
         if nvtx>35: nvtx = 35
-        etaName = 'Tracking{0}Pt10Eta'.format('Less' if pt<10 else 'Greater')
-        nvtxName = 'Tracking{0}Pt10NVtx'.format('Less' if pt<10 else 'Greater')
+        etaName = 'TrackingEta'
+        nvtxName = 'TrackingVtx'
         valEta, errEta = (1., 0.)
         valNVtx, errNVtx = (1., 0.)
         if etaName in self.tracking_pog_scales:
