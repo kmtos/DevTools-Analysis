@@ -162,7 +162,8 @@ class DYAnalysis(AnalysisBase):
     ### lepton id ###
     #################
     def passLoose(self,cand):
-        return passHppLoose(cand)
+        #return passHppLoose(cand)
+        return passHppMedium(cand)
 
     def passMedium(self,cand):
         return passHppMedium(cand)
@@ -171,8 +172,11 @@ class DYAnalysis(AnalysisBase):
         return passHppTight(cand)
 
     def looseScale(self,cand):
-        if isinstance(cand,Muon):       return self.leptonScales.getScale('MediumIDLooseIso',cand)
-        elif isinstance(cand,Electron): return self.leptonScales.getScale('CutbasedVeto',cand)
+        #if isinstance(cand,Muon):       return self.leptonScales.getScale('MediumIDLooseIso',cand)
+        #elif isinstance(cand,Electron): return self.leptonScales.getScale('CutbasedVeto',cand)
+        #else:                           return 1.
+        if isinstance(cand,Muon):       return self.leptonScales.getScale('MediumIDTightIso',cand)
+        elif isinstance(cand,Electron): return self.leptonScales.getScale('CutbasedMedium',cand)
         else:                           return 1.
 
     def mediumScale(self,cand):
