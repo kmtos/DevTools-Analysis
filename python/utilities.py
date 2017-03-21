@@ -26,11 +26,17 @@ latestNtuples = {
     '80X' : '2017-02-28_DevTools_80X_v1', # Moriond 2017
 }
 
+overrides = {
+   '80X_SingleMuon': '2017-03-20_DevTools_80X_resubmitSingleMuon_v1', 
+}
+
 def getNtupleDirectory(version=None):
     baseDir = '/hdfs/store/user/dntaylor'
     if not version: version = getCMSSWVersion()
     if version in latestNtuples:
         return os.path.join(baseDir,latestNtuples[version])
+    if version in overrides:
+        return os.path.join(baseDir,overrides[version])
 
 def getTestFiles(sample,n=1,version=None):
     if not version: version = getCMSSWVersion()
@@ -45,7 +51,12 @@ def getTestFiles(sample,n=1,version=None):
         #'dy'    : 'DYJetsToLL_M-50_TuneCUETP8M1_13TeV-amcatnloFXFX-pythia8',
         'dy'    : 'DYJetsToLL_M-50_TuneCUETP8M1_13TeV-madgraphMLM-pythia8',
         'w'     : 'WJetsToLNu_TuneCUETP8M1_13TeV-amcatnloFXFX-pythia8',
-        'SingleMuon': 'SingleMuon',
+        'SingleMuon'    : 'SingleMuon',
+        'SingleElectron': 'SingleElectron',
+        'DoubleMuon'    : 'DoubleMuon',
+        'DoubleEG'      : 'DoubleEG',
+        'MuonEG'        : 'MuonEG',
+        'Tau'           : 'Tau',
     }
 
     if sample not in sampleMap: return []

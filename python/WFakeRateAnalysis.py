@@ -44,9 +44,11 @@ class WFakeRateAnalysis(AnalysisBase):
             self.tree.add(lambda cands: self.event.IsoMu20Pass(), 'pass_IsoMu20', 'I')
             self.tree.add(lambda cands: self.event.IsoTkMu20Pass(), 'pass_IsoTkMu20', 'I')
         else:
-            self.tree.add(lambda cands: self.event.IsoMu22Pass(), 'pass_IsoMu22', 'I')
-            self.tree.add(lambda cands: self.event.IsoTkMu22Pass(), 'pass_IsoTkMu22', 'I')
+            self.tree.add(lambda cands: self.event.IsoMu24Pass(), 'pass_IsoMu24', 'I')
+            self.tree.add(lambda cands: self.event.IsoTkMu24Pass(), 'pass_IsoTkMu24', 'I')
         self.tree.add(self.triggerEfficiency, 'triggerEfficiency', 'F')
+        self.tree.add(self.triggerEfficiencyMC, 'triggerEfficiencyMC', 'F')
+        self.tree.add(self.triggerEfficiencyData, 'triggerEfficiencyData', 'F')
 
         # lepton
         # mu tag
@@ -85,8 +87,9 @@ class WFakeRateAnalysis(AnalysisBase):
         # get leptons
         leps = self.getPassingCands('Loose')
         muons = self.getCands(self.muons,self.passTight)
-        if len(muons)!=1: return candidate # need 1 tight muon
-        if len(leps)!=2: return candidate # need 1 additional lep
+        if len(muons)<1: return candidate # need 1 tight muon
+        #if len(leps)!=2: return candidate # need 1 additional lep
+        if len(leps)<2: return candidate # need 1 additional lep
 
         # get invariant masses
         bestL = ()
@@ -94,7 +97,8 @@ class WFakeRateAnalysis(AnalysisBase):
         for z2 in leps:
             zpair = (muons[0], z2)
             if zpair[0].pt()<25: continue
-            if zpair[1].pt()<20: continue
+            if zpair[1].pt()<10: continue
+            if zpair[1].collName=='taus' and zpair[1].pt()<20: continue
             z = DiCandidate(*zpair)
             if z.deltaR()<0.5: continue
             pt = zpair[1].pt()
@@ -154,7 +158,8 @@ class WFakeRateAnalysis(AnalysisBase):
         else:
             return []
         cands = []
-        for coll in [self.muons,self.electrons]:
+        #for coll in [self.muons,self.electrons]:
+        for coll in [self.muons,self.electrons,self.taus]:
             cands += self.getCands(coll,passMode)
         return cands
 
@@ -171,8 +176,7 @@ class WFakeRateAnalysis(AnalysisBase):
     ### analysis selections ###
     ###########################
     def trigger(self,cands):
-        # accept MC, check trigger for data
-        if self.event.isData()<0.5: return True
+        isData = self.event.isData()>0.5
         if self.version=='76X':
             triggerNames = {
                 'SingleMuon'     : [
@@ -183,8 +187,8 @@ class WFakeRateAnalysis(AnalysisBase):
         else:
             triggerNames = {
                 'SingleMuon'     : [
-                    'IsoMu22',
-                    'IsoTkMu22',
+                    'IsoMu24',
+                    'IsoTkMu24',
                 ],
             }
         # the order here defines the heirarchy
@@ -197,10 +201,10 @@ class WFakeRateAnalysis(AnalysisBase):
         # reject triggers if they are in another dataset
         # looks for the dataset name in the filename
         # for MC it accepts all
-        reject = True if self.event.isData()>0.5 else False
+        reject = True if isData else False
         for dataset in datasets:
             # if we match to the dataset, start accepting triggers
-            if dataset in self.fileNames[0]: reject = False
+            if dataset in self.fileNames[0] and isData: reject = False
             for trigger in triggerNames[dataset]:
                 var = '{0}Pass'.format(trigger)
                 passTrigger = getattr(self.event,var)()
@@ -209,13 +213,24 @@ class WFakeRateAnalysis(AnalysisBase):
                     # in data: reject if it corresponds to a higher dataset
                     return False if reject else True
             # dont check the rest of data
-            if dataset in self.fileNames[0]: break
+            if dataset in self.fileNames[0] and isData: break
         return False
 
-    def triggerEfficiency(self,cands):
+    def triggerEfficiencyMC(self,cands):
+        return self.triggerEfficiency(cands,mode='mc')
+
+    def triggerEfficiencyData(self,cands):
+        return self.triggerEfficiency(cands,mode='data')
+
+    def triggerEfficiency(self,cands,mode='ratio'):
         candList = [cands['m']]
-        triggerList = ['IsoMu20_OR_IsoTkMu20'] if self.version=='76X' else ['IsoMu22ORIsoTkMu22']
-        return self.triggerScales.getDataEfficiency(triggerList,candList)
+        triggerList = ['IsoMu20_OR_IsoTkMu20'] if self.version=='76X' else ['IsoMu24_OR_IsoTkMu24']
+        if mode=='data':
+            return self.triggerScales.getDataEfficiency(triggerList,candList)
+        elif mode=='mc':
+            return self.triggerScales.getMCEfficiency(triggerList,candList)
+        elif mode=='ratio':
+            return self.triggerScales.getRatio(triggerList,candList)
 
 def parse_command_line(argv):
     parser = argparse.ArgumentParser(description='Run analyzer')

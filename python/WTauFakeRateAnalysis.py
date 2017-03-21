@@ -39,14 +39,19 @@ class WTauFakeRateAnalysis(AnalysisBase):
         # chan string
         self.tree.add(self.getChannelString, 'channel', ['C',3])
 
+        self.tree.add(lambda cands: len(self.getCands(self.muons,self.passLoose)), 'numLooseMuons', 'I')
+        self.tree.add(lambda cands: len(self.getCands(self.muons,self.passTight)), 'numTightMuons', 'I')
+
         # trigger
         if self.version=='76X':
             self.tree.add(lambda cands: self.event.IsoMu20Pass(), 'pass_IsoMu20', 'I')
             self.tree.add(lambda cands: self.event.IsoTkMu20Pass(), 'pass_IsoTkMu20', 'I')
         else:
-            self.tree.add(lambda cands: self.event.IsoMu22Pass(), 'pass_IsoMu22', 'I')
-            self.tree.add(lambda cands: self.event.IsoTkMu22Pass(), 'pass_IsoTkMu22', 'I')
+            self.tree.add(lambda cands: self.event.IsoMu24Pass(), 'pass_IsoMu24', 'I')
+            self.tree.add(lambda cands: self.event.IsoTkMu24Pass(), 'pass_IsoTkMu24', 'I')
         self.tree.add(self.triggerEfficiency, 'triggerEfficiency', 'F')
+        self.tree.add(self.triggerEfficiencyMC, 'triggerEfficiencyMC', 'F')
+        self.tree.add(self.triggerEfficiencyData, 'triggerEfficiencyData', 'F')
 
         # lepton
         # mu tag
@@ -83,37 +88,25 @@ class WTauFakeRateAnalysis(AnalysisBase):
         }
 
         # get leptons
-        leps = self.getPassingCands('Loose')
         muons = self.getCands(self.muons,self.passTight)
-        loosemuons = self.getCands(self.muons,self.passLoose)
+        #loosemuons = self.getCands(self.muons,self.passLoose)
         taus = self.getCands(self.taus,self.passLoose)
         if len(muons)!=1: return candidate # need 1 tight muon
-        if len(loosemuons)>1: return candidate # dont allow another loose muon
+        #if len(loosemuons)>1: return candidate # dont allow another loose muon
         if len(taus)<1: return candidate # need at least 1 tau 
 
-        # get invariant masses
-        bestT = ()
-        bestPt = 0
-        for zpair in itertools.permutations(leps,2):
-            if zpair[0].collName!='muons': continue
-            if zpair[1].collName!='taus': continue
-            if zpair[0].pt()<25: continue
-            if zpair[1].pt()<20: continue
-            z = DiCandidate(*zpair)
-            if z.deltaR()<0.5: continue
-            pt = zpair[1].pt()
-            if pt>bestPt:
-                bestT = zpair
-                bestPt = pt
 
-        if not bestT: return candidate # need a z candidate
+        # quality
+        if muons[0].pt()<25: return candidate
+        if taus[0].pt()<20: return candidate
+        z = DiCandidate(muons[0],taus[0])
+        if z.deltaR()<0.5: return candidate
 
-        z = bestT
-        candidate['m'] = z[0]
-        candidate['t'] = z[1]
-        candidate['z'] = DiCandidate(z[0],z[1])
-        candidate['wm'] = MetCompositeCandidate(self.pfmet,z[0])
-        candidate['wt'] = MetCompositeCandidate(self.pfmet,z[1])
+        candidate['m'] = muons[0]
+        candidate['t'] = taus[0]
+        candidate['z'] = z
+        candidate['wm'] = MetCompositeCandidate(self.pfmet,muons[0])
+        candidate['wt'] = MetCompositeCandidate(self.pfmet,taus[0])
 
 
         return candidate
@@ -173,8 +166,7 @@ class WTauFakeRateAnalysis(AnalysisBase):
     ### analysis selections ###
     ###########################
     def trigger(self,cands):
-        # accept MC, check trigger for data
-        if self.event.isData()<0.5: return True
+        isData = self.event.isData()>0.5
         if self.version=='76X':
             triggerNames = {
                 'SingleMuon'     : [
@@ -185,8 +177,8 @@ class WTauFakeRateAnalysis(AnalysisBase):
         else:
             triggerNames = {
                 'SingleMuon'     : [
-                    'IsoMu22',
-                    'IsoTkMu22',
+                    'IsoMu24',
+                    'IsoTkMu24',
                 ],
             }
         # the order here defines the heirarchy
@@ -196,33 +188,29 @@ class WTauFakeRateAnalysis(AnalysisBase):
         datasets = [
             'SingleMuon',
         ]
-        # reject triggers if they are in another dataset
-        # looks for the dataset name in the filename
-        # for MC it accepts all
-        reject = True if self.event.isData()>0.5 else False
-        for dataset in datasets:
-            # if we match to the dataset, start accepting triggers
-            if dataset in self.fileNames[0]: reject = False
-            for trigger in triggerNames[dataset]:
-                var = '{0}Pass'.format(trigger)
-                passTrigger = getattr(self.event,var)()
-                if passTrigger>0.5:
-                    # it passed the trigger
-                    # in data: reject if it corresponds to a higher dataset
-                    return False if reject else True
-            # dont check the rest of data
-            if dataset in self.fileNames[0]: break
-        return False
+        return self.checkTrigger(*datasets,**triggerNames)
 
-    def triggerEfficiency(self,cands):
+    def triggerEfficiencyMC(self,cands):
+        return self.triggerEfficiency(cands,mode='mc')
+
+    def triggerEfficiencyData(self,cands):
+        return self.triggerEfficiency(cands,mode='data')
+
+    def triggerEfficiency(self,cands,mode='ratio'):
         candList = [cands['m']]
-        triggerList = ['IsoMu20_OR_IsoTkMu20'] if self.version=='76X' else ['IsoMu22ORIsoTkMu22']
-        return self.triggerScales.getDataEfficiency(triggerList,candList)
+        triggerList = ['IsoMu20_OR_IsoTkMu20'] if self.version=='76X' else ['IsoMu24_OR_IsoTkMu24']
+        if mode=='data':
+            return self.triggerScales.getDataEfficiency(triggerList,candList)
+        elif mode=='mc':
+            return self.triggerScales.getMCEfficiency(triggerList,candList)
+        elif mode=='ratio':
+            return self.triggerScales.getRatio(triggerList,candList)
+
 
 def parse_command_line(argv):
     parser = argparse.ArgumentParser(description='Run analyzer')
 
-    parser.add_argument('--inputFiles', type=str, nargs='*', default=getTestFiles('w'), help='Input files')
+    parser.add_argument('--inputFiles', type=str, nargs='*', default=getTestFiles('SingleMuon'), help='Input files')
     parser.add_argument('--inputFileList', type=str, default='', help='Input file list')
     parser.add_argument('--outputFile', type=str, default='wTauFakeRateTree.root', help='Output file')
     parser.add_argument('--shift', type=str, default='', choices=['','ElectronEnUp','ElectronEnDown','MuonEnUp','MuonEnDown','TauEnUp','TauEnDown','JetEnUp','JetEnDown','JetResUp','JetResDown','UnclusteredEnUp','UnclusteredEnDown'], help='Energy shift')

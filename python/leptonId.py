@@ -129,38 +129,54 @@ def passWZTight(cand,version='80X'):
 ###############
 ### H++ ids ###
 ###############
-def passHppLooseMuonICHEP(muon):
-    pt = muon.pt()
-    if pt<=10: return False
-    if abs(muon.eta())>=2.4: return False
-    globMuon = (muon.isGlobalMuon()>0.5
-                and muon.normalizedChi2()<3.
-                and muon.trackerStandaloneMatch()<12
-                and muon.trackKink()<20)
-    medMuon = (muon.isLooseMuon()>0.5
-               and muon.validTrackerFraction()>0.49
-               and (muon.segmentCompatibility()>0.303 if globMuon else muon.segmentCompatibility()>0.451))
-    if not medMuon: return False
-    if muon.trackIso()/pt>=0.4: return False
-    if abs(muon.dz())>=0.1: return False
-    dxy = muon.dB2D()
-    if abs(dxy)>=0.01 and pt<20: return False
-    if abs(dxy)>=0.02 and pt>=20: return False
-    if muon.relPFIsoDeltaBetaR04()>=0.25: return False
-    return True
-
-def passHppMediumMuonICHEP(muon):
-    if not passHppLooseMuonICHEP(muon): return False
-    if muon.relPFIsoDeltaBetaR04()>=0.15: return False
-    return True
+#def passHppLooseMuonICHEP(muon):
+#    pt = muon.pt()
+#    if pt<=10: return False
+#    if abs(muon.eta())>=2.4: return False
+#    globMuon = (muon.isGlobalMuon()>0.5
+#                and muon.normalizedChi2()<3.
+#                and muon.trackerStandaloneMatch()<12
+#                and muon.trackKink()<20)
+#    medMuon = (muon.isLooseMuon()>0.5
+#               and muon.validTrackerFraction()>0.49
+#               and (muon.segmentCompatibility()>0.303 if globMuon else muon.segmentCompatibility()>0.451))
+#    if not medMuon: return False
+#    if muon.trackIso()/pt>=0.4: return False
+#    if abs(muon.dz())>=0.1: return False
+#    dxy = muon.dB2D()
+#    if abs(dxy)>=0.01 and pt<20: return False
+#    if abs(dxy)>=0.02 and pt>=20: return False
+#    #if muon.relPFIsoDeltaBetaR04()>=0.25: return False
+#    if muon.relPFIsoDeltaBetaR04()>=0.4: return False
+#    return True
+#
+#def passHppMediumMuonICHEP(muon):
+#    if not passHppLooseMuonICHEP(muon): return False
+#    if muon.relPFIsoDeltaBetaR04()>=0.15: return False
+#    return True
 
 def passHppLooseElectron(electron):
     pt = electron.pt()
     if pt<=10: return False
     return electron.cutBasedVeto()>0.5
 
-def passHppLooseMuon(muon):
-    return passWZLooseMuon(muon)
+def passHppLooseMuon(muon,version='80X'):
+    pt = muon.pt()
+    if pt<=10: return False
+    if abs(muon.eta())>=2.4: return False
+    if version=='76X':
+        if muon.isMediumMuon()<0.5: return False
+    else:
+        if muon.isMediumMuonICHEP()<0.5: return False
+    if muon.trackIso()/pt>=0.4: return False
+    if abs(muon.dz())>=0.1: return False
+    pt = muon.pt()
+    dxy = muon.dB2D()
+    if abs(dxy)>=0.01 and pt<20: return False
+    if abs(dxy)>=0.02 and pt>=20: return False
+    #if muon.relPFIsoDeltaBetaR04()>=0.25: return False
+    if muon.relPFIsoDeltaBetaR04()>=0.4: return False
+    return True
 
 def passHppLooseTau(tau):
     pt = tau.pt()
@@ -169,13 +185,13 @@ def passHppLooseTau(tau):
     if tau.againstMuonLoose3()<0.5: return False
     if tau.againstElectronVLooseMVA6()<0.5: return False
     # remove iso
-    # if tau.byVLooseIsolationMVArun2v1DBoldDMwLT()<0.5: return False
+    #if tau.byVLooseIsolationMVArun2v1DBoldDMwLT()<0.5: return False
     if tau.byIsolationMVArun2v1DBoldDMwLTraw()<-0.8: return False # custom vvloose isolation
     return True
 
 def passHppLoose(cand,version='80X'):
     if isinstance(cand,Electron): return passHppLooseElectron(cand)
-    if isinstance(cand,Muon):     return passHppLooseMuon(cand) if version=='76X' else passHppLooseMuonICHEP(cand)
+    if isinstance(cand,Muon):     return passHppLooseMuon(cand,version=version) #if version=='76X' else passHppLooseMuonICHEP(cand)
     if isinstance(cand,Tau):      return passHppLooseTau(cand)
     return False
 
@@ -183,9 +199,10 @@ def passHppMediumElectron(electron):
     if not passHppLooseElectron(electron): return False
     return electron.cutBasedMedium()>0.5
 
-def passHppMediumMuon(muon):
-    if not passHppLooseMuon(muon): return False
-    return passWZMediumMuon(muon)
+def passHppMediumMuon(muon,version='80X'):
+    if not passHppLooseMuon(muon,version=version): return False
+    if muon.relPFIsoDeltaBetaR04()>=0.15: return False
+    return True
 
 def passHppMediumTau(tau):
     if tau.decayModeFinding()<0.5: return False
@@ -196,7 +213,7 @@ def passHppMediumTau(tau):
 
 def passHppMedium(cand,version='80X'):
     if isinstance(cand,Electron): return passHppMediumElectron(cand)
-    if isinstance(cand,Muon):     return passHppMediumMuon(cand) if version=='76X' else passHppMediumMuonICHEP(cand)
+    if isinstance(cand,Muon):     return passHppMediumMuon(cand,version=version) #if version=='76X' else passHppMediumMuonICHEP(cand)
     if isinstance(cand,Tau):      return passHppMediumTau(cand)
     return False
 
@@ -215,7 +232,7 @@ def passHppTightTau(tau):
 
 def passHppTight(cand,version='80X'):
     if isinstance(cand,Electron): return passHppTightElectron(cand)
-    if isinstance(cand,Muon):     return passHppMediumMuon(cand) if version=='76X' else passHppMediumMuonICHEP(cand)
+    if isinstance(cand,Muon):     return passHppMediumMuon(cand,version=version) #if version=='76X' else passHppMediumMuonICHEP(cand)
     if isinstance(cand,Tau):      return passHppTightTau(cand)
     return False
 

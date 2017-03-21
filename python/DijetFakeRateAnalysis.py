@@ -49,6 +49,8 @@ class DijetFakeRateAnalysis(AnalysisBase):
         self.tree.add(lambda cands: self.event.Ele17_CaloIdL_TrackIdL_IsoVLPass(), 'pass_Ele17_CaloIdL_TrackIdL_IsoVL', 'I')
         self.tree.add(lambda cands: self.event.Ele23_CaloIdL_TrackIdL_IsoVLPass(), 'pass_Ele23_CaloIdL_TrackIdL_IsoVL', 'I')
         self.tree.add(self.triggerEfficiency, 'triggerEfficiency', 'F')
+        self.tree.add(self.triggerEfficiencyMC, 'triggerEfficiencyMC', 'F')
+        self.tree.add(self.triggerEfficiencyData, 'triggerEfficiencyData', 'F')
         self.tree.add(self.triggerPrescale, 'triggerPrescale', 'F')
 
         # lead jet
@@ -177,7 +179,7 @@ class DijetFakeRateAnalysis(AnalysisBase):
 
     def trigger(self,cands):
         # accept MC, check trigger for data
-        if self.event.isData()<0.5: return True
+        isData = self.event.isData()>0.5
         if not cands['l1']: return False
         triggerNames = {
             'DoubleMuon'     : [
@@ -186,14 +188,14 @@ class DijetFakeRateAnalysis(AnalysisBase):
             ],
             'DoubleEG'       : [
                 ['Ele12_CaloIdL_TrackIdL_IsoVL', 0],
-                ['Ele17_CaloIdL_TrackIdL_IsoVL', 25],
+                ['Ele23_CaloIdL_TrackIdL_IsoVL', 30],
             ],
         }
         # here we need to accept only a specific trigger after a certain pt threshold
         pt = cands['l1'].pt()
         dataset = 'DoubleEG' if isinstance(cands['l1'],Electron) else 'DoubleMuon'
         # accept the event only if it is triggered in the current dataset
-        reject = True if self.event.isData()>0.5 else False
+        reject = True if isData else False
         if dataset in self.fileNames[0]: reject = False
         # now pick the appropriate trigger for the pt
         theTrigger = ''
@@ -205,7 +207,13 @@ class DijetFakeRateAnalysis(AnalysisBase):
         if passTrigger>0.5: return False if reject else True
         return False
 
-    def triggerEfficiency(self,cands):
+    def triggerEfficiencyMC(self,cands):
+        return self.triggerEfficiency(cands,mode='mc')
+
+    def triggerEfficiencyData(self,cands):
+        return self.triggerEfficiency(cands,mode='data')
+
+    def triggerEfficiency(self,cands,mode='ratio'):
         candList = [cands['l1']]
         # select via pt and flavor
         pt = cands['l1'].pt()
@@ -214,14 +222,19 @@ class DijetFakeRateAnalysis(AnalysisBase):
             if pt<25:
                 triggerList = ['Ele17_Ele12Leg2'] if self.version=='76X' else ['Ele23Ele12Leg2']
             else:
-                triggerList = ['Ele17_Ele12Leg1'] if self.version=='76X' else ['Ele23Ele12Leg1'] # cheat a little, use Ele23 and choose pt on plateau
+                triggerList = ['Ele17_Ele12Leg1'] if self.version=='76X' else ['Ele23Ele12Leg1']
         else:
             #triggerList = ['Mu17_Mu8Leg2'] if self.version=='76X' else ['Mu17Mu8Leg2']
             if pt<25:
                 triggerList = ['Mu17_Mu8Leg2'] if self.version=='76X' else ['Mu17Mu8Leg2']
             else:
                 triggerList = ['Mu17_Mu8Leg1'] if self.version=='76X' else ['Mu17Mu8Leg1']
-        return self.triggerScales.getDataEfficiency(triggerList,candList)
+        if mode=='data':
+            return self.triggerScales.getDataEfficiency(triggerList,candList)
+        elif mode=='mc':
+            return self.triggerScales.getMCEfficiency(triggerList,candList)
+        elif mode=='ratio':
+            return self.triggerScales.getRatio(triggerList,candList)
 
     def triggerPrescale(self,cands):
         # select via pt and flavor
@@ -229,9 +242,9 @@ class DijetFakeRateAnalysis(AnalysisBase):
         if isinstance(cands['l1'],Electron):
             #trigger = 'Ele17_Ele12Leg2'
             if pt<25:
-                trigger = 'Ele17_Ele12Leg2'
+                trigger = 'Ele23_Ele12Leg2'
             else:
-                trigger = 'Ele17_Ele12Leg1'
+                trigger = 'Ele23_Ele12Leg1'
         else:
             #trigger = 'Mu17_Mu8Leg2'
             if pt<25:

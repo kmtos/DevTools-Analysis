@@ -61,24 +61,33 @@ class Hpp3lAnalysis(AnalysisBase):
             self.tree.add(lambda cands: self.event.IsoMu20Pass(), 'pass_IsoMu20', 'I')
             self.tree.add(lambda cands: self.event.IsoTkMu20Pass(), 'pass_IsoTkMu20', 'I')
             self.tree.add(lambda cands: self.event.Ele23_WPLoose_GsfPass(), 'pass_Ele23_WPLoose_Gsf', 'I')
+            self.tree.add(lambda cands: self.event.Mu8_TrkIsoVVL_Ele17_CaloIdL_TrackIdL_IsoVLPass(), 'pass_Mu8_TrkIsoVVL_Ele17_CaloIdL_TrackIdL_IsoVL', 'I')
+            self.tree.add(lambda cands: self.event.Mu17_TrkIsoVVL_Ele12_CaloIdL_TrackIdL_IsoVLPass(), 'pass_Mu17_TrkIsoVVL_Ele12_CaloIdL_TrackIdL_IsoVL', 'I')
+            self.tree.add(lambda cands: self.event.DoubleMediumIsoPFTau35_Trk1_eta2p1_RegPass(), 'pass_DoubleMediumIsoPFTau35_Trk1_eta2p1_Reg', 'I')
         else:
-            self.tree.add(lambda cands: self.event.Mu17_TrkIsoVVL_Mu8_TrkIsoVVLPass(), 'pass_Mu17_TrkIsoVVL_Mu8_TrkIsoVVL', 'I')
-            self.tree.add(lambda cands: self.event.Mu17_TrkIsoVVL_TkMu8_TrkIsoVVLPass(), 'pass_Mu17_TrkIsoVVL_TkMu8_TrkIsoVVL', 'I')
+            self.tree.add(lambda cands: self.event.Mu17_TrkIsoVVL_Mu8_TrkIsoVVL_DZPass(), 'pass_Mu17_TrkIsoVVL_Mu8_TrkIsoVVL_DZ', 'I')
+            self.tree.add(lambda cands: self.event.Mu17_TrkIsoVVL_TkMu8_TrkIsoVVL_DZPass(), 'pass_Mu17_TrkIsoVVL_TkMu8_TrkIsoVVL_DZ', 'I')
             self.tree.add(lambda cands: self.event.Ele23_Ele12_CaloIdL_TrackIdL_IsoVL_DZPass(), 'pass_Ele23_Ele12_CaloIdL_TrackIdL_IsoVL_DZ', 'I')
-            self.tree.add(lambda cands: self.event.IsoMu22Pass(), 'pass_IsoMu22', 'I')
-            self.tree.add(lambda cands: self.event.IsoTkMu22Pass(), 'pass_IsoTkMu22', 'I')
-            self.tree.add(lambda cands: self.event.Mu45_eta2p1Pass(), 'pass_Mu45_eta2p1', 'I')
-            self.tree.add(lambda cands: self.event.Mu50Pass(), 'pass_Mu50', 'I')
-            self.tree.add(lambda cands: self.event.Ele25_eta2p1_WPTight_GsfPass(), 'pass_Ele25_eta2p1_WPTight_Gsf', 'I')
+            self.tree.add(lambda cands: self.event.IsoMu24Pass(), 'pass_IsoMu24', 'I')
+            self.tree.add(lambda cands: self.event.IsoTkMu24Pass(), 'pass_IsoTkMu24', 'I')
+            #self.tree.add(lambda cands: self.event.Mu45_eta2p1Pass(), 'pass_Mu45_eta2p1', 'I')
+            #self.tree.add(lambda cands: self.event.Mu50Pass(), 'pass_Mu50', 'I')
             self.tree.add(lambda cands: self.event.Ele27_WPTight_GsfPass(), 'pass_Ele27_WPTight_Gsf', 'I')
-            self.tree.add(lambda cands: self.event.Ele27_eta2p1_WPLoose_GsfPass(), 'pass_Ele27_eta2p1_WPLoose_Gsf', 'I')
-            self.tree.add(lambda cands: self.event.Ele45_WPLoose_GsfPass(), 'pass_Ele45_WPLoose_Gsf', 'I')
-        self.tree.add(lambda cands: self.event.Mu8_TrkIsoVVL_Ele17_CaloIdL_TrackIdL_IsoVLPass(), 'pass_Mu8_TrkIsoVVL_Ele17_CaloIdL_TrackIdL_IsoVL', 'I')
-        self.tree.add(lambda cands: self.event.Mu17_TrkIsoVVL_Ele12_CaloIdL_TrackIdL_IsoVLPass(), 'pass_Mu17_TrkIsoVVL_Ele12_CaloIdL_TrackIdL_IsoVL', 'I')
-        self.tree.add(lambda cands: self.event.DoubleMediumIsoPFTau35_Trk1_eta2p1_RegPass(), 'pass_DoubleMediumIsoPFTau35_Trk1_eta2p1_Reg', 'I')
+            self.tree.add(lambda cands: self.event.Mu8_TrkIsoVVL_Ele23_CaloIdL_TrackIdL_IsoVLPass(), 'pass_Mu8_TrkIsoVVL_Ele23_CaloIdL_TrackIdL_IsoVL', 'I')
+            self.tree.add(lambda cands: self.event.Mu23_TrkIsoVVL_Ele8_CaloIdL_TrackIdL_IsoVLPass(), 'pass_Mu23_TrkIsoVVL_Ele8_CaloIdL_TrackIdL_IsoVL', 'I')
+            self.tree.add(lambda cands: self.event.Mu8_TrkIsoVVL_Ele23_CaloIdL_TrackIdL_IsoVL_DZPass(), 'pass_Mu8_TrkIsoVVL_Ele23_CaloIdL_TrackIdL_IsoVL_DZ', 'I')
+            self.tree.add(lambda cands: self.event.Mu23_TrkIsoVVL_Ele8_CaloIdL_TrackIdL_IsoVL_DZPass(), 'pass_Mu23_TrkIsoVVL_Ele8_CaloIdL_TrackIdL_IsoVL_DZ', 'I')
+            self.tree.add(lambda cands: self.event.DoubleMediumCombinedIsoPFTau35_Trk1_eta2p1_RegPass(), 'pass_DoubleMediumCombinedIsoPFTau35_Trk1_eta2p1_Reg', 'I')
+
         self.tree.add(lambda cands: self.triggerEfficiency(cands)[0], 'triggerEfficiency', 'F')
         self.tree.add(lambda cands: self.triggerEfficiency(cands)[1], 'triggerEfficiencyUp', 'F')
         self.tree.add(lambda cands: self.triggerEfficiency(cands)[2], 'triggerEfficiencyDown', 'F')
+        self.tree.add(lambda cands: self.triggerEfficiencyMC(cands)[0], 'triggerEfficiencyMC', 'F')
+        self.tree.add(lambda cands: self.triggerEfficiencyMC(cands)[1], 'triggerEfficiencyMCUp', 'F')
+        self.tree.add(lambda cands: self.triggerEfficiencyMC(cands)[2], 'triggerEfficiencyMCDown', 'F')
+        self.tree.add(lambda cands: self.triggerEfficiencyData(cands)[0], 'triggerEfficiencyData', 'F')
+        self.tree.add(lambda cands: self.triggerEfficiencyData(cands)[1], 'triggerEfficiencyDataUp', 'F')
+        self.tree.add(lambda cands: self.triggerEfficiencyData(cands)[2], 'triggerEfficiencyDataDown', 'F')
 
         # 3 lepton
         self.addComposite('3l')
@@ -305,8 +314,8 @@ class Hpp3lAnalysis(AnalysisBase):
 
     def looseScale(self,cand):
         if cand.collName=='muons':
-            #return self.leptonScales.getScale('MediumIDLooseIso',cand,doError=True)
-            return self.leptonScales.getScale('HppLooseIDLooseIso',cand,doError=True)
+            return self.leptonScales.getScale('MediumIDLooseIso',cand,doError=True)
+            #return self.leptonScales.getScale('HppLooseIDLooseIso',cand,doError=True)
             #return self.leptonScales.getScale('None',cand,doError=True)
         elif cand.collName=='electrons':
             return self.leptonScales.getScale('CutbasedVeto',cand,doError=True)
@@ -316,8 +325,8 @@ class Hpp3lAnalysis(AnalysisBase):
 
     def mediumScale(self,cand):
         if cand.collName=='muons':
-            #return self.leptonScales.getScale('MediumIDTightIso',cand,doError=True)
-            return self.leptonScales.getScale('HppMediumIDMediumIso',cand,doError=True)
+            return self.leptonScales.getScale('MediumIDTightIso',cand,doError=True)
+            #return self.leptonScales.getScale('HppMediumIDMediumIso',cand,doError=True)
             #return self.leptonScales.getScale('HZZTight',cand,doError=True)
         elif cand.collName=='electrons':
             return self.leptonScales.getScale('CutbasedMedium',cand,doError=True)
@@ -327,8 +336,8 @@ class Hpp3lAnalysis(AnalysisBase):
 
     def tightScale(self,cand):
         if cand.collName=='muons':
-            #return self.leptonScales.getScale('MediumIDTightIso',cand,doError=True)
-            return self.leptonScales.getScale('HppMediumIDMediumIso',cand,doError=True)
+            return self.leptonScales.getScale('MediumIDTightIso',cand,doError=True)
+            #return self.leptonScales.getScale('HppMediumIDMediumIso',cand,doError=True)
             #return self.leptonScales.getScale('HZZTight',cand,doError=True)
         elif cand.collName=='electrons':
             return self.leptonScales.getScale('CutbasedTight',cand,doError=True)
@@ -431,8 +440,7 @@ class Hpp3lAnalysis(AnalysisBase):
         return len(self.getPassingCands('Medium'))<=3
 
     def trigger(self,cands):
-        # accept MC, check trigger for data
-        if self.event.isData()<0.5: return True
+        isData = self.event.isData()>0.5
         if self.version=='76X':
             triggerNames = {
                 'DoubleMuon'     : [
@@ -460,32 +468,34 @@ class Hpp3lAnalysis(AnalysisBase):
         else:
             triggerNames = {
                 'DoubleMuon'     : [
-                    'Mu17_TrkIsoVVL_Mu8_TrkIsoVVL',
-                    'Mu17_TrkIsoVVL_TkMu8_TrkIsoVVL',
+                    'Mu17_TrkIsoVVL_Mu8_TrkIsoVVL_DZ',
+                    'Mu17_TrkIsoVVL_TkMu8_TrkIsoVVL_DZ',
                 ],
                 'DoubleEG'       : [
                     'Ele23_Ele12_CaloIdL_TrackIdL_IsoVL_DZ',
                 ],
                 'MuonEG'         : [
                     'Mu8_TrkIsoVVL_Ele23_CaloIdL_TrackIdL_IsoVL',
-                    'Mu23_TrkIsoVVL_Ele12_CaloIdL_TrackIdL_IsoVL',
+                    'Mu23_TrkIsoVVL_Ele8_CaloIdL_TrackIdL_IsoVL',
                 ],
                 'SingleMuon'     : [
-                    'IsoMu22',
-                    'IsoTkMu22',
-                    'Mu45_eta2p1',
-                    'Mu50',
+                    'IsoMu24',
+                    'IsoTkMu24',
+                    #'Mu45_eta2p1',
+                    #'Mu50',
                 ],
                 'SingleElectron' : [
-                    'Ele25_eta2p1_WPTight_Gsf',
                     'Ele27_WPTight_Gsf',
-                    'Ele27_eta2p1_WPLoose_Gsf',
-                    'Ele45_WPLoose_Gsf',
                 ],
                 'Tau' : [
-                    'DoubleMediumIsoPFTau35_Trk1_eta2p1_Reg',
+                    'DoubleMediumCombinedIsoPFTau35_Trk1_eta2p1_Reg',
                 ],
             }
+            if isData and self.event.run()>=281639:
+                triggerNames['MuonEG'] = [
+                    'Mu8_TrkIsoVVL_Ele23_CaloIdL_TrackIdL_IsoVL_DZ',
+                    'Mu23_TrkIsoVVL_Ele8_CaloIdL_TrackIdL_IsoVL_DZ',
+                ]
 
         # the order here defines the heirarchy
         # first dataset, any trigger passes
@@ -499,36 +509,29 @@ class Hpp3lAnalysis(AnalysisBase):
             'SingleElectron',
             'Tau',
         ]
-        # reject triggers if they are in another dataset
-        # looks for the dataset name in the filename
-        # for MC it accepts all
-        reject = True if self.event.isData()>0.5 else False
-        for dataset in datasets:
-            # if we match to the dataset, start accepting triggers
-            if dataset in self.fileNames[0]: reject = False
-            for trigger in triggerNames[dataset]:
-                var = '{0}Pass'.format(trigger)
-                passTrigger = getattr(self.event,var)()
-                if passTrigger>0.5:
-                    # it passed the trigger
-                    # in data: reject if it corresponds to a higher dataset
-                    return False if reject else True
-            # dont check the rest of data
-            if dataset in self.fileNames[0]: break
-        return False
+        return self.checkTrigger(*datasets,**triggerNames)
 
-    def triggerEfficiency(self,cands):
+    def triggerEfficiencyMC(self,cands):
+        return self.triggerEfficiency(cands,mode='mc')
+
+    def triggerEfficiencyData(self,cands):
+        return self.triggerEfficiency(cands,mode='data')
+
+    def triggerEfficiency(self,cands,mode='ratio'):
         candList = [cands[c] for c in ['hpp1','hpp2','hm1']]
         numTaus = [c.collName for c in candList].count('taus')
         if numTaus<2:
-            triggerList = ['IsoMu20_OR_IsoTkMu20','Ele23_WPLoose','Mu17_Mu8','Ele17_Ele12'] if self.version=='76X' else ['SingleMuSoup','SingleEleSoup','Mu17Mu8','Ele23Ele12']
+            triggerList = ['IsoMu20_OR_IsoTkMu20','Ele23_WPLoose','Mu17_Mu8','Ele17_Ele12'] if self.version=='76X' else ['IsoMu24_OR_IsoTkMu24','Ele27Tight','Mu17Mu8','Ele23Ele12']
         elif numTaus==2:
-            triggerList = ['IsoMu20_OR_IsoTkMu20','Ele23_WPLoose','DoublePFTau35'] if self.version=='76X' else ['SingleMuSoup','SingleEleSoup','DoublePFTau35']
+            triggerList = ['IsoMu20_OR_IsoTkMu20','Ele23_WPLoose','DoublePFTau35'] if self.version=='76X' else ['IsoMu24_OR_IsoTkMu24','Ele27Tight','DoublePFTau35']
         else:
             triggerList = ['DoublePFTau35']
-        return self.triggerScales.getDataEfficiency(triggerList,candList,doError=True)
-
-
+        if mode=='data':
+            return self.triggerScales.getDataEfficiency(triggerList,candList,doError=True)
+        elif mode=='mc':
+            return self.triggerScales.getMCEfficiency(triggerList,candList,doError=True)
+        elif mode=='ratio':
+            return self.triggerScales.getRatio(triggerList,candList,doError=True)
 
 
 

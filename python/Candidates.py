@@ -232,6 +232,14 @@ class Met(Candidate):
         super(Met, self).__init__(tree,entry=entry,collName=collName)
         self.shift = shift
 
+    def __repr__(self):
+        return '<{0} {1} {2:.2f}:{3:.2f}>'.format(
+            self.collName,
+            self.entry,
+            self.et(),
+            self.phi(),
+        )
+
     def et(self):
         var = 'et'
         if self.shift=='ElectronEnUp':      var = 'et_electronEnUp'
@@ -294,6 +302,11 @@ class CompositeCandidate(object):
             return self.get(name)
         except:
             return self.get(name.capitalize()) # catch things like 'pt' instead of 'Pt'
+
+    def __repr__(self):
+        return '<CompositeCandidate {0}>'.format(
+            ' '.join([obj.__repr__() for obj in self.objects])
+        )
 
     def get(self,var):
         '''Default variable access from TLorentzVector'''

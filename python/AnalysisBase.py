@@ -110,6 +110,7 @@ class AnalysisBase(object):
         #    tchainLumi.GetEntry(entry)
         #    self.numEvents += tchainLumi.nevents
         #    self.summedWeights += tchainLumi.summedWeights
+        logging.info('Analysis is running with version {0}'.format(self.version))
         logging.info("Will process {0} lumi sections with {1} events ({2}).".format(self.numLumis,self.numEvents,self.summedWeights))
         self.flush()
         if not len(self.fileNames): raise Exception
@@ -184,7 +185,6 @@ class AnalysisBase(object):
         self.tree.add(lambda cands: 0. if self.event.isData() else self.event.genWeights()[6] if len(self.event.genWeights())>6 else 0., 'genWeight_muR{muR:3.1f}_muF{muF:3.1f}'.format(**weightMap[6]), 'F')
         self.tree.add(lambda cands: 0. if self.event.isData() else self.event.genWeights()[7] if len(self.event.genWeights())>7 else 0., 'genWeight_muR{muR:3.1f}_muF{muF:3.1f}'.format(**weightMap[7]), 'F')
         self.tree.add(lambda cands: 0. if self.event.isData() else self.event.genWeights()[8] if len(self.event.genWeights())>8 else 0., 'genWeight_muR{muR:3.1f}_muF{muF:3.1f}'.format(**weightMap[8]), 'F')
-
 
     def __exit__(self, type, value, traceback):
         self.finish()
@@ -356,6 +356,27 @@ class AnalysisBase(object):
         elif isinstance(cand,Photon): return 'g'
         elif isinstance(cand,Jet):    return 'j'
         else:                         return 'a'
+
+    def checkTrigger(self,*datasets,**triggerNames):
+        '''Check trigger using trigger map'''
+        isData = self.event.isData()>0.5
+        # reject triggers if they are in another dataset
+        # looks for the dataset name in the filename
+        # for MC it accepts any
+        reject = True if isData else False
+        for dataset in datasets:
+            # if we match to the dataset, start accepting triggers
+            if dataset in self.fileNames[0] and isData: reject = False
+            for trigger in triggerNames[dataset]:
+                var = '{0}Pass'.format(trigger)
+                passTrigger = getattr(self.event,var)()
+                if passTrigger>0.5:
+                    # it passed the trigger
+                    # in data: reject if it corresponds to a higher dataset
+                    return False if reject else True
+            # dont check the rest of data
+            if dataset in self.fileNames[0] and isData: break
+        return False
 
     ##########################
     ### add object to tree ###

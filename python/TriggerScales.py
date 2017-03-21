@@ -121,44 +121,45 @@ class TriggerScales(object):
 
         # private electron
         self.private_electron_80X = {}
-        path = '{0}/src/DevTools/Analyzer/data/trigger_efficiencies_electron_2016.root'.format(os.environ['CMSSW_BASE'])
+        path = '{0}/src/DevTools/Analyzer/data/scalefactors_electron_trigger_Moriond16_80X.root'.format(os.environ['CMSSW_BASE'])
         self.private_electron_80X_rootfile = ROOT.TFile(path)
         trigMap = {
-            'Ele23Ele12DZ'         : 'passingHLTEle23Ele12DZ/probe_Ele_pt_probe_Ele_eta_PLOT_passingHLTEle23Ele12Leg2_true_&_tag_passingEle23Ele12Leg1_true',
-            'Ele23Ele12Leg1'       : 'passingHLTEle23Ele12Leg1/probe_Ele_pt_probe_Ele_eta_PLOT',
-            'Ele23Ele12Leg2'       : 'passingHLTEle23Ele12Leg2/probe_Ele_pt_probe_Ele_eta_PLOT_tag_passingEle23Ele12Leg1_true',
-            'Ele24Tau20LegSingleL1': 'passingHLTEle24Tau20LegSingleL1/probe_Ele_pt_probe_Ele_eta_PLOT',
-            'Ele25Eta2p1Tight'     : 'passingHLTEle25Eta2p1Tight/probe_Ele_pt_probe_Ele_eta_PLOT',
-            'Ele27Tight'           : 'passingHLTEle27Tight/probe_Ele_pt_probe_Ele_eta_PLOT',
-            'Ele27Eta2p1'          : 'passingHLTEle27Eta2p1/probe_Ele_pt_probe_Ele_eta_PLOT',
-            'Ele45'                : 'passingHLTEle45/probe_Ele_pt_probe_Ele_eta_PLOT',
-            'SingleEleSoup'        : 'passingHLTSingleEleSoup/probe_Ele_pt_probe_Ele_eta_PLOT',
+            'Ele23Ele12DZ'         : 'Ele12LegDZ',
+            'Ele23Ele12Leg1'       : 'Ele23Leg',
+            'Ele23Ele12Leg2'       : 'Ele12Leg',
+            'Ele27Tight'           : 'Ele27WPTight',
+            'Ele27Eta2p1Tight'     : 'Ele27Eta2p1WPTight',
         }
         for trig in trigMap:
-            self.private_electron_80X[trig] = self.private_electron_80X_rootfile.Get(trigMap[trig])
+            self.private_electron_80X[trig] = {
+                'MC'   : self.private_electron_80X_rootfile.Get(trigMap[trig]+'_effMC'),
+                'DATA' : self.private_electron_80X_rootfile.Get(trigMap[trig]+'_effData'),
+            }
 
         # private muon
         self.private_muon_80X = {}
-        path = '{0}/src/DevTools/Analyzer/data/trigger_efficiencies_muon_2016.root'.format(os.environ['CMSSW_BASE'])
+        path = '{0}/src/DevTools/Analyzer/data/scalefactors_muon_trigger_Moriond16_80X.root'.format(os.environ['CMSSW_BASE'])
         self.private_muon_80X_rootfile = ROOT.TFile(path)
         trigMap = {
-            'IsoMu22ORIsoTkMu22'  : 'passingIsoMu22ORIsoTkMu22/probe_pt_probe_eta_PLOT',
-            'Mu45Eta2p1'          : 'passingMu45Eta2p1/probe_pt_probe_eta_PLOT',
-            'Mu50'                : 'passingMu50/probe_pt_probe_eta_PLOT',
-            'SingleMuSoup'        : 'passingSingleMuSoup/probe_pt_probe_eta_PLOT',
-            'Mu17Mu8Leg1'         : 'passingMu17/probe_pt_probe_eta_PLOT',
-            'Mu17Mu8Leg2'         : 'passingMu8ORTkMu8/probe_pt_probe_eta_PLOT_tag_passingMu17_true',
-            'Mu19Tau20LegSingleL1': 'passingMu19Tau20MLegSingleL1/probe_pt_probe_eta_PLOT',
+            'IsoMu24ORIsoTkMu24'       : 'IsoMu24ORIsoTkMu24',
+            'Mu50'                     : 'Mu50',
+            'IsoMu24ORIsoTkMu24ORMu50' : 'IsoMu24ORIsoTkMu24ORMu50',
+            'Mu17Mu8DZ'                : 'Mu8ORTkMu8LegDZ',
+            'Mu17Mu8Leg1'              : 'Mu17Leg',
+            'Mu17Mu8Leg2'              : 'Mu8ORTkMu8Leg',
         }
         for trig in trigMap:
-            self.private_muon_80X[trig] = self.private_muon_80X_rootfile.Get(trigMap[trig])
+            self.private_muon_80X[trig] = {
+                'MC'   : self.private_muon_80X_rootfile.Get(trigMap[trig]+'_effMC'),
+                'DATA' : self.private_muon_80X_rootfile.Get(trigMap[trig]+'_effData'),
+            }
 
 
         # define supported triggers
         if self.version=='80X':
             self.singleTriggers = {
-                'muons'    : ['IsoMu24ORIsoTkMu24','Mu17Mu8Leg1','Mu17Mu8Leg2','Mu50ORTkMu50'],
-                'electrons': ['Ele25Eta2p1Tight','Ele27Tight','Ele23Ele12Leg1','Ele23Ele12Leg2'],
+                'muons'    : ['IsoMu24_OR_IsoTkMu24','Mu17Mu8Leg1','Mu17Mu8Leg2','Mu50_OR_TkMu50'],
+                'electrons': ['Ele27Tight','Ele23Ele12Leg1','Ele23Ele12Leg2'],
                 'taus'     : [],
             }
             self.doubleTriggers = {
@@ -327,11 +328,38 @@ class TriggerScales(object):
                            else:
                                return row['eff']
             elif self.version=='80X':
-                if rootName in self.private_muon_80X:
-                    if pt>1000: pt = 999
-                    hist = self.private_muon_80X[rootName]
+                # Muon POG
+                if rootName in self.singleMu_efficiencies_80X_BCDEF and rootName in self.singleMu_efficiencies_80X_GH:
+                    if pt>120: pt = 119
+                    hist0 = self.singleMu_efficiencies_80X_BCDEF[rootName][mode]
+                    hist1 = self.singleMu_efficiencies_80X_GH[rootName][mode]
+                    lumi0 = 5.788 + 2.573 + 4.248 + 4.009 + 3.102 # BCDEF
+                    lumi1 = 7.540 + 8.606 # GH
+                    b0 = hist0.FindBin(pt,abs(eta))
+                    b1 = hist1.FindBin(pt,abs(eta))
+                    val0 = hist0.GetBinContent(b0)
+                    val1 = hist1.GetBinContent(b1)
+                    err0 = hist0.GetBinError(b0)
+                    err1 = hist1.GetBinError(b1)
+                    v0 = val0
+                    v1 = val1
+                    if shift=='up':
+                        v0 += err0
+                        v1 += err1
+                    if shift=='down':
+                        v0 -= err0
+                        v1 -= err1
+                    val = (lumi0*v0+lumi1*v1)/(lumi0+lumi1)
+                    if val<0: val = 0
+                    if val>1: val = 1 
+                    return val
+                elif rootName in self.private_muon_80X:
+                    if pt>200: pt = 199
+                    hist = self.private_muon_80X[rootName][mode]
                     b = hist.FindBin(pt,eta)
                     val = hist.GetBinContent(b)
+                    if val<0: val=0
+                    if val>1: val=1
                     err = hist.GetBinError(b)
                     if shift=='up':
                         return min([val+err,1.])
@@ -382,11 +410,15 @@ class TriggerScales(object):
                            else:
                                return row['eff']
             elif self.version=='80X':
+                # EGAMMA POG
+                # TODO implement
                 if rootName in self.private_electron_80X:
                     if pt>1000: pt = 999
-                    hist = self.private_electron_80X[rootName]
+                    hist = self.private_electron_80X[rootName][mode]
                     b = hist.FindBin(pt,eta)
                     val = hist.GetBinContent(b)
+                    if val<0: val=0
+                    if val>1: val=1
                     err = hist.GetBinError(b)
                     if shift=='up':
                         return min([val+err,1.])
@@ -480,8 +512,10 @@ class TriggerScales(object):
                 return self.__getEfficiency('Mu17_Mu8Leg1',mode,cand,shift=shift)
             elif 'Mu17_Mu8Leg2' in rootNames:
                 return self.__getEfficiency('Mu17_Mu8Leg2',mode,cand,shift=shift)
-            elif 'IsoMu22ORIsoTkMu22' in rootNames:
-                return self.__getEfficiency('IsoMu22ORIsoTkMu22',mode,cand,shift=shift)
+            elif 'IsoMu24_OR_IsoTkMu24' in rootNames:
+                return self.__getEfficiency('IsoMu24_OR_IsoTkMu24',mode,cand,shift=shift)
+            elif 'IsoMu24ORIsoTkMu24' in rootNames:
+                return self.__getEfficiency('IsoMu24_OR_IsoTkMu24',mode,cand,shift=shift)
             elif 'Mu45Eta2p1' in rootNames:
                 return self.__getEfficiency('Mu45Eta2p1',mode,cand,shift=shift)
             elif 'Mu50' in rootNames:
@@ -572,7 +606,6 @@ class TriggerScales(object):
 
     def getMCEfficiency(self,triggers,cands,doError=False):
         '''Get the efficiency for a set of triggers for a list of candidates in MC'''
-        if self.version=='80X': return 1
         eff = self.__getTriggerEfficiency(triggers,cands,'MC')
         eff_up = self.__getTriggerEfficiency(triggers,cands,'MC',shift='up')
         eff_down = self.__getTriggerEfficiency(triggers,cands,'MC',shift='down')
@@ -604,9 +637,8 @@ class TriggerScales(object):
 
     def getRatio(self,triggers,cands,doError=False):
         '''Get the scale to apply to MC (eff_data/eff_mc)'''
-        if self.version=='80X': return 1
-        eff_data, eff_data_up, eff_data_down = self.getDataEfficiency(triggers,cands,doError=doError)
-        eff_mc, eff_mc_up, eff_mc_down = self.getMCEfficiency(triggers,cands,doError=doError)
+        eff_data, eff_data_up, eff_data_down = self.getDataEfficiency(triggers,cands,doError=True)
+        eff_mc, eff_mc_up, eff_mc_down = self.getMCEfficiency(triggers,cands,doError=True)
         if eff_mc:
             val = eff_data/eff_mc
             val_up = eff_data_up/eff_mc_up

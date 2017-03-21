@@ -92,6 +92,8 @@ class DYAnalysis(AnalysisBase):
             self.tree.add(lambda cands: self.event.Ele25_eta2p1_WPTight_GsfPass(), 'pass_Ele25_eta2p1_WPTight_Gsf', 'I')
             self.tree.add(lambda cands: self.event.Ele27_WPTight_GsfPass(), 'pass_Ele27_WPTight_Gsf', 'I')
         self.tree.add(self.triggerEfficiency, 'triggerEfficiency', 'F')
+        self.tree.add(self.triggerEfficiencyMC, 'triggerEfficiencyMC', 'F')
+        self.tree.add(self.triggerEfficiencyData, 'triggerEfficiencyData', 'F')
 
 
         # z leptons
@@ -266,10 +268,7 @@ class DYAnalysis(AnalysisBase):
                     #'Mu50',
                 ],
                 'SingleElectron' : [
-                    'Ele25_eta2p1_WPTight_Gsf',
                     'Ele27_WPTight_Gsf',
-                    #'Ele27_eta2p1_WPLoose_Gsf',
-                    #'Ele45_WPLoose_Gsf',
                 ],
             }
 
@@ -289,34 +288,26 @@ class DYAnalysis(AnalysisBase):
                 'DoubleMuon', 
                 'SingleMuon',
             ]
-        # reject triggers if they are in another dataset
-        # looks for the dataset name in the filename
-        # for MC it accepts all
-        isData = self.event.isData()>0.5
-        reject = True if isData else False
-        for dataset in datasets:
-            # if we match to the dataset, start accepting triggers
-            if dataset in self.fileNames[0] and isData: reject = False
-            for trigger in triggerNames[dataset]:
-                var = '{0}Pass'.format(trigger)
-                passTrigger = getattr(self.event,var)()
-                if passTrigger>0.5:
-                    # it passed the trigger
-                    # in data: reject if it corresponds to a higher dataset
-                    return False if reject else True
-            # dont check the rest of data
-            if dataset in self.fileNames[0] and isData: break
-        return False
+            return self.checkTrigger(*datasets,**triggerNames)
 
-    def triggerEfficiency(self,cands):
+    def triggerEfficiencyMC(self,cands):
+        return self.triggerEfficiency(cands,mode='mc')
+
+    def triggerEfficiencyData(self,cands):
+        return self.triggerEfficiency(cands,mode='data')
+
+    def triggerEfficiency(self,cands,mode='ratio'):
         candList = [cands[c] for c in ['z1','z2']]
         if isinstance(candList[0],Electron):
-            triggerList = ['Ele23_WPLoose','Ele17_Ele12'] if self.version=='76X' else ['SingleEleSoup','Ele23Ele12']
+            triggerList = ['Ele23_WPLoose','Ele17_Ele12'] if self.version=='76X' else ['Ele27Tight','Ele23Ele12']
         else:
-            #triggerList = ['IsoMu20_OR_IsoTkMu20','Mu17_Mu8'] if self.version=='76X' else ['SingleMuSoup','Mu17Mu8']
             triggerList = ['IsoMu20_OR_IsoTkMu20','Mu17_Mu8'] if self.version=='76X' else ['IsoMu24_OR_IsoTkMu24','Mu17Mu8']
-        return self.triggerScales.getDataEfficiency(triggerList,candList)
-
+        if mode=='data':
+            return self.triggerScales.getDataEfficiency(triggerList,candList)
+        elif mode=='mc':
+            return self.triggerScales.getMCEfficiency(triggerList,candList)
+        elif mode=='ratio':
+            return self.triggerScales.getRatio(triggerList,candList)
 
 
 

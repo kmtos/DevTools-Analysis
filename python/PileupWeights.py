@@ -39,7 +39,8 @@ class PileupWeights(object):
 
     def alt_weight(self,event,xsec):
         vert = event.nTrueVertices()
-        if vert < 0:
+        isData = event.isData()>0.5
+        if vert < 0 or isData:
             return 1
         else:
             if xsec in self.alt_scales:
@@ -50,7 +51,8 @@ class PileupWeights(object):
 
     def weight(self, event):
         vert = event.nTrueVertices()
-        if vert < 0:
+        isData = event.isData()>0.5
+        if vert < 0 or isData:
             return [1,1,1]
         else:
             val = self.scale[int(floor(vert))]
