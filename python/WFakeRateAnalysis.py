@@ -89,7 +89,7 @@ class WFakeRateAnalysis(AnalysisBase):
         muons = self.getCands(self.muons,self.passTight)
         if len(muons)<1: return candidate # need 1 tight muon
         #if len(leps)!=2: return candidate # need 1 additional lep
-        if len(leps)<2: return candidate # need 1 additional lep
+        if len(leps)!=2: return candidate # need 1 additional lep
 
         # get invariant masses
         bestL = ()
