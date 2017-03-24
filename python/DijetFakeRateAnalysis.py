@@ -113,16 +113,16 @@ class DijetFakeRateAnalysis(AnalysisBase):
     ### lepton IDs ###
     ##################
     def passLoose(self,cand):
-        #return passHppLoose(cand)
-        return passWZ2017Loose(cand)
+        return passHppLoose(cand)
+        #return passWZ2017Loose(cand)
 
     def passMedium(self,cand):
-        #return passHppMedium(cand)
-        return passWZ2017Medium(cand)
+        return passHppMedium(cand)
+        #return passWZ2017Medium(cand)
 
     def passTight(self,cand):
-        #return passHppTight(cand)
-        return passWZ2017Tight(cand)
+        return passHppTight(cand)
+        #return passWZ2017Tight(cand)
 
     def looseScale(self,cand):
         if isinstance(cand,Muon):       return self.leptonScales.getScale('HppLooseIDLooseIso',cand)

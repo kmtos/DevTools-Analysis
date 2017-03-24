@@ -43,18 +43,20 @@ class WFakeRateAnalysis(AnalysisBase):
         if self.version=='76X':
             self.tree.add(lambda cands: self.event.IsoMu20Pass(), 'pass_IsoMu20', 'I')
             self.tree.add(lambda cands: self.event.IsoTkMu20Pass(), 'pass_IsoTkMu20', 'I')
+            self.tree.add(lambda cands: self.event.Ele23_WPLoose_GsfPass(), 'pass_Ele23_WPLoose_Gsf', 'I')
         else:
             self.tree.add(lambda cands: self.event.IsoMu24Pass(), 'pass_IsoMu24', 'I')
             self.tree.add(lambda cands: self.event.IsoTkMu24Pass(), 'pass_IsoTkMu24', 'I')
+            self.tree.add(lambda cands: self.event.Ele27_WPTight_GsfPass(), 'pass_Ele27_WPTight_Gsf', 'I')
         self.tree.add(self.triggerEfficiency, 'triggerEfficiency', 'F')
         self.tree.add(self.triggerEfficiencyMC, 'triggerEfficiencyMC', 'F')
         self.tree.add(self.triggerEfficiencyData, 'triggerEfficiencyData', 'F')
 
         # lepton
         # mu tag
-        self.addLeptonMet('wm')
-        self.addLepton('m')
-        self.tree.add(lambda cands: self.tightScale(cands['m']), 'm_tightScale', 'F')
+        self.addLeptonMet('wt')
+        self.addLepton('t')
+        self.tree.add(lambda cands: self.tightScale(cands['t']), 't_tightScale', 'F')
 
         # lep probe
         self.addLeptonMet('wl')
@@ -76,10 +78,10 @@ class WFakeRateAnalysis(AnalysisBase):
     #############################
     def selectCandidates(self):
         candidate = {
-            'm' : None,
+            't' : None,
             'l' : None,
             'z' : None,
-            'wm': None,
+            'wt': None,
             'wl': None,
             'met': self.pfmet,
         }
@@ -87,20 +89,23 @@ class WFakeRateAnalysis(AnalysisBase):
         # get leptons
         leps = self.getPassingCands('Loose')
         muons = self.getCands(self.muons,self.passTight)
-        if len(muons)<1: return candidate # need 1 tight muon
+        elecs = self.getCands(self.electrons,self.passTight)
+        if len(muons)<1 and len(elecs)<1: return candidate # need 1 tight muon/electron
         #if len(leps)!=2: return candidate # need 1 additional lep
         if len(leps)!=2: return candidate # need 1 additional lep
 
         # get invariant masses
         bestL = ()
         bestPt = 0
-        for z2 in leps:
-            zpair = (muons[0], z2)
-            if zpair[0].pt()<25: continue
+        for zpair in itertools.permutations(leps,2):
+            if zpair[0].pt()<30: continue # trigger threshold
             if zpair[1].pt()<10: continue
-            if zpair[1].collName=='taus' and zpair[1].pt()<20: continue
+            #if zpair[1].collName=='taus' and zpair[1].pt()<20: continue
+            #if zpair[0].collName==zpair[1].collName: continue # me/em
+            if zpair[0].charge()!=zpair[1].charge(): continue # same sign
+            if not self.passTight(zpair[0]): continue # first must be tight
             z = DiCandidate(*zpair)
-            if z.deltaR()<0.5: continue
+            if z.deltaR()<0.5: continue # well separated
             pt = zpair[1].pt()
             if pt>bestPt:
                 bestL = zpair
@@ -111,10 +116,10 @@ class WFakeRateAnalysis(AnalysisBase):
 
 
         z = bestL
-        candidate['m'] = z[0]
+        candidate['t'] = z[0]
         candidate['l'] = z[1]
         candidate['z'] = DiCandidate(z[0],z[1])
-        candidate['wm'] = MetCompositeCandidate(self.pfmet,z[0])
+        candidate['wt'] = MetCompositeCandidate(self.pfmet,z[0])
         candidate['wl'] = MetCompositeCandidate(self.pfmet,z[1])
 
 
@@ -158,8 +163,8 @@ class WFakeRateAnalysis(AnalysisBase):
         else:
             return []
         cands = []
-        #for coll in [self.muons,self.electrons]:
-        for coll in [self.muons,self.electrons,self.taus]:
+        #for coll in [self.muons,self.electrons,self.taus]:
+        for coll in [self.muons,self.electrons]:
             cands += self.getCands(coll,passMode)
         return cands
 
@@ -169,7 +174,7 @@ class WFakeRateAnalysis(AnalysisBase):
     ######################
     def getChannelString(self,cands):
         '''Get the channel string'''
-        chanString = 'm' + self.getCollectionString(cands['l'])
+        chanString = ''.join([self.getCollectionString(cands[x]) for x in ['t','l']])
         return chanString
 
     ###########################
@@ -183,6 +188,9 @@ class WFakeRateAnalysis(AnalysisBase):
                     'IsoMu20',
                     'IsoTkMu20',
                 ],
+                'SingleElectron' : [
+                    'Ele23_WPLoose_Gsf',
+                ],
             }
         else:
             triggerNames = {
@@ -190,31 +198,19 @@ class WFakeRateAnalysis(AnalysisBase):
                     'IsoMu24',
                     'IsoTkMu24',
                 ],
+                'SingleElectron' : [
+                    'Ele27_WPTight_Gsf',
+                ],
             }
         # the order here defines the heirarchy
         # first dataset, any trigger passes
         # second dataset, if a trigger in the first dataset is found, reject event
         # so forth
-        datasets = [
-            'SingleMuon',
-        ]
-        # reject triggers if they are in another dataset
-        # looks for the dataset name in the filename
-        # for MC it accepts all
-        reject = True if isData else False
-        for dataset in datasets:
-            # if we match to the dataset, start accepting triggers
-            if dataset in self.fileNames[0] and isData: reject = False
-            for trigger in triggerNames[dataset]:
-                var = '{0}Pass'.format(trigger)
-                passTrigger = getattr(self.event,var)()
-                if passTrigger>0.5:
-                    # it passed the trigger
-                    # in data: reject if it corresponds to a higher dataset
-                    return False if reject else True
-            # dont check the rest of data
-            if dataset in self.fileNames[0] and isData: break
-        return False
+        if isinstance(cands['t'],Electron):
+            datasets = ['SingleElectron']
+        else:
+            datasets = ['SingleMuon']
+        return self.checkTrigger(*datasets,**triggerNames)
 
     def triggerEfficiencyMC(self,cands):
         return self.triggerEfficiency(cands,mode='mc')
@@ -223,8 +219,11 @@ class WFakeRateAnalysis(AnalysisBase):
         return self.triggerEfficiency(cands,mode='data')
 
     def triggerEfficiency(self,cands,mode='ratio'):
-        candList = [cands['m']]
-        triggerList = ['IsoMu20_OR_IsoTkMu20'] if self.version=='76X' else ['IsoMu24_OR_IsoTkMu24']
+        candList = [cands['t']]
+        if isinstance(cands['t'],Electron):
+            triggerList = ['Ele23_WPLoose'] if self.version=='76X' else ['Ele27Tight']
+        else:
+            triggerList = ['IsoMu20_OR_IsoTkMu20'] if self.version=='76X' else ['IsoMu24_OR_IsoTkMu24']
         if mode=='data':
             return self.triggerScales.getDataEfficiency(triggerList,candList)
         elif mode=='mc':

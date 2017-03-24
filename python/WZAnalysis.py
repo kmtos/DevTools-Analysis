@@ -7,7 +7,7 @@ from DevTools.Analyzer.utilities import getTestFiles
 from AnalysisBase import AnalysisBase
 from utilities import ZMASS, deltaPhi, deltaR
 from leptonId import passWZ2017Loose, passWZ2017Medium, passWZ2017Tight
-from leptonId import passWZLoose, passWZMedium, passWZTight
+from leptonId import passHppLoose, passHppMedium, passHppTight
 
 from Candidates import *
 
@@ -223,16 +223,16 @@ class WZAnalysis(AnalysisBase):
     ### lepton id ###
     #################
     def passLoose(self,cand):
-        return passWZ2017Loose(cand,version=self.version)
-        #return passWZLoose(cand,version=self.version)
+        #return passWZ2017Loose(cand,version=self.version)
+        return passHppLoose(cand,version=self.version)
 
     def passMedium(self,cand):
-        return passWZ2017Medium(cand,version=self.version)
-        #return passWZMedium(cand,version=self.version)
+        #return passWZ2017Medium(cand,version=self.version)
+        return passHppMedium(cand,version=self.version)
 
     def passTight(self,cand):
-        return passWZ2017Tight(cand,version=self.version)
-        #return passWZTight(cand,version=self.version)
+        #return passWZ2017Tight(cand,version=self.version)
+        return passHppTight(cand,version=self.version)
 
     def looseScale(self,cand):
         if cand.collName=='muons':
@@ -259,10 +259,12 @@ class WZAnalysis(AnalysisBase):
             return 1.
 
     def mediumFakeRate(self,cand):
-        return self.fakeRates.getFakeRate(cand,'WZMedium','WZLoose')
+        #return self.fakeRates.getFakeRate(cand,'WZMedium','WZLoose')
+        return self.fakeRates.getFakeRate(cand,'HppMedium','HppLoose')
 
     def tightFakeRate(self,cand):
-        return self.fakeRates.getFakeRate(cand,'WZTight','WZLoose')
+        #return self.fakeRates.getFakeRate(cand,'WZTight','WZLoose')
+        return self.fakeRates.getFakeRate(cand,'HppTight','HppLoose')
 
     def getPassingCands(self,mode):
         if mode=='Loose':
