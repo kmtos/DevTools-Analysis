@@ -6,7 +6,6 @@ import sys
 from DevTools.Analyzer.utilities import getTestFiles
 from AnalysisBase import AnalysisBase
 from utilities import ZMASS, deltaPhi, deltaR
-from leptonId import passWZLoose, passWZMedium, passWZTight, passHppLoose, passHppMedium, passHppTight
 
 from Candidates import *
 
@@ -42,10 +41,8 @@ class TauChargeAnalysis(AnalysisBase):
             self.tree.add(lambda cands: self.event.IsoMu20Pass(), 'pass_IsoMu20', 'I')
             self.tree.add(lambda cands: self.event.IsoTkMu20Pass(), 'pass_IsoTkMu20', 'I')
         else:
-            self.tree.add(lambda cands: self.event.IsoMu22Pass(), 'pass_IsoMu22', 'I')
-            self.tree.add(lambda cands: self.event.IsoTkMu22Pass(), 'pass_IsoTkMu22', 'I')
-            self.tree.add(lambda cands: self.event.Mu45_eta2p1Pass(), 'pass_Mu45_eta2p1', 'I')
-            self.tree.add(lambda cands: self.event.Mu50Pass(), 'pass_Mu50', 'I')
+            self.tree.add(lambda cands: self.event.IsoMu24Pass(), 'pass_IsoMu24', 'I')
+            self.tree.add(lambda cands: self.event.IsoTkMu24Pass(), 'pass_IsoTkMu24', 'I')
         self.tree.add(self.triggerEfficiency, 'triggerEfficiency', 'F')
 
         # z leptons
@@ -53,15 +50,15 @@ class TauChargeAnalysis(AnalysisBase):
         self.addLepton('m')
         self.tree.add(lambda cands: self.passMedium(cands['m']), 'm_passMedium', 'I')
         self.tree.add(lambda cands: self.passTight(cands['m']), 'm_passTight', 'I')
-        self.tree.add(lambda cands: self.looseScale(cands['m']), 'm_looseScale', 'F')
-        self.tree.add(lambda cands: self.mediumScale(cands['m']), 'm_mediumScale', 'F')
-        self.tree.add(lambda cands: self.tightScale(cands['m']), 'm_tightScale', 'F')
+        self.tree.add(lambda cands: self.looseScale(cands['m'])[0], 'm_looseScale', 'F')
+        self.tree.add(lambda cands: self.mediumScale(cands['m'])[0], 'm_mediumScale', 'F')
+        self.tree.add(lambda cands: self.tightScale(cands['m'])[0], 'm_tightScale', 'F')
         self.addLepton('t')
         self.tree.add(lambda cands: self.passMedium(cands['t']), 't_passMedium', 'I')
         self.tree.add(lambda cands: self.passTight(cands['t']), 't_passTight', 'I')
-        self.tree.add(lambda cands: self.looseScale(cands['t']), 't_looseScale', 'F')
-        self.tree.add(lambda cands: self.mediumScale(cands['t']), 't_mediumScale', 'F')
-        self.tree.add(lambda cands: self.tightScale(cands['t']), 't_tightScale', 'F')
+        self.tree.add(lambda cands: self.looseScale(cands['t'])[0], 't_looseScale', 'F')
+        self.tree.add(lambda cands: self.mediumScale(cands['t'])[0], 't_mediumScale', 'F')
+        self.tree.add(lambda cands: self.tightScale(cands['t'])[0], 't_tightScale', 'F')
 
         # w lepton
         self.addLeptonMet('wm')
@@ -84,7 +81,7 @@ class TauChargeAnalysis(AnalysisBase):
         }
 
         # get leptons
-        leps = self.getPassingCands('Loose')
+        leps = self.getPassingCands('Loose',self.muons,self.taus)
         if len(leps)<2: return candidate # need at least 2 leptons
 
         # get invariant masses
@@ -115,62 +112,6 @@ class TauChargeAnalysis(AnalysisBase):
 
         return candidate
 
-    #################
-    ### lepton id ###
-    #################
-    def passLoose(self,cand):
-        return passHppLoose(cand)
-
-    def passMedium(self,cand):
-        return passHppMedium(cand)
-
-    def passTight(self,cand):
-        return passHppTight(cand)
-
-    def looseScale(self,cand):
-        if cand.collName=='muons':
-            return self.leptonScales.getScale('MediumIDLooseIso',cand)
-        elif cand.collName=='electrons':
-            return self.leptonScales.getScale('CutbasedVeto',cand)
-        else:
-            return 1.
-
-    def mediumScale(self,cand):
-        if cand.collName=='muons':
-            return self.leptonScales.getScale('MediumIDTightIso',cand)
-        elif cand.collName=='electrons':
-            return self.leptonScales.getScale('CutbasedMedium',cand)
-        else:
-            return 1.
-
-    def tightScale(self,cand):
-        if cand.collName=='muons':
-            return self.leptonScales.getScale('MediumIDTightIso',cand)
-        elif cand.collName=='electrons':
-            return self.leptonScales.getScale('CutbasedTight',cand)
-        else:
-            return 1.
-
-    def mediumFakeRate(self,cand):
-        return self.fakeRates.getFakeRate(cand,'HppMedium','HppLoose')
-
-    def tightFakeRate(self,cand):
-        return self.fakeRates.getFakeRate(cand,'HppTight','HppLoose')
-
-    def getPassingCands(self,mode):
-        if mode=='Loose':
-            passMode = self.passLoose
-        elif mode=='Medium':
-            passMode = self.passMedium
-        elif mode=='Tight':
-            passMode = self.passTight
-        else:
-            return []
-        cands = []
-        for coll in [self.muons,self.taus]:
-            cands += self.getCands(coll,passMode)
-        return cands
-
 
     ######################
     ### channel string ###
@@ -186,11 +127,9 @@ class TauChargeAnalysis(AnalysisBase):
     ### analysis selections ###
     ###########################
     def twoLoose(self,cands):
-        return len(self.getPassingCands('Loose'))>=2
+        return len(self.getPassingCands('Loose',self.muons,self.taus))>=2
 
     def trigger(self,cands):
-        # accept MC, check trigger for data
-        if self.event.isData()<0.5: return True
         if self.version=='76X':
             triggerNames = {
                 'SingleMuon'     : [
@@ -201,10 +140,8 @@ class TauChargeAnalysis(AnalysisBase):
         else:
             triggerNames = {
                 'SingleMuon'     : [
-                    'IsoMu22',
-                    'IsoTkMu22',
-                    'Mu45_eta2p1',
-                    'Mu50',
+                    'IsoMu24',
+                    'IsoTkMu24',
                 ],
             }
 
@@ -215,27 +152,11 @@ class TauChargeAnalysis(AnalysisBase):
         datasets = [
             'SingleMuon',
         ]
-        # reject triggers if they are in another dataset
-        # looks for the dataset name in the filename
-        # for MC it accepts all
-        reject = True if self.event.isData()>0.5 else False
-        for dataset in datasets:
-            # if we match to the dataset, start accepting triggers
-            if dataset in self.fileNames[0]: reject = False
-            for trigger in triggerNames[dataset]:
-                var = '{0}Pass'.format(trigger)
-                passTrigger = getattr(self.event,var)()
-                if passTrigger>0.5:
-                    # it passed the trigger
-                    # in data: reject if it corresponds to a higher dataset
-                    return False if reject else True
-            # dont check the rest of data
-            if dataset in self.fileNames[0]: break
-        return False
+        return self.checkTrigger(*datasets,**triggerNames)
 
     def triggerEfficiency(self,cands):
         candList = [cands['m']]
-        triggerList = ['IsoMu20_OR_IsoTkMu20'] if self.version=='76X' else ['SingleMuSoup']
+        triggerList = ['IsoMu20_OR_IsoTkMu20'] if self.version=='76X' else ['IsoMu24_OR_IsoTkMu24']
         return self.triggerScales.getDataEfficiency(triggerList,candList)
 
 

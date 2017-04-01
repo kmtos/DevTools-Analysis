@@ -6,7 +6,6 @@ import sys
 from DevTools.Analyzer.utilities import getTestFiles
 from AnalysisBase import AnalysisBase
 from utilities import ZMASS, deltaPhi, deltaR
-from leptonId import passWZLoose, passWZMedium, passWZTight, passHppLoose, passHppMedium, passHppTight
 from Candidates import *
 
 import itertools
@@ -47,17 +46,12 @@ class ChargeAnalysis(AnalysisBase):
             self.tree.add(lambda cands: self.event.IsoTkMu20Pass(), 'pass_IsoTkMu20', 'I')
             self.tree.add(lambda cands: self.event.Ele23_WPLoose_GsfPass(), 'pass_Ele23_WPLoose_Gsf', 'I')
         else:
-            self.tree.add(lambda cands: self.event.Mu17_TrkIsoVVL_Mu8_TrkIsoVVLPass(), 'pass_Mu17_TrkIsoVVL_Mu8_TrkIsoVVL', 'I')
-            self.tree.add(lambda cands: self.event.Mu17_TrkIsoVVL_TkMu8_TrkIsoVVLPass(), 'pass_Mu17_TrkIsoVVL_TkMu8_TrkIsoVVL', 'I')
+            self.tree.add(lambda cands: self.event.Mu17_TrkIsoVVL_Mu8_TrkIsoVVL_DZPass(), 'pass_Mu17_TrkIsoVVL_Mu8_TrkIsoVVL_DZ', 'I')
+            self.tree.add(lambda cands: self.event.Mu17_TrkIsoVVL_TkMu8_TrkIsoVVL_DZPass(), 'pass_Mu17_TrkIsoVVL_TkMu8_TrkIsoVVL_DZ', 'I')
             self.tree.add(lambda cands: self.event.Ele23_Ele12_CaloIdL_TrackIdL_IsoVL_DZPass(), 'pass_Ele23_Ele12_CaloIdL_TrackIdL_IsoVL_DZ', 'I')
-            self.tree.add(lambda cands: self.event.IsoMu22Pass(), 'pass_IsoMu22', 'I')
-            self.tree.add(lambda cands: self.event.IsoTkMu22Pass(), 'pass_IsoTkMu22', 'I')
-            self.tree.add(lambda cands: self.event.Mu45_eta2p1Pass(), 'pass_Mu45_eta2p1', 'I')
-            self.tree.add(lambda cands: self.event.Mu50Pass(), 'pass_Mu50', 'I')
-            self.tree.add(lambda cands: self.event.Ele25_eta2p1_WPTight_GsfPass(), 'pass_Ele25_eta2p1_WPTight_Gsf', 'I')
+            self.tree.add(lambda cands: self.event.IsoMu24Pass(), 'pass_IsoMu24', 'I')
+            self.tree.add(lambda cands: self.event.IsoTkMu24Pass(), 'pass_IsoTkMu24', 'I')
             self.tree.add(lambda cands: self.event.Ele27_WPTight_GsfPass(), 'pass_Ele27_WPTight_Gsf', 'I')
-            self.tree.add(lambda cands: self.event.Ele27_eta2p1_WPLoose_GsfPass(), 'pass_Ele27_eta2p1_WPLoose_Gsf', 'I')
-            self.tree.add(lambda cands: self.event.Ele45_WPLoose_GsfPass(), 'pass_Ele45_WPLoose_Gsf', 'I')
         self.tree.add(self.triggerEfficiency, 'triggerEfficiency', 'F')
 
         # z leptons
@@ -66,15 +60,15 @@ class ChargeAnalysis(AnalysisBase):
         self.addLepton('z1')
         self.tree.add(lambda cands: self.passMedium(cands['z1']), 'z1_passMedium', 'I')
         self.tree.add(lambda cands: self.passTight(cands['z1']), 'z1_passTight', 'I')
-        self.tree.add(lambda cands: self.looseScale(cands['z1']), 'z1_looseScale', 'F')
-        self.tree.add(lambda cands: self.mediumScale(cands['z1']), 'z1_mediumScale', 'F')
-        self.tree.add(lambda cands: self.tightScale(cands['z1']), 'z1_tightScale', 'F')
+        self.tree.add(lambda cands: self.looseScale(cands['z1'])[0], 'z1_looseScale', 'F')
+        self.tree.add(lambda cands: self.mediumScale(cands['z1'])[0], 'z1_mediumScale', 'F')
+        self.tree.add(lambda cands: self.tightScale(cands['z1'])[0], 'z1_tightScale', 'F')
         self.addLepton('z2')
         self.tree.add(lambda cands: self.passMedium(cands['z2']), 'z2_passMedium', 'I')
         self.tree.add(lambda cands: self.passTight(cands['z2']), 'z2_passTight', 'I')
-        self.tree.add(lambda cands: self.looseScale(cands['z2']), 'z2_looseScale', 'F')
-        self.tree.add(lambda cands: self.mediumScale(cands['z2']), 'z2_mediumScale', 'F')
-        self.tree.add(lambda cands: self.tightScale(cands['z2']), 'z2_tightScale', 'F')
+        self.tree.add(lambda cands: self.looseScale(cands['z2'])[0], 'z2_looseScale', 'F')
+        self.tree.add(lambda cands: self.mediumScale(cands['z2'])[0], 'z2_mediumScale', 'F')
+        self.tree.add(lambda cands: self.tightScale(cands['z2'])[0], 'z2_tightScale', 'F')
 
         # met
         self.addMet('met')
@@ -91,7 +85,7 @@ class ChargeAnalysis(AnalysisBase):
         }
 
         # get leptons
-        leps = self.getPassingCands('Loose')
+        leps = self.getPassingCands('Loose',self.electrons,self.muons)
         if len(leps)<2: return candidate # need at least 2 leptons
 
         # get invariant masses
@@ -115,48 +109,6 @@ class ChargeAnalysis(AnalysisBase):
 
         return candidate
 
-    #################
-    ### lepton id ###
-    #################
-    def passLoose(self,cand):
-        return passHppLoose(cand)
-
-    def passMedium(self,cand):
-        return passHppMedium(cand)
-
-    def passTight(self,cand):
-        return passHppTight(cand)
-
-    def looseScale(self,cand):
-        if isinstance(cand,Muon):       return self.leptonScales.getScale('MediumIDLooseIso',cand)
-        elif isinstance(cand,Electron): return self.leptonScales.getScale('CutbasedVeto',cand)
-        else:                           return 1.
-
-    def mediumScale(self,cand):
-        if isinstance(cand,Muon):       return self.leptonScales.getScale('MediumIDTightIso',cand)
-        elif isinstance(cand,Electron): return self.leptonScales.getScale('CutbasedMedium',cand)
-        else:                           return 1.
-
-    def tightScale(self,cand):
-        if isinstance(cand,Muon):       return self.leptonScales.getScale('MediumIDTightIso',cand)
-        elif isinstance(cand,Electron): return self.leptonScales.getScale('CutbasedTight',cand)
-        else:                           return 1.
-
-    def getPassingCands(self,mode):
-        if mode=='Loose':
-            passMode = self.passLoose
-        elif mode=='Medium':
-            passMode = self.passMedium
-        elif mode=='Tight':
-            passMode = self.passTight
-        else:
-            return []
-        cands = []
-        for coll in [self.electrons,self.muons]:
-            cands += self.getCands(coll,passMode)
-        return cands
-
-
     ######################
     ### channel string ###
     ######################
@@ -171,7 +123,7 @@ class ChargeAnalysis(AnalysisBase):
     ### analysis selections ###
     ###########################
     def twoLoose(self,cands):
-        return len(self.getPassingCands('Loose'))>=2
+        return len(self.getPassingCands('Loose',self.electrons,self.muons))>=2
 
     def trigger(self,cands):
         # accept MC, check trigger for data

@@ -6,8 +6,6 @@ import sys
 from DevTools.Analyzer.utilities import getTestFiles
 from AnalysisBase import AnalysisBase
 from utilities import ZMASS, deltaPhi, deltaR
-from leptonId import passWZ2017Loose, passWZ2017Medium, passWZ2017Tight
-from leptonId import passHppLoose, passHppMedium, passHppTight
 
 from Candidates import *
 
@@ -95,20 +93,20 @@ class WZAnalysis(AnalysisBase):
         self.addLepton('z1')
         self.tree.add(lambda cands: self.passMedium(cands['z1']), 'z1_passMedium', 'I')
         self.tree.add(lambda cands: self.passTight(cands['z1']), 'z1_passTight', 'I')
-        self.tree.add(lambda cands: self.looseScale(cands['z1']), 'z1_looseScale', 'F')
-        self.tree.add(lambda cands: self.mediumScale(cands['z1']), 'z1_mediumScale', 'F')
-        self.tree.add(lambda cands: self.tightScale(cands['z1']), 'z1_tightScale', 'F')
-        self.tree.add(lambda cands: self.mediumFakeRate(cands['z1']), 'z1_mediumFakeRate', 'F')
-        self.tree.add(lambda cands: self.tightFakeRate(cands['z1']), 'z1_tightFakeRate', 'F')
+        self.tree.add(lambda cands: self.looseScale(cands['z1'])[0], 'z1_looseScale', 'F')
+        self.tree.add(lambda cands: self.mediumScale(cands['z1'])[0], 'z1_mediumScale', 'F')
+        self.tree.add(lambda cands: self.tightScale(cands['z1'])[0], 'z1_tightScale', 'F')
+        self.tree.add(lambda cands: self.mediumFakeRate(cands['z1'])[0], 'z1_mediumFakeRate', 'F')
+        self.tree.add(lambda cands: self.tightFakeRate(cands['z1'])[0], 'z1_tightFakeRate', 'F')
         self.tree.add(lambda cands: self.zeppenfeld(cands['leadJet'],cands['subleadJet'],cands['z1']), 'z1_zeppenfeld','F')
         self.addLepton('z2')
         self.tree.add(lambda cands: self.passMedium(cands['z2']), 'z2_passMedium', 'I')
         self.tree.add(lambda cands: self.passTight(cands['z2']), 'z2_passTight', 'I')
-        self.tree.add(lambda cands: self.looseScale(cands['z2']), 'z2_looseScale', 'F')
-        self.tree.add(lambda cands: self.mediumScale(cands['z2']), 'z2_mediumScale', 'F')
-        self.tree.add(lambda cands: self.tightScale(cands['z2']), 'z2_tightScale', 'F')
-        self.tree.add(lambda cands: self.mediumFakeRate(cands['z2']), 'z2_mediumFakeRate', 'F')
-        self.tree.add(lambda cands: self.tightFakeRate(cands['z2']), 'z2_tightFakeRate', 'F')
+        self.tree.add(lambda cands: self.looseScale(cands['z2'])[0], 'z2_looseScale', 'F')
+        self.tree.add(lambda cands: self.mediumScale(cands['z2'])[0], 'z2_mediumScale', 'F')
+        self.tree.add(lambda cands: self.tightScale(cands['z2'])[0], 'z2_tightScale', 'F')
+        self.tree.add(lambda cands: self.mediumFakeRate(cands['z2'])[0], 'z2_mediumFakeRate', 'F')
+        self.tree.add(lambda cands: self.tightFakeRate(cands['z2'])[0], 'z2_tightFakeRate', 'F')
         self.tree.add(lambda cands: self.zeppenfeld(cands['leadJet'],cands['subleadJet'],cands['z2']), 'z2_zeppenfeld','F')
 
         # w lepton
@@ -116,11 +114,11 @@ class WZAnalysis(AnalysisBase):
         self.addLepton('w1')
         self.tree.add(lambda cands: self.passMedium(cands['w1']), 'w1_passMedium', 'I')
         self.tree.add(lambda cands: self.passTight(cands['w1']), 'w1_passTight', 'I')
-        self.tree.add(lambda cands: self.looseScale(cands['w1']), 'w1_looseScale', 'F')
-        self.tree.add(lambda cands: self.mediumScale(cands['w1']), 'w1_mediumScale', 'F')
-        self.tree.add(lambda cands: self.tightScale(cands['w1']), 'w1_tightScale', 'F')
-        self.tree.add(lambda cands: self.mediumFakeRate(cands['w1']), 'w1_mediumFakeRate', 'F')
-        self.tree.add(lambda cands: self.tightFakeRate(cands['w1']), 'w1_tightFakeRate', 'F')
+        self.tree.add(lambda cands: self.looseScale(cands['w1'])[0], 'w1_looseScale', 'F')
+        self.tree.add(lambda cands: self.mediumScale(cands['w1'])[0], 'w1_mediumScale', 'F')
+        self.tree.add(lambda cands: self.tightScale(cands['w1'])[0], 'w1_tightScale', 'F')
+        self.tree.add(lambda cands: self.mediumFakeRate(cands['w1'])[0], 'w1_mediumFakeRate', 'F')
+        self.tree.add(lambda cands: self.tightFakeRate(cands['w1'])[0], 'w1_tightFakeRate', 'F')
         self.tree.add(lambda cands: self.zeppenfeld(cands['leadJet'],cands['subleadJet'],cands['w1']), 'w1_zeppenfeld','F')
 
         # wrong combination
@@ -157,7 +155,7 @@ class WZAnalysis(AnalysisBase):
         #TODO: Fix low efficiency
 
         # get leptons
-        leps = self.getPassingCands('Loose')
+        leps = self.getPassingCands('Loose',self.electrons,self.muons)
         if len(leps)<3: return candidate # need at least 3 leptons
 
         # get invariant masses
@@ -194,7 +192,7 @@ class WZAnalysis(AnalysisBase):
         z2 = bestWZ[1] if bestWZ[0].pt()>bestWZ[1].pt() else bestWZ[0]
         w1 = bestWZ[2]
 
-        medLeps = self.getPassingCands('Medium')
+        medLeps = self.getPassingCands('Medium',self.electrons,self.muons)
         remainingLeps = self.cleanCands(medLeps,[z1,z2,w1],0.02)
 
         if remainingLeps:
@@ -218,74 +216,6 @@ class WZAnalysis(AnalysisBase):
         if len(candidate['cleanJets'])>1: candidate['dijet'] = DiCandidate(candidate['leadJet'],candidate['subleadJet'])
 
         return candidate
-
-    #################
-    ### lepton id ###
-    #################
-    def passLoose(self,cand):
-        #return passWZ2017Loose(cand,version=self.version)
-        return passHppLoose(cand,version=self.version)
-
-    def passMedium(self,cand):
-        #return passWZ2017Medium(cand,version=self.version)
-        return passHppMedium(cand,version=self.version)
-
-    def passTight(self,cand):
-        #return passWZ2017Tight(cand,version=self.version)
-        return passHppTight(cand,version=self.version)
-
-    def looseScale(self,cand):
-        if cand.collName=='muons':
-            return self.leptonScales.getScale('MediumIDLooseIso',cand)
-        elif cand.collName=='electrons':
-            return self.leptonScales.getScale('CutbasedVeto',cand)
-        else:
-            return 1.
-
-    def mediumScale(self,cand):
-        if cand.collName=='muons':
-            return self.leptonScales.getScale('MediumIDTightIso',cand)
-        elif cand.collName=='electrons':
-            return self.leptonScales.getScale('CutbasedMedium',cand)
-        else:
-            return 1.
-
-    def tightScale(self,cand):
-        if cand.collName=='muons':
-            return self.leptonScales.getScale('MediumIDTightIso',cand)
-        elif cand.collName=='electrons':
-            return self.leptonScales.getScale('CutbasedTight',cand)
-        else:
-            return 1.
-
-    def mediumFakeRate(self,cand):
-        #return self.fakeRates.getFakeRate(cand,'WZMedium','WZLoose')
-        return self.fakeRates.getFakeRate(cand,'HppMedium','HppLoose')
-
-    def tightFakeRate(self,cand):
-        #return self.fakeRates.getFakeRate(cand,'WZTight','WZLoose')
-        return self.fakeRates.getFakeRate(cand,'HppTight','HppLoose')
-
-    def getPassingCands(self,mode):
-        if mode=='Loose':
-            passMode = self.passLoose
-        elif mode=='Medium':
-            passMode = self.passMedium
-        elif mode=='Tight':
-            passMode = self.passTight
-        else:
-            return []
-        cands = []
-        for coll in [self.electrons,self.muons]:
-            cands += self.getCands(coll,passMode)
-        return cands
-
-    def numJets(self,cleanJets,mode,pt):
-        jetColl = self.getCands(
-            cleanJets,
-            lambda cand: getattr(cand,mode)()>0.5 and cand.pt()>pt
-        )
-        return len(jetColl)
 
     def numCentralJets(self,leadJet,subleadJet,cleanJets,mode,pt):
         if not leadJet: return -1
@@ -329,10 +259,10 @@ class WZAnalysis(AnalysisBase):
     ### analysis selections ###
     ###########################
     def threeLoose(self,cands):
-        return len(self.getPassingCands('Loose'))>=3
+        return len(self.getPassingCands('Loose',self.electrons,self.muons))>=3
 
     def vetoFourth(self,cands):
-        return len(self.getPassingCands('Medium'))<=3
+        return len(self.getPassingCands('Medium',self.electrons,self.muons))<=3
 
     def trigger(self,cands):
         # accept MC, check trigger for data

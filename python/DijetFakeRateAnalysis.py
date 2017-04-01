@@ -5,7 +5,6 @@ import sys
 
 from DevTools.Analyzer.utilities import getTestFiles
 from AnalysisBase import AnalysisBase
-from leptonId import passWZ2017Loose, passWZ2017Medium, passWZ2017Tight, passHppLoose, passHppMedium, passHppTight
 from utilities import ZMASS, deltaPhi, deltaR
 from Candidates import *
 
@@ -61,9 +60,9 @@ class DijetFakeRateAnalysis(AnalysisBase):
         self.addLepton('l1')
         self.tree.add(lambda cands: self.passMedium(cands['l1']), 'l1_passMedium', 'I')
         self.tree.add(lambda cands: self.passTight(cands['l1']), 'l1_passTight', 'I')
-        self.tree.add(lambda cands: self.looseScale(cands['l1']), 'l1_looseScale', 'F')
-        self.tree.add(lambda cands: self.mediumScale(cands['l1']), 'l1_mediumScale', 'F')
-        self.tree.add(lambda cands: self.tightScale(cands['l1']), 'l1_tightScale', 'F')
+        self.tree.add(lambda cands: self.looseScale(cands['l1'])[0], 'l1_looseScale', 'F')
+        self.tree.add(lambda cands: self.mediumScale(cands['l1'])[0], 'l1_mediumScale', 'F')
+        self.tree.add(lambda cands: self.tightScale(cands['l1'])[0], 'l1_tightScale', 'F')
 
         # met
         self.addMet('met')
@@ -80,7 +79,7 @@ class DijetFakeRateAnalysis(AnalysisBase):
         }
 
         # get leptons
-        leps = self.getPassingCands('Loose')
+        leps = self.getPassingCands('Loose',self.electrons,self.muons)
         if len(leps)<1: return candidate # need at least 1 lepton
 
         # choose highest pt
@@ -109,50 +108,6 @@ class DijetFakeRateAnalysis(AnalysisBase):
 
         return candidate
 
-    ##################
-    ### lepton IDs ###
-    ##################
-    def passLoose(self,cand):
-        return passHppLoose(cand)
-        #return passWZ2017Loose(cand)
-
-    def passMedium(self,cand):
-        return passHppMedium(cand)
-        #return passWZ2017Medium(cand)
-
-    def passTight(self,cand):
-        return passHppTight(cand)
-        #return passWZ2017Tight(cand)
-
-    def looseScale(self,cand):
-        if isinstance(cand,Muon):       return self.leptonScales.getScale('HppLooseIDLooseIso',cand)
-        elif isinstance(cand,Electron): return self.leptonScales.getScale('CutbasedVeto',cand)
-        else:                           return 1.
-
-    def mediumScale(self,cand):
-        if isinstance(cand,Muon):       return self.leptonScales.getScale('HppMediumIDMediumIso',cand)
-        elif isinstance(cand,Electron): return self.leptonScales.getScale('CutbasedMedium',cand)
-        else:                           return 1.
-
-    def tightScale(self,cand):
-        if isinstance(cand,Muon):       return self.leptonScales.getScale('HppMediumIDMediumIso',cand)
-        elif isinstance(cand,Electron): return self.leptonScales.getScale('CutbasedTight',cand)
-        else:                           return 1.
-
-    def getPassingCands(self,mode):
-        if mode=='Loose':
-            passMode = self.passLoose
-        elif mode=='Medium':
-            passMode = self.passMedium
-        elif mode=='Tight':
-            passMode = self.passTight
-        else:
-            return []
-        cands = []
-        for coll in [self.electrons,self.muons]:
-            cands += self.getCands(coll,passMode)
-        return cands
-
 
     ######################
     ### channel string ###
@@ -168,7 +123,7 @@ class DijetFakeRateAnalysis(AnalysisBase):
     ### analysis selections ###
     ###########################
     def vetoSecond(self,cands):
-        return len(self.getPassingCands('Loose'))==1
+        return len(self.getPassingCands('Loose',self.electrons,self.muons))==1
 
     def metVeto(self,cands):
         return cands['met'].et()<25

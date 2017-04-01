@@ -6,7 +6,6 @@ import sys
 from DevTools.Analyzer.utilities import getTestFiles
 from AnalysisBase import AnalysisBase
 from utilities import ZMASS, deltaPhi, deltaR
-from leptonId import passWZLoose, passWZMedium, passWZTight, passHppLoose, passHppMedium, passHppTight
 from Candidates import *
 
 import itertools
@@ -103,15 +102,15 @@ class DYAnalysis(AnalysisBase):
         self.addLepton('z1')
         self.tree.add(lambda cands: self.passMedium(cands['z1']), 'z1_passMedium', 'I')
         self.tree.add(lambda cands: self.passTight(cands['z1']), 'z1_passTight', 'I')
-        self.tree.add(lambda cands: self.looseScale(cands['z1']), 'z1_looseScale', 'F')
-        self.tree.add(lambda cands: self.mediumScale(cands['z1']), 'z1_mediumScale', 'F')
-        self.tree.add(lambda cands: self.tightScale(cands['z1']), 'z1_tightScale', 'F')
+        self.tree.add(lambda cands: self.looseScale(cands['z1'])[0], 'z1_looseScale', 'F')
+        self.tree.add(lambda cands: self.mediumScale(cands['z1'])[0], 'z1_mediumScale', 'F')
+        self.tree.add(lambda cands: self.tightScale(cands['z1'])[0], 'z1_tightScale', 'F')
         self.addLepton('z2')
         self.tree.add(lambda cands: self.passMedium(cands['z2']), 'z2_passMedium', 'I')
         self.tree.add(lambda cands: self.passTight(cands['z2']), 'z2_passTight', 'I')
-        self.tree.add(lambda cands: self.looseScale(cands['z2']), 'z2_looseScale', 'F')
-        self.tree.add(lambda cands: self.mediumScale(cands['z2']), 'z2_mediumScale', 'F')
-        self.tree.add(lambda cands: self.tightScale(cands['z2']), 'z2_tightScale', 'F')
+        self.tree.add(lambda cands: self.looseScale(cands['z2'])[0], 'z2_looseScale', 'F')
+        self.tree.add(lambda cands: self.mediumScale(cands['z2'])[0], 'z2_mediumScale', 'F')
+        self.tree.add(lambda cands: self.tightScale(cands['z2'])[0], 'z2_tightScale', 'F')
 
         # met
         self.addMet('met')
@@ -133,7 +132,7 @@ class DYAnalysis(AnalysisBase):
 
         # get leptons
         #leps = self.getPassingCands('Loose')
-        medLeps = self.getPassingCands('Medium')
+        medLeps = self.getPassingCands('Medium',self.electrons,self.muons)
         if len(medLeps)<2: return candidate # need at least 2 leptons
 
         # get invariant masses
@@ -160,58 +159,6 @@ class DYAnalysis(AnalysisBase):
 
         return candidate
 
-    #################
-    ### lepton id ###
-    #################
-    def passLoose(self,cand):
-        #return passHppLoose(cand)
-        return passHppMedium(cand)
-
-    def passMedium(self,cand):
-        return passHppMedium(cand)
-
-    def passTight(self,cand):
-        return passHppTight(cand)
-
-    def looseScale(self,cand):
-        #if isinstance(cand,Muon):       return self.leptonScales.getScale('MediumIDLooseIso',cand)
-        #elif isinstance(cand,Electron): return self.leptonScales.getScale('CutbasedVeto',cand)
-        #else:                           return 1.
-        if isinstance(cand,Muon):       return self.leptonScales.getScale('MediumIDTightIso',cand)
-        elif isinstance(cand,Electron): return self.leptonScales.getScale('CutbasedMedium',cand)
-        else:                           return 1.
-
-    def mediumScale(self,cand):
-        if isinstance(cand,Muon):       return self.leptonScales.getScale('MediumIDTightIso',cand)
-        elif isinstance(cand,Electron): return self.leptonScales.getScale('CutbasedMedium',cand)
-        else:                           return 1.
-
-    def tightScale(self,cand):
-        if isinstance(cand,Muon):       return self.leptonScales.getScale('MediumIDTightIso',cand)
-        elif isinstance(cand,Electron): return self.leptonScales.getScale('CutbasedTight',cand)
-        else:                           return 1.
-
-    def getPassingCands(self,mode):
-        if mode=='Loose':
-            passMode = self.passLoose
-        elif mode=='Medium':
-            passMode = self.passMedium
-        elif mode=='Tight':
-            passMode = self.passTight
-        else:
-            return []
-        cands = []
-        for coll in [self.electrons,self.muons]:
-            cands += self.getCands(coll,passMode)
-        return cands
-
-    def numJets(self,cleanJets,mode,pt):
-        jetColl = self.getCands(
-            cleanJets,
-            lambda cand: getattr(cand,mode)()>0.5 and cand.pt()>pt
-        )
-        return len(jetColl)
-
     ######################
     ### channel string ###
     ######################
@@ -226,7 +173,7 @@ class DYAnalysis(AnalysisBase):
     ### analysis selections ###
     ###########################
     def twoLoose(self,cands):
-        return len(self.getPassingCands('Loose'))>=2
+        return len(self.getPassingCands('Loose',self.electrons,self.muons))>=2
 
     def trigger(self,cands):
         # apply trigger in data and mc
@@ -288,7 +235,7 @@ class DYAnalysis(AnalysisBase):
                 'DoubleMuon', 
                 'SingleMuon',
             ]
-            return self.checkTrigger(*datasets,**triggerNames)
+        return self.checkTrigger(*datasets,**triggerNames)
 
     def triggerEfficiencyMC(self,cands):
         return self.triggerEfficiency(cands,mode='mc')

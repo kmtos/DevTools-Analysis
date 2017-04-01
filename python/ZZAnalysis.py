@@ -6,7 +6,6 @@ import sys
 from DevTools.Analyzer.utilities import getTestFiles
 from AnalysisBase import AnalysisBase
 from utilities import ZMASS, deltaPhi, deltaR
-from leptonId import passWZLoose, passWZMedium, passWZTight, passHppLoose, passHppMedium, passHppTight, passHZZLoose, passHZZTight
 
 from Candidates import *
 
@@ -92,20 +91,20 @@ class ZZAnalysis(AnalysisBase):
         self.addLepton('z11')
         self.tree.add(lambda cands: self.passMedium(cands['z11']), 'z11_passMedium', 'I')
         self.tree.add(lambda cands: self.passTight(cands['z11']), 'z11_passTight', 'I')
-        self.tree.add(lambda cands: self.looseScale(cands['z11']), 'z11_looseScale', 'F')
-        self.tree.add(lambda cands: self.mediumScale(cands['z11']), 'z11_mediumScale', 'F')
-        self.tree.add(lambda cands: self.tightScale(cands['z11']), 'z11_tightScale', 'F')
-        self.tree.add(lambda cands: self.mediumFakeRate(cands['z11']), 'z11_mediumFakeRate', 'F')
-        self.tree.add(lambda cands: self.tightFakeRate(cands['z11']), 'z11_tightFakeRate', 'F')
+        self.tree.add(lambda cands: self.looseScale(cands['z11'])[0], 'z11_looseScale', 'F')
+        self.tree.add(lambda cands: self.mediumScale(cands['z11'])[0], 'z11_mediumScale', 'F')
+        self.tree.add(lambda cands: self.tightScale(cands['z11'])[0], 'z11_tightScale', 'F')
+        self.tree.add(lambda cands: self.mediumFakeRate(cands['z11'])[0], 'z11_mediumFakeRate', 'F')
+        self.tree.add(lambda cands: self.tightFakeRate(cands['z11'])[0], 'z11_tightFakeRate', 'F')
         #self.tree.add(lambda cands: self.zeppenfeld(cands,cands['z11']), 'z11_zeppenfeld','F')
         self.addLepton('z12')
         self.tree.add(lambda cands: self.passMedium(cands['z12']), 'z12_passMedium', 'I')
         self.tree.add(lambda cands: self.passTight(cands['z12']), 'z12_passTight', 'I')
-        self.tree.add(lambda cands: self.looseScale(cands['z12']), 'z12_looseScale', 'F')
-        self.tree.add(lambda cands: self.mediumScale(cands['z12']), 'z12_mediumScale', 'F')
-        self.tree.add(lambda cands: self.tightScale(cands['z12']), 'z12_tightScale', 'F')
-        self.tree.add(lambda cands: self.mediumFakeRate(cands['z12']), 'z12_mediumFakeRate', 'F')
-        self.tree.add(lambda cands: self.tightFakeRate(cands['z12']), 'z12_tightFakeRate', 'F')
+        self.tree.add(lambda cands: self.looseScale(cands['z12'])[0], 'z12_looseScale', 'F')
+        self.tree.add(lambda cands: self.mediumScale(cands['z12'])[0], 'z12_mediumScale', 'F')
+        self.tree.add(lambda cands: self.tightScale(cands['z12'])[0], 'z12_tightScale', 'F')
+        self.tree.add(lambda cands: self.mediumFakeRate(cands['z12'])[0], 'z12_mediumFakeRate', 'F')
+        self.tree.add(lambda cands: self.tightFakeRate(cands['z12'])[0], 'z12_tightFakeRate', 'F')
         #self.tree.add(lambda cands: self.zeppenfeld(cands,cands['z12']), 'z12_zeppenfeld','F')
 
         # z2 leptons
@@ -115,20 +114,20 @@ class ZZAnalysis(AnalysisBase):
         self.addLepton('z21')
         self.tree.add(lambda cands: self.passMedium(cands['z21']), 'z21_passMedium', 'I')
         self.tree.add(lambda cands: self.passTight(cands['z21']), 'z21_passTight', 'I')
-        self.tree.add(lambda cands: self.looseScale(cands['z21']), 'z21_looseScale', 'F')
-        self.tree.add(lambda cands: self.mediumScale(cands['z21']), 'z21_mediumScale', 'F')
-        self.tree.add(lambda cands: self.tightScale(cands['z21']), 'z21_tightScale', 'F')
-        self.tree.add(lambda cands: self.mediumFakeRate(cands['z21']), 'z21_mediumFakeRate', 'F')
-        self.tree.add(lambda cands: self.tightFakeRate(cands['z21']), 'z21_tightFakeRate', 'F')
+        self.tree.add(lambda cands: self.looseScale(cands['z21'])[0], 'z21_looseScale', 'F')
+        self.tree.add(lambda cands: self.mediumScale(cands['z21'])[0], 'z21_mediumScale', 'F')
+        self.tree.add(lambda cands: self.tightScale(cands['z21'])[0], 'z21_tightScale', 'F')
+        self.tree.add(lambda cands: self.mediumFakeRate(cands['z21'])[0], 'z21_mediumFakeRate', 'F')
+        self.tree.add(lambda cands: self.tightFakeRate(cands['z21'])[0], 'z21_tightFakeRate', 'F')
         #self.tree.add(lambda cands: self.zeppenfeld(cands,cands['z21']), 'z21_zeppenfeld','F')
         self.addLepton('z22')
         self.tree.add(lambda cands: self.passMedium(cands['z22']), 'z22_passMedium', 'I')
         self.tree.add(lambda cands: self.passTight(cands['z22']), 'z22_passTight', 'I')
-        self.tree.add(lambda cands: self.looseScale(cands['z22']), 'z22_looseScale', 'F')
-        self.tree.add(lambda cands: self.mediumScale(cands['z22']), 'z22_mediumScale', 'F')
-        self.tree.add(lambda cands: self.tightScale(cands['z22']), 'z22_tightScale', 'F')
-        self.tree.add(lambda cands: self.mediumFakeRate(cands['z22']), 'z22_mediumFakeRate', 'F')
-        self.tree.add(lambda cands: self.tightFakeRate(cands['z22']), 'z22_tightFakeRate', 'F')
+        self.tree.add(lambda cands: self.looseScale(cands['z22'])[0], 'z22_looseScale', 'F')
+        self.tree.add(lambda cands: self.mediumScale(cands['z22'])[0], 'z22_mediumScale', 'F')
+        self.tree.add(lambda cands: self.tightScale(cands['z22'])[0], 'z22_tightScale', 'F')
+        self.tree.add(lambda cands: self.mediumFakeRate(cands['z22'])[0], 'z22_mediumFakeRate', 'F')
+        self.tree.add(lambda cands: self.tightFakeRate(cands['z22'])[0], 'z22_tightFakeRate', 'F')
         #self.tree.add(lambda cands: self.zeppenfeld(cands,cands['z22']), 'z22_zeppenfeld','F')
 
         # wrong combination
@@ -169,8 +168,8 @@ class ZZAnalysis(AnalysisBase):
         }
 
         # get leptons
-        leps = self.getPassingCands('Loose')
-        medLeps = self.getPassingCands('Medium')
+        leps = self.getPassingCands('Loose',self.electrons,self.muons)
+        medLeps = self.getPassingCands('Medium',self.electrons,self.muons)
         if len(leps)<4: return candidate # need at least 4 leptons
 
 
@@ -245,78 +244,6 @@ class ZZAnalysis(AnalysisBase):
 
         return candidate
 
-    ##################
-    ### lepton IDs ###
-    ##################
-    def passLoose(self,cand):
-        return passHppLoose(cand)
-        #return passHZZLoose(cand)
-
-    def passMedium(self,cand):
-        return passHppMedium(cand)
-        #return passHZZTight(cand)
-
-    def passTight(self,cand):
-        return passHppTight(cand)
-        #return passHZZTight(cand)
-
-    def looseScale(self,cand):
-        if cand.collName=='muons':
-            return self.leptonScales.getScale('MediumIDLooseIso',cand)
-            #return self.leptonScales.getScale('None',cand)
-        elif cand.collName=='electrons':
-            return self.leptonScales.getScale('CutbasedVeto',cand)
-            #return self.leptonScales.getScale('None',cand)
-        else:
-            return 1.
-
-    def mediumScale(self,cand):
-        if cand.collName=='muons':
-            return self.leptonScales.getScale('MediumIDTightIso',cand)
-            #return self.leptonScales.getScale('HZZTight',cand)
-        elif cand.collName=='electrons':
-            return self.leptonScales.getScale('CutbasedMedium',cand)
-            #return self.leptonScales.getScale('HZZTight',cand)
-        else:
-            return 1.
-
-    def tightScale(self,cand):
-        if cand.collName=='muons':
-            return self.leptonScales.getScale('MediumIDTightIso',cand)
-            #return self.leptonScales.getScale('HZZTight',cand)
-        elif cand.collName=='electrons':
-            return self.leptonScales.getScale('CutbasedTight',cand)
-            #return self.leptonScales.getScale('HZZTight',cand)
-        else:
-            return 1.
-
-    def mediumFakeRate(self,cand):
-        return self.fakeRates.getFakeRate(cand,'HppMedium','HppLoose')
-
-    def tightFakeRate(self,cand):
-        return self.fakeRates.getFakeRate(cand,'HppTight','HppLoose')
-
-    def getPassingCands(self,mode):
-        if mode=='Loose':
-            passMode = self.passLoose
-        elif mode=='Medium':
-            passMode = self.passMedium
-        elif mode=='Tight':
-            passMode = self.passTight
-        else:
-            return []
-        cands = []
-        for coll in [self.electrons,self.muons]:
-            cands += self.getCands(coll,passMode)
-        return cands
-
-    def numJets(self,cleanJets,mode,pt):
-        jetColl = self.getCands(
-            cleanJets,
-            lambda cand: getattr(cand,mode)()>0.5 and cand.pt()>pt
-        )
-        return len(jetColl)
-
 
     ######################
     ### channel string ###
@@ -333,7 +260,7 @@ class ZZAnalysis(AnalysisBase):
     ### analysis selections ###
     ###########################
     def fourLoose(self,cands):
-        return len(self.getPassingCands('Loose'))>=4
+        return len(self.getPassingCands('Loose',self.electrons,self.muons))>=4
 
     def trigger(self,cands):
         # accept MC, check trigger for data

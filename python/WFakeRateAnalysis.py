@@ -5,7 +5,6 @@ import sys
 
 from DevTools.Analyzer.utilities import getTestFiles
 from AnalysisBase import AnalysisBase
-from leptonId import passWZLoose, passWZMedium, passWZTight, passHppLoose, passHppMedium, passHppTight
 from utilities import ZMASS, deltaPhi, deltaR
 
 from Candidates import *
@@ -56,16 +55,16 @@ class WFakeRateAnalysis(AnalysisBase):
         # mu tag
         self.addLeptonMet('wt')
         self.addLepton('t')
-        self.tree.add(lambda cands: self.tightScale(cands['t']), 't_tightScale', 'F')
+        self.tree.add(lambda cands: self.tightScale(cands['t'])[0], 't_tightScale', 'F')
 
         # lep probe
         self.addLeptonMet('wl')
         self.addLepton('l')
         self.tree.add(lambda cands: self.passMedium(cands['l']), 'l_passMedium', 'I')
         self.tree.add(lambda cands: self.passTight(cands['l']), 'l_passTight', 'I')
-        self.tree.add(lambda cands: self.looseScale(cands['l']), 'l_looseScale', 'F')
-        self.tree.add(lambda cands: self.mediumScale(cands['l']), 'l_mediumScale', 'F')
-        self.tree.add(lambda cands: self.tightScale(cands['l']), 'l_tightScale', 'F')
+        self.tree.add(lambda cands: self.looseScale(cands['l'])[0], 'l_looseScale', 'F')
+        self.tree.add(lambda cands: self.mediumScale(cands['l'])[0], 'l_mediumScale', 'F')
+        self.tree.add(lambda cands: self.tightScale(cands['l'])[0], 'l_tightScale', 'F')
 
         # dilepton combination
         self.addDiLepton('z')
@@ -87,7 +86,7 @@ class WFakeRateAnalysis(AnalysisBase):
         }
 
         # get leptons
-        leps = self.getPassingCands('Loose')
+        leps = self.getPassingCands('Loose',self.electrons,self.muons)
         muons = self.getCands(self.muons,self.passTight)
         elecs = self.getCands(self.electrons,self.passTight)
         if len(muons)<1 and len(elecs)<1: return candidate # need 1 tight muon/electron
@@ -124,49 +123,6 @@ class WFakeRateAnalysis(AnalysisBase):
 
 
         return candidate
-
-
-    ##################
-    ### lepton IDs ###
-    ##################
-    def passLoose(self,cand):
-        return passHppLoose(cand)
-
-    def passMedium(self,cand):
-        return passHppMedium(cand)
-
-    def passTight(self,cand):
-        return passHppTight(cand)
-
-    def looseScale(self,cand):
-        if isinstance(cand,Muon):       return self.leptonScales.getScale('MediumIDLooseIso',cand)
-        elif isinstance(cand,Electron): return self.leptonScales.getScale('CutbasedVeto',cand)
-        else:                           return 1.
-
-    def mediumScale(self,cand):
-        if isinstance(cand,Muon):       return self.leptonScales.getScale('MediumIDTightIso',cand)
-        elif isinstance(cand,Electron): return self.leptonScales.getScale('CutbasedMedium',cand)
-        else:                           return 1.
-
-    def tightScale(self,cand):
-        if isinstance(cand,Muon):       return self.leptonScales.getScale('MediumIDTightIso',cand)
-        elif isinstance(cand,Electron): return self.leptonScales.getScale('CutbasedTight',cand)
-        else:                           return 1.
-
-    def getPassingCands(self,mode):
-        if mode=='Loose':
-            passMode = self.passLoose
-        elif mode=='Medium':
-            passMode = self.passMedium
-        elif mode=='Tight':
-            passMode = self.passTight
-        else:
-            return []
-        cands = []
-        #for coll in [self.muons,self.electrons,self.taus]:
-        for coll in [self.muons,self.electrons]:
-            cands += self.getCands(coll,passMode)
-        return cands
 
 
     ######################

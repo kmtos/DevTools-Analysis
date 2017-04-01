@@ -7,7 +7,6 @@ import sys
 from DevTools.Analyzer.utilities import getTestFiles
 from AnalysisBase import AnalysisBase
 from utilities import ZMASS, deltaPhi, deltaR
-from leptonId import passWZLoose, passWZMedium, passWZTight, passHppLoose, passHppMedium, passHppTight
 
 from Candidates import *
 
@@ -200,8 +199,8 @@ class Hpp3lAnalysis(AnalysisBase):
         }
 
         # get leptons
-        leps = self.getPassingCands('Loose')
-        medLeps = self.getPassingCands('Medium')
+        leps = self.getPassingCands('Loose',self.electrons,self.muons,self.taus)
+        medLeps = self.getPassingCands('Medium',self.electrons,self.muons,self.taus)
         if len(leps)<3: return candidate # need at least 3 leptons
         if len(medLeps)>3: return candidate # cant have more than 3 medium leptons
 
@@ -300,79 +299,6 @@ class Hpp3lAnalysis(AnalysisBase):
 
         return candidate
 
-    ##################
-    ### lepton IDs ###
-    ##################
-    def passLoose(self,cand):
-        return passHppLoose(cand)
-
-    def passMedium(self,cand):
-        return passHppMedium(cand)
-
-    def passTight(self,cand):
-        return passHppTight(cand)
-
-    def looseScale(self,cand):
-        if cand.collName=='muons':
-            return self.leptonScales.getScale('MediumIDLooseIso',cand,doError=True)
-            #return self.leptonScales.getScale('HppLooseIDLooseIso',cand,doError=True)
-            #return self.leptonScales.getScale('None',cand,doError=True)
-        elif cand.collName=='electrons':
-            return self.leptonScales.getScale('CutbasedVeto',cand,doError=True)
-            #return self.leptonScales.getScale('None',cand,doError=True)
-        else:
-            return [1.,1.,1.]
-
-    def mediumScale(self,cand):
-        if cand.collName=='muons':
-            return self.leptonScales.getScale('MediumIDTightIso',cand,doError=True)
-            #return self.leptonScales.getScale('HppMediumIDMediumIso',cand,doError=True)
-            #return self.leptonScales.getScale('HZZTight',cand,doError=True)
-        elif cand.collName=='electrons':
-            return self.leptonScales.getScale('CutbasedMedium',cand,doError=True)
-            #return self.leptonScales.getScale('HZZTight',cand,doError=True)
-        else:
-            return [1.,1.,1.]
-
-    def tightScale(self,cand):
-        if cand.collName=='muons':
-            return self.leptonScales.getScale('MediumIDTightIso',cand,doError=True)
-            #return self.leptonScales.getScale('HppMediumIDMediumIso',cand,doError=True)
-            #return self.leptonScales.getScale('HZZTight',cand,doError=True)
-        elif cand.collName=='electrons':
-            return self.leptonScales.getScale('CutbasedTight',cand,doError=True)
-            #return self.leptonScales.getScale('HZZTight',cand,doError=True)
-        else:
-            return [1.,1.,1.]
-
-    def mediumFakeRate(self,cand):
-        return self.fakeRates.getFakeRate(cand,'HppMedium','HppLoose',doError=True)
-
-    def tightFakeRate(self,cand):
-        return self.fakeRates.getFakeRate(cand,'HppTight','HppLoose',doError=True)
-
-    def getPassingCands(self,mode):
-        if mode=='Loose':
-            passMode = self.passLoose
-        elif mode=='Medium':
-            passMode = self.passMedium
-        elif mode=='Tight':
-            passMode = self.passTight
-        else:
-            return []
-        cands = []
-        for coll in [self.electrons,self.muons,self.taus]:
-            cands += self.getCands(coll,passMode)
-        return cands
-
-    def numJets(self,cleanJets,mode,pt):
-        jetColl = self.getCands(
-            cleanJets,
-            lambda cand: getattr(cand,mode)()>0.5 and cand.pt()>pt
-        )
-        return len(jetColl)
-
-
     ######################
     ### channel string ###
     ######################
@@ -444,10 +370,10 @@ class Hpp3lAnalysis(AnalysisBase):
     ### analysis selections ###
     ###########################
     def threeLoose(self,cands):
-        return len(self.getPassingCands('Loose'))>=3
+        return len(self.getPassingCands('Loose',self.electrons,self.muons,self.taus))>=3
 
     def vetoFourth(self,cands):
-        return len(self.getPassingCands('Medium'))<=3
+        return len(self.getPassingCands('Medium',self.electrons,self.muons,self.taus))<=3
 
     def trigger(self,cands):
         isData = self.event.isData()>0.5

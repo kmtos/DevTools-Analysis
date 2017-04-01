@@ -25,6 +25,7 @@ from ZZGenWeight import ZZGenWeight
 from utilities import deltaR, deltaPhi
 from DevTools.Utilities.utilities import getCMSSWVersion
 from Candidates import *
+from leptonId import passHppLoose, passHppMedium, passHppTight
 
 try:
     from progressbar import ProgressBar, ETA, Percentage, Bar, SimpleProgress
@@ -377,6 +378,62 @@ class AnalysisBase(object):
             # dont check the rest of data
             if dataset in self.fileNames[0] and isData: break
         return False
+
+    ##################
+    ### Common IDs ###
+    ##################
+    # override in derived class if desired
+    # base selections for H++ analysis
+    ##################
+    ### lepton IDs ###
+    ##################
+    def passLoose(self,cand):
+        return passHppLoose(cand)
+
+    def passMedium(self,cand):
+        return passHppMedium(cand)
+
+    def passTight(self,cand):
+        return passHppTight(cand)
+
+    def looseScale(self,cand):
+        key = 'CutbasedVeto' if abs(cand.eta())<1.479 else 'CutbasedLoose'
+        if cand.collName=='muons': return self.leptonScales.getScale('MediumIDLooseIso',cand,doError=True)
+        elif cand.collName=='electrons': return self.leptonScales.getScale(key,cand,doError=True)
+        else: return [1.,1.,1.]
+
+    def mediumScale(self,cand):
+        if cand.collName=='muons': return self.leptonScales.getScale('MediumIDTightIso',cand,doError=True)
+        elif cand.collName=='electrons': return self.leptonScales.getScale('CutbasedMedium',cand,doError=True)
+        else: return [1.,1.,1.]
+
+    def tightScale(self,cand):
+        if cand.collName=='muons': return self.leptonScales.getScale('MediumIDTightIso',cand,doError=True)
+        elif cand.collName=='electrons': return self.leptonScales.getScale('CutbasedTight',cand,doError=True)
+        else: return [1.,1.,1.]
+
+    def mediumFakeRate(self,cand):
+        return self.fakeRates.getFakeRate(cand,'HppMedium','HppLoose',doError=True)
+
+    def tightFakeRate(self,cand):
+        return self.fakeRates.getFakeRate(cand,'HppTight','HppLoose',doError=True)
+
+    def getPassingCands(self,mode,*colls):
+        if mode=='Loose': passMode = self.passLoose
+        elif mode=='Medium': passMode = self.passMedium
+        elif mode=='Tight': passMode = self.passTight
+        else: return []
+        cands = []
+        for coll in colls:
+            cands += self.getCands(coll,passMode)
+        return cands
+
+    def numJets(self,cleanJets,mode,pt):
+        jetColl = self.getCands(
+            cleanJets,
+            lambda cand: getattr(cand,mode)()>0.5 and cand.pt()>pt
+        )
+        return len(jetColl)
 
     ##########################
     ### add object to tree ###
