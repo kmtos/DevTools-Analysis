@@ -384,9 +384,6 @@ class AnalysisBase(object):
     ##################
     # override in derived class if desired
     # base selections for H++ analysis
-    ##################
-    ### lepton IDs ###
-    ##################
     def passLoose(self,cand):
         return passHppLoose(cand)
 
@@ -417,6 +414,9 @@ class AnalysisBase(object):
 
     def tightFakeRate(self,cand):
         return self.fakeRates.getFakeRate(cand,'HppTight','HppLoose',doError=True)
+
+    def tightFromMediumFakeRate(self,cand):
+        return self.fakeRates.getFakeRate(cand,'HppTight','HppMedium',doError=True)
 
     def getPassingCands(self,mode,*colls):
         if mode=='Loose': passMode = self.passLoose
@@ -458,7 +458,7 @@ class AnalysisBase(object):
         self.addCandVar(label,'phi','phi','F')
         self.addCandVar(label,'energy','energy','F')
 
-    def addLepton(self,label):
+    def addLepton(self,label,doId=False,doScales=False,doFakes=False,doErrors=False):
         '''Add variables relevant for leptons'''
         self.addCandVar(label,'pt','pt','F')
         self.addCandVar(label,'eta','eta','F')
@@ -481,6 +481,29 @@ class AnalysisBase(object):
         self.addFlavorDependentCandVar(label,'genIsPrompt',    {'electrons':'genIsPrompt',    'muons':'genIsPrompt',    '':''},'I')
         self.addFlavorDependentCandVar(label,'genIsFromTau',   {'electrons':'genIsFromTau',   'muons':'genIsFromTau',   '':''},'I')
         self.addFlavorDependentCandVar(label,'genIsFromHadron',{'electrons':'genIsFromHadron','muons':'genIsFromHadron','':''},'I')
+        if doId:
+            self.tree.add(lambda cands: self.passMedium(cands[label]),                     '{0}_passMedium'.format(label), 'I')
+            self.tree.add(lambda cands: self.passTight(cands[label]),                      '{0}_passTight'.format(label), 'I')
+        if doScales:
+            self.tree.add(lambda cands: self.looseScale(cands[label])[0],                  '{0}_looseScale'.format(label), 'F')
+            if doErrors: self.tree.add(lambda cands: self.looseScale(cands[label])[1],     '{0}_looseScaleUp'.format(label), 'F')
+            if doErrors: self.tree.add(lambda cands: self.looseScale(cands[label])[2],     '{0}_looseScaleDown'.format(label), 'F')
+            self.tree.add(lambda cands: self.mediumScale(cands[label])[0],                 '{0}_mediumScale'.format(label), 'F')
+            if doErrors: self.tree.add(lambda cands: self.mediumScale(cands[label])[1],    '{0}_mediumScaleUp'.format(label), 'F')
+            if doErrors: self.tree.add(lambda cands: self.mediumScale(cands[label])[2],    '{0}_mediumScaleDown'.format(label), 'F')
+            self.tree.add(lambda cands: self.tightScale(cands[label])[0],                  '{0}_tightScale'.format(label), 'F')
+            if doErrors: self.tree.add(lambda cands: self.tightScale(cands[label])[1],     '{0}_tightScaleUp'.format(label), 'F')
+            if doErrors: self.tree.add(lambda cands: self.tightScale(cands[label])[2],     '{0}_tightScaleDown'.format(label), 'F')
+        if doFakes:
+            self.tree.add(lambda cands: self.mediumFakeRate(cands[label])[0],              '{0}_mediumFakeRate'.format(label), 'F')
+            if doErrors: self.tree.add(lambda cands: self.mediumFakeRate(cands[label])[1], '{0}_mediumFakeRateUp'.format(label), 'F')
+            if doErrors: self.tree.add(lambda cands: self.mediumFakeRate(cands[label])[2], '{0}_mediumFakeRateDown'.format(label), 'F')
+            self.tree.add(lambda cands: self.tightFakeRate(cands[label])[0],               '{0}_tightFakeRate'.format(label), 'F')
+            if doErrors: self.tree.add(lambda cands: self.tightFakeRate(cands[label])[1],  '{0}_tightFakeRateUp'.format(label), 'F')
+            if doErrors: self.tree.add(lambda cands: self.tightFakeRate(cands[label])[2],  '{0}_tightFakeRateDown'.format(label), 'F')
+            self.tree.add(lambda cands: self.tightFromMediumFakeRate(cands[label])[0],               '{0}_tightFromMediumFakeRate'.format(label), 'F')
+            if doErrors: self.tree.add(lambda cands: self.tightFromMediumFakeRate(cands[label])[1],  '{0}_tightFromMediumFakeRateUp'.format(label), 'F')
+            if doErrors: self.tree.add(lambda cands: self.tightFromMediumFakeRate(cands[label])[2],  '{0}_tightFromMediumFakeRateDown'.format(label), 'F')
 
     def genDeltaR(self,cand):
         '''Get the gen level deltaR'''
