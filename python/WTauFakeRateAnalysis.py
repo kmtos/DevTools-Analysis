@@ -99,6 +99,7 @@ class WTauFakeRateAnalysis(AnalysisBase):
         # quality
         if muons[0].pt()<25: return candidate
         if taus[0].pt()<20: return candidate
+        if muons[0].charge()!=taus[0].charge(): return candidate
         z = DiCandidate(muons[0],taus[0])
         if z.deltaR()<0.5: return candidate
 

@@ -158,7 +158,11 @@ def passWZTight(cand,version='80X'):
 def passHppLooseElectron(electron):
     pt = electron.pt()
     if pt<=10: return False
-    return electron.cutBasedVeto()>0.5
+    eta = electron.eta()
+    if abs(eta)<1.479:
+        return electron.cutBasedVeto()>0.5
+    else:
+        return electron.cutBasedLoose()>0.5
 
 def passHppLooseMuon(muon,version='80X'):
     pt = muon.pt()
@@ -186,7 +190,8 @@ def passHppLooseTau(tau):
     if tau.againstElectronVLooseMVA6()<0.5: return False
     # remove iso
     #if tau.byVLooseIsolationMVArun2v1DBoldDMwLT()<0.5: return False
-    if tau.byIsolationMVArun2v1DBoldDMwLTraw()<-0.8: return False # custom vvloose isolation
+    #if tau.byIsolationMVArun2v1DBoldDMwLTraw()<-0.8: return False # custom vvloose isolation
+    if tau.byIsolationMVArun2v1DBoldDMwLTraw()<-0.2: return False # custom vvloose isolation
     return True
 
 def passHppLoose(cand,version='80X'):

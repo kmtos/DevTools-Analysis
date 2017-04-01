@@ -640,8 +640,8 @@ class TriggerScales(object):
         eff_data, eff_data_up, eff_data_down = self.getDataEfficiency(triggers,cands,doError=True)
         eff_mc, eff_mc_up, eff_mc_down = self.getMCEfficiency(triggers,cands,doError=True)
         if eff_mc:
-            val = eff_data/eff_mc
-            val_up = eff_data_up/eff_mc_up
-            val_down = eff_data_down/eff_mc_down
+            val = eff_data/eff_mc if eff_mc else 1.
+            val_up = eff_data_up/eff_mc_up if eff_mc_up else 1.
+            val_down = eff_data_down/eff_mc_down if eff_mc_down else 1.
             return (val,val_up,val_down) if doError else val
         return [1.,1.,1.] if doError else 1.
