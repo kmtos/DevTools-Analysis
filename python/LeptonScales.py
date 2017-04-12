@@ -190,7 +190,7 @@ class LeptonScales(object):
     def __getTauScale(self,leptonId,cand):
         #pt  = cand.pt()
         #eta = cand.eta()
-        return 1., 0. # simple recommendation, 6% error
+        return 0.95, 0. # simple recommendation, 5% error
 
     def __getMuonTrackingScale(self,cand):
         pt  = cand.pt()

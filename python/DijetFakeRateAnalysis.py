@@ -54,6 +54,7 @@ class DijetFakeRateAnalysis(AnalysisBase):
 
         # lead jet
         self.addJet('leadJet')
+        self.addDiCandidate('lj')
 
         # lepton
         self.addLeptonMet('w')
@@ -75,6 +76,7 @@ class DijetFakeRateAnalysis(AnalysisBase):
             'l1' : None,
             'w' : None,
             'leadJet' : None,
+            'lj': None,
             'met': self.pfmet
         }
 
@@ -105,6 +107,7 @@ class DijetFakeRateAnalysis(AnalysisBase):
         candidate['l1'] = bestCand
         candidate['w'] = MetCompositeCandidate(self.pfmet,bestCand)
         candidate['leadJet'] = bestJet
+        candidate['lj'] = DiCandidate(bestCand,bestJet)
 
         return candidate
 

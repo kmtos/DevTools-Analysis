@@ -523,8 +523,8 @@ class AnalysisBase(object):
         genPhi = cand.genJetPhi()
         return deltaR(eta,phi,genEta,genPhi)
 
-    def addDiJet(self,label):
-        '''Add variables relevant for a dijet candidate'''
+    def addDiCandidate(self,label):
+        '''Add variables relevant for a two object candidate'''
         self.addCandVar(label,'mass','M','F')
         self.addCandVar(label,'pt','Pt','F')
         self.addCandVar(label,'eta','Eta','F')
@@ -534,16 +534,13 @@ class AnalysisBase(object):
         self.addCandVar(label,'deltaPhi','deltaPhi','F')
         self.addCandVar(label,'energy','Energy','F')
 
+    def addDiJet(self,label):
+        '''Add variables relevant for a dijet candidate'''
+        self.addDiCandidate(label)
+
     def addDiLepton(self,label):
         '''Add variables relevant for a dilepton candidate'''
-        self.addCandVar(label,'mass','M','F')
-        self.addCandVar(label,'pt','Pt','F')
-        self.addCandVar(label,'eta','Eta','F')
-        self.addCandVar(label,'phi','Phi','F')
-        self.addCandVar(label,'deltaR','deltaR','F')
-        self.addCandVar(label,'deltaEta','deltaEta','F')
-        self.addCandVar(label,'deltaPhi','deltaPhi','F')
-        self.addCandVar(label,'energy','Energy','F')
+        self.addDiCandidate(label)
 
     def addLeptonMet(self,label):
         '''Add variables related to a lepton + met'''
