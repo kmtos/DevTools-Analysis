@@ -394,9 +394,10 @@ class AnalysisBase(object):
         return passHppTight(cand)
 
     def looseScale(self,cand):
-        key = 'CutbasedVeto' if abs(cand.eta())<1.479 else 'CutbasedLoose'
+        #key = 'CutbasedVeto' if abs(cand.eta())<1.479 else 'CutbasedLoose'
         if cand.collName=='muons': return self.leptonScales.getScale('MediumIDLooseIso',cand,doError=True)
-        elif cand.collName=='electrons': return self.leptonScales.getScale(key,cand,doError=True)
+        #elif cand.collName=='electrons': return self.leptonScales.getScale(key,cand,doError=True)
+        elif cand.collName=='electrons': return self.leptonScales.getScale('CutbasedLoose',cand,doError=True)
         else: return [1.,1.,1.]
 
     def mediumScale(self,cand):
@@ -405,7 +406,8 @@ class AnalysisBase(object):
         else: return [1.,1.,1.]
 
     def tightScale(self,cand):
-        if cand.collName=='muons': return self.leptonScales.getScale('MediumIDTightIso',cand,doError=True)
+        #if cand.collName=='muons': return self.leptonScales.getScale('MediumIDTightIso',cand,doError=True)
+        if cand.collName=='muons': return self.leptonScales.getScale('TightIDTightIso',cand,doError=True)
         elif cand.collName=='electrons': return self.leptonScales.getScale('CutbasedTight',cand,doError=True)
         else: return [1.,1.,1.]
 
@@ -438,6 +440,41 @@ class AnalysisBase(object):
     ##########################
     ### add object to tree ###
     ##########################
+    def addTriggers(self):
+        if self.version=='76X':
+            # single lepton
+            self.tree.add(lambda cands: self.event.IsoMu20Pass(), 'pass_IsoMu20', 'I')
+            self.tree.add(lambda cands: self.event.IsoTkMu20Pass(), 'pass_IsoTkMu20', 'I')
+            self.tree.add(lambda cands: self.event.Ele23_WPLoose_GsfPass(), 'pass_Ele23_WPLoose_Gsf', 'I')
+            # double lepton
+            self.tree.add(lambda cands: self.event.Mu17_TrkIsoVVL_Mu8_TrkIsoVVL_DZPass(), 'pass_Mu17_TrkIsoVVL_Mu8_TrkIsoVVL_DZ', 'I')
+            self.tree.add(lambda cands: self.event.Mu17_TrkIsoVVL_TkMu8_TrkIsoVVL_DZPass(), 'pass_Mu17_TrkIsoVVL_TkMu8_TrkIsoVVL_DZ', 'I')
+            self.tree.add(lambda cands: self.event.Ele17_Ele12_CaloIdL_TrackIdL_IsoVL_DZPass(), 'pass_Ele17_Ele12_CaloIdL_TrackIdL_IsoVL_DZ', 'I')
+            self.tree.add(lambda cands: self.event.Mu8_TrkIsoVVL_Ele17_CaloIdL_TrackIdL_IsoVLPass(), 'pass_Mu8_TrkIsoVVL_Ele17_CaloIdL_TrackIdL_IsoVL', 'I')
+            self.tree.add(lambda cands: self.event.Mu17_TrkIsoVVL_Ele12_CaloIdL_TrackIdL_IsoVLPass(), 'pass_Mu17_TrkIsoVVL_Ele12_CaloIdL_TrackIdL_IsoVL', 'I')
+            self.tree.add(lambda cands: self.event.DoubleMediumIsoPFTau35_Trk1_eta2p1_RegPass(), 'pass_DoubleMediumIsoPFTau35_Trk1_eta2p1_Reg', 'I')
+        else:
+            # single lepton
+            self.tree.add(lambda cands: self.event.IsoMu24Pass(), 'pass_IsoMu24', 'I')
+            self.tree.add(lambda cands: self.event.IsoTkMu24Pass(), 'pass_IsoTkMu24', 'I')
+            self.tree.add(lambda cands: self.event.Mu50Pass(), 'pass_Mu50', 'I')
+            self.tree.add(lambda cands: self.event.TkMu50Pass(), 'pass_TkMu50', 'I')
+            self.tree.add(lambda cands: self.event.Ele27_WPTight_GsfPass(), 'pass_Ele27_WPTight_Gsf', 'I')
+            # double lepton
+            self.tree.add(lambda cands: self.event.Mu17_TrkIsoVVL_Mu8_TrkIsoVVL_DZPass(), 'pass_Mu17_TrkIsoVVL_Mu8_TrkIsoVVL_DZ', 'I')
+            self.tree.add(lambda cands: self.event.Mu17_TrkIsoVVL_TkMu8_TrkIsoVVL_DZPass(), 'pass_Mu17_TrkIsoVVL_TkMu8_TrkIsoVVL_DZ', 'I')
+            self.tree.add(lambda cands: self.event.Ele23_Ele12_CaloIdL_TrackIdL_IsoVL_DZPass(), 'pass_Ele23_Ele12_CaloIdL_TrackIdL_IsoVL_DZ', 'I')
+            self.tree.add(lambda cands: self.event.Mu8_TrkIsoVVL_Ele23_CaloIdL_TrackIdL_IsoVLPass(), 'pass_Mu8_TrkIsoVVL_Ele23_CaloIdL_TrackIdL_IsoVL', 'I')
+            self.tree.add(lambda cands: self.event.Mu23_TrkIsoVVL_Ele8_CaloIdL_TrackIdL_IsoVLPass(), 'pass_Mu23_TrkIsoVVL_Ele8_CaloIdL_TrackIdL_IsoVL', 'I')
+            self.tree.add(lambda cands: self.event.Mu8_TrkIsoVVL_Ele23_CaloIdL_TrackIdL_IsoVL_DZPass(), 'pass_Mu8_TrkIsoVVL_Ele23_CaloIdL_TrackIdL_IsoVL_DZ', 'I')
+            self.tree.add(lambda cands: self.event.Mu23_TrkIsoVVL_Ele8_CaloIdL_TrackIdL_IsoVL_DZPass(), 'pass_Mu23_TrkIsoVVL_Ele8_CaloIdL_TrackIdL_IsoVL_DZ', 'I')
+            self.tree.add(lambda cands: self.event.DoubleMediumCombinedIsoPFTau35_Trk1_eta2p1_RegPass(), 'pass_DoubleMediumCombinedIsoPFTau35_Trk1_eta2p1_Reg', 'I')
+            # triple lepton
+            self.tree.add(lambda cands: self.event.Ele16_Ele12_Ele8_CaloIdL_TrackIdLPass(), 'pass_Ele16_Ele12_Ele8_CaloIdL_TrackIdL', 'I')
+            self.tree.add(lambda cands: self.event.Mu8_DiEle12_CaloIdL_TrackIdLPass(), 'pass_Mu8_DiEle12_CaloIdL_TrackIdL', 'I')
+            self.tree.add(lambda cands: self.event.DiMu9_Ele9_CaloIdL_TrackIdLPass(), 'pass_DiMu9_Ele9_CaloIdL_TrackIdL', 'I')
+            self.tree.add(lambda cands: self.event.TripleMu_12_10_5Pass(), 'pass_TripleMu_12_10_5', 'I')
+
     def addCandVar(self,label,varLabel,var,rootType):
         '''Add a variable for a cand'''
         self.tree.add(lambda cands: getattr(cands[label],var)(), '{0}_{1}'.format(label,varLabel), rootType)
@@ -467,8 +504,8 @@ class AnalysisBase(object):
         self.addCandVar(label,'charge','charge','I')
         self.addCandVar(label,'dz','dz','F')
         self.addCandVar(label,'pdgId','pdgId','I')
-        self.addFlavorDependentCandVar(label,'dxy',      {'electrons':'dB2D',          'muons':'dB2D', 'taus':'dxy',  '':''},'F')
-        self.addFlavorDependentCandVar(label,'isolation',{'electrons':'relPFIsoRhoR03','muons':'relPFIsoDeltaBetaR04','':''},'F')
+        self.addFlavorDependentCandVar(label,'dxy',            {'electrons':'dB2D',           'muons':'dB2D',      'taus':'dxy',         '':''},'F')
+        self.addFlavorDependentCandVar(label,'isolation',      {'electrons':'relPFIsoRhoR03', 'muons':'relPFIsoDeltaBetaR04',            '':''},'F')
         self.addFlavorDependentCandVar(label,'genMatch',       {'electrons':'genMatch',       'muons':'genMatch',  'taus':'genJetMatch', '':''},'I')
         self.tree.add(lambda cands: self.genDeltaR(cands[label]) if isinstance(cands[label],Electron) or isinstance(cands[label],Muon) else self.genJetDeltaR(cands[label]), '{0}_genDeltaR'.format(label), 'F')
         self.addFlavorDependentCandVar(label,'genStatus',      {'electrons':'genStatus',      'muons':'genStatus', 'taus':'genJetStatus','':''},'I')
@@ -478,9 +515,9 @@ class AnalysisBase(object):
         self.addFlavorDependentCandVar(label,'genPhi',         {'electrons':'genPhi',         'muons':'genPhi',    'taus':'genJetPhi',   '':''},'F')
         self.addFlavorDependentCandVar(label,'genEnergy',      {'electrons':'genEnergy',      'muons':'genEnergy', 'taus':'genJetEnergy','':''},'F')
         self.addFlavorDependentCandVar(label,'genCharge',      {'electrons':'genCharge',      'muons':'genCharge', 'taus':'genJetCharge','':''},'I')
-        self.addFlavorDependentCandVar(label,'genIsPrompt',    {'electrons':'genIsPrompt',    'muons':'genIsPrompt',    '':''},'I')
-        self.addFlavorDependentCandVar(label,'genIsFromTau',   {'electrons':'genIsFromTau',   'muons':'genIsFromTau',   '':''},'I')
-        self.addFlavorDependentCandVar(label,'genIsFromHadron',{'electrons':'genIsFromHadron','muons':'genIsFromHadron','':''},'I')
+        self.addFlavorDependentCandVar(label,'genIsPrompt',    {'electrons':'genIsPrompt',    'muons':'genIsPrompt',                     '':''},'I')
+        self.addFlavorDependentCandVar(label,'genIsFromTau',   {'electrons':'genIsFromTau',   'muons':'genIsFromTau',                    '':''},'I')
+        self.addFlavorDependentCandVar(label,'genIsFromHadron',{'electrons':'genIsFromHadron','muons':'genIsFromHadron',                 '':''},'I')
         if doId:
             self.tree.add(lambda cands: self.passMedium(cands[label]),                     '{0}_passMedium'.format(label), 'I')
             self.tree.add(lambda cands: self.passTight(cands[label]),                      '{0}_passTight'.format(label), 'I')
