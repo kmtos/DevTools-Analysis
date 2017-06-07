@@ -322,9 +322,6 @@ class WZAnalysis(AnalysisBase):
         ]
         return self.checkTrigger(*datasets,**triggerNames)
 
-    def triggerEfficiency(self,cands):
-        return self.triggerScales.getDataEfficiency(triggerList,candList)
-
     def triggerEfficiencyMC(self,cands):
         return self.triggerEfficiency(cands,mode='mc')
 

@@ -26,6 +26,7 @@ from utilities import deltaR, deltaPhi
 from DevTools.Utilities.utilities import getCMSSWVersion
 from Candidates import *
 from leptonId import passHppLoose, passHppMedium, passHppTight
+from photonId import passPhoton, passPreselection
 
 try:
     from progressbar import ProgressBar, ETA, Percentage, Bar, SimpleProgress
@@ -243,7 +244,7 @@ class AnalysisBase(object):
                     self.electrons = [Electron(tree,entry=i,shift=self.shift) for i in range(tree.electrons_count)]
                     self.muons     = [Muon(tree,entry=i,shift=self.shift) for i in range(tree.muons_count)]
                     self.taus      = [Tau(tree,entry=i,shift=self.shift) for i in range(tree.taus_count)]
-                    #self.photons   = [Photon(tree,entry=i,shift=self.shift) for i in range(tree.photons_count)]
+                    if hasattr(tree,'photons_counts'): self.photons   = [Photon(tree,entry=i,shift=self.shift) for i in range(tree.photons_count)]
                     self.jets      = [Jet(tree,entry=i,shift=self.shift) for i in range(tree.jets_count)]
                     self.pfmet     = Met(tree,shift=self.shift)
                     # call per row action
@@ -281,7 +282,7 @@ class AnalysisBase(object):
                     self.electrons = [Electron(tree,entry=i,shift=self.shift) for i in range(tree.electrons_count)]
                     self.muons     = [Muon(tree,entry=i,shift=self.shift) for i in range(tree.muons_count)]
                     self.taus      = [Tau(tree,entry=i,shift=self.shift) for i in range(tree.taus_count)]
-                    #self.photons   = [Photon(tree,entry=i,shift=self.shift) for i in range(tree.photons_count)]
+                    if hasattr(tree, 'photons_count'): self.photons   = [Photon(tree,entry=i,shift=self.shift) for i in range(tree.photons_count)]
                     self.jets      = [Jet(tree,entry=i,shift=self.shift) for i in range(tree.jets_count)]
                     self.pfmet     = Met(tree,shift=self.shift)
                     # call per row action
@@ -393,6 +394,12 @@ class AnalysisBase(object):
     def passTight(self,cand):
         return passHppTight(cand)
 
+    def passPhotonId(self,cand):
+        return passPhoton(cand)
+
+    def passPhotonPreselection(self,cand):
+        return passPreselection(cand)
+
     def looseScale(self,cand):
         #key = 'CutbasedVeto' if abs(cand.eta())<1.479 else 'CutbasedLoose'
         if cand.collName=='muons': return self.leptonScales.getScale('MediumIDLooseIso',cand,doError=True)
@@ -424,6 +431,8 @@ class AnalysisBase(object):
         if mode=='Loose': passMode = self.passLoose
         elif mode=='Medium': passMode = self.passMedium
         elif mode=='Tight': passMode = self.passTight
+        elif mode=='Photon': passMode = self.passPhotonId
+        elif mode=='PhotonPreselection': passMode = self.passPhotonPreselection
         else: return []
         cands = []
         for coll in colls:
@@ -474,6 +483,12 @@ class AnalysisBase(object):
             self.tree.add(lambda cands: self.event.Mu8_DiEle12_CaloIdL_TrackIdLPass(), 'pass_Mu8_DiEle12_CaloIdL_TrackIdL', 'I')
             self.tree.add(lambda cands: self.event.DiMu9_Ele9_CaloIdL_TrackIdLPass(), 'pass_DiMu9_Ele9_CaloIdL_TrackIdL', 'I')
             self.tree.add(lambda cands: self.event.TripleMu_12_10_5Pass(), 'pass_TripleMu_12_10_5', 'I')
+
+    def addPhotonTriggers(self):
+        self.tree.add(lambda cands: self.event.DoublePhoton60Pass(), 'pass_DoublePhoton60', 'I')
+        self.tree.add(lambda cands: self.event.Diphoton30_18_R9Id_OR_IsoCaloId_AND_HE_R9Id_Mass90Pass(), 'pass_Diphoton30_18_R9Id_OR_IsoCaloId_AND_HE_R9Id_Mass90', 'I')
+        self.tree.add(lambda cands: self.event.Photon175Pass(), 'pass_Photon175', 'I')
+        
 
     def addCandVar(self,label,varLabel,var,rootType):
         '''Add a variable for a cand'''
@@ -541,6 +556,19 @@ class AnalysisBase(object):
             self.tree.add(lambda cands: self.tightFromMediumFakeRate(cands[label])[0],               '{0}_tightFromMediumFakeRate'.format(label), 'F')
             if doErrors: self.tree.add(lambda cands: self.tightFromMediumFakeRate(cands[label])[1],  '{0}_tightFromMediumFakeRateUp'.format(label), 'F')
             if doErrors: self.tree.add(lambda cands: self.tightFromMediumFakeRate(cands[label])[2],  '{0}_tightFromMediumFakeRateDown'.format(label), 'F')
+
+    def addPhoton(self,label,doId=False,doScales=False,doFakes=False,doErrors=False):
+        '''Add variables relevant for photons'''
+        self.addCandVar(label,'pt','pt','F')
+        self.addCandVar(label,'eta','eta','F')
+        self.addCandVar(label,'phi','phi','F')
+        self.addCandVar(label,'energy','energy','F')
+        self.addCandVar(label,'mvaNonTrigValues','mvaNonTrigValues','F')
+        self.addCandVar(label,'mvaNonTrigCategories','mvaNonTrigCategories','F')
+        self.addCandVar(label,'r9','r9','F')
+        if doId:
+            self.tree.add(lambda cands: self.passPhotonId(cands[label]),           '{0}_passId'.format(label), 'I')
+            self.tree.add(lambda cands: self.passPhotonPreselection(cands[label]), '{0}_passPreselection'.format(label), 'I')
 
     def genDeltaR(self,cand):
         '''Get the gen level deltaR'''

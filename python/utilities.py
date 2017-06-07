@@ -24,10 +24,7 @@ latestNtuples = {
     '76X' : '2016-09-28_DevTools_76X_v1',
     #'80X' : '2016-07-20_DevTools_80X_v1', # ICHEP 2016
     '80X' : '2017-02-28_DevTools_80X_v1', # Moriond 2017
-}
-
-overrides = {
-   '80X_SingleMuon': '2017-03-20_DevTools_80X_resubmitSingleMuon_v1', 
+    '80XPhoton' : '2017-06-06_DevTools_80X_photon_v1', # Moriond 2017
 }
 
 def getNtupleDirectory(version=None):
@@ -35,8 +32,6 @@ def getNtupleDirectory(version=None):
     if not version: version = getCMSSWVersion()
     if version in latestNtuples:
         return os.path.join(baseDir,latestNtuples[version])
-    if version in overrides:
-        return os.path.join(baseDir,overrides[version])
 
 def getTestFiles(sample,n=1,version=None):
     if not version: version = getCMSSWVersion()
@@ -62,7 +57,7 @@ def getTestFiles(sample,n=1,version=None):
 
     if sample not in sampleMap: return []
     
-    files = [f.replace('/hdfs','') for f in glob.glob('{0}/{1}/*/*/*/*.root'.format(getNtupleDirectory(),sampleMap[sample]))]
+    files = [f.replace('/hdfs','') for f in glob.glob('{0}/{1}/*/*/*/*.root'.format(getNtupleDirectory(version=version),sampleMap[sample]))]
 
     if sample=='wz': return files[1:min(n+1,len(files)-1)] # temporary hack to get a better WZ sample (Summer16 MC)
     return files[:min(n,len(files))]

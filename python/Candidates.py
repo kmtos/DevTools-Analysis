@@ -73,20 +73,6 @@ class Muon(Candidate):
         if self.shift=='MuonEnDown': var = 'pt_muonEnDown'
         return self.get(var)
 
-    def eta(self):
-        var = 'rochesterEta'
-        var = 'eta'
-        if self.shift=='MuonEnUp': var = 'eta_muonEnUp'
-        if self.shift=='MuonEnDown': var = 'eta_muonEnDown'
-        return self.get(var)
-
-    def phi(self):
-        var = 'rochesterPhi'
-        var = 'phi'
-        if self.shift=='MuonEnUp': var = 'phi_muonEnUp'
-        if self.shift=='MuonEnDown': var = 'phi_muonEnDown'
-        return self.get(var)
-
     def energy(self):
         var = 'rochesterEnergy'
         var = 'energy'
@@ -109,18 +95,6 @@ class Electron(Candidate):
         var = 'pt'
         if self.shift=='ElectronEnUp': var = 'pt_electronEnUp'
         if self.shift=='ElectronEnDown': var = 'pt_electronEnDown'
-        return self.get(var)
-
-    def eta(self):
-        var = 'eta'
-        if self.shift=='ElectronEnUp': var = 'eta_electronEnUp'
-        if self.shift=='ElectronEnDown': var = 'eta_electronEnDown'
-        return self.get(var)
-
-    def phi(self):
-        var = 'phi'
-        if self.shift=='ElectronEnUp': var = 'phi_electronEnUp'
-        if self.shift=='ElectronEnDown': var = 'phi_electronEnDown'
         return self.get(var)
 
     def energy(self):
@@ -146,18 +120,6 @@ class Tau(Candidate):
         if self.shift=='TauEnDown': var = 'pt_tauEnDown'
         return self.get(var)
 
-    def eta(self):
-        var = 'eta'
-        if self.shift=='TauEnUp': var = 'eta_tauEnUp'
-        if self.shift=='TauEnDown': var = 'eta_tauEnDown'
-        return self.get(var)
-
-    def phi(self):
-        var = 'phi'
-        if self.shift=='TauEnUp': var = 'phi_tauEnUp'
-        if self.shift=='TauEnDown': var = 'phi_tauEnDown'
-        return self.get(var)
-
     def energy(self):
         var = 'energy'
         if self.shift=='TauEnUp': var = 'energy_tauEnUp'
@@ -179,18 +141,6 @@ class Jet(Candidate):
         var = 'pt'
         if self.shift=='JetEnUp': var = 'pt_jetEnUp'
         if self.shift=='JetEnDown': var = 'pt_jetEnDown'
-        return self.get(var)
-
-    def eta(self):
-        var = 'eta'
-        if self.shift=='JetEnUp': var = 'eta_jetEnUp'
-        if self.shift=='JetEnDown': var = 'eta_jetEnDown'
-        return self.get(var)
-
-    def phi(self):
-        var = 'phi'
-        if self.shift=='JetEnUp': var = 'phi_jetEnUp'
-        if self.shift=='JetEnDown': var = 'phi_jetEnDown'
         return self.get(var)
 
     def energy(self):
