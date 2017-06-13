@@ -26,7 +26,7 @@ from utilities import deltaR, deltaPhi
 from DevTools.Utilities.utilities import getCMSSWVersion
 from Candidates import *
 from leptonId import passHppLoose, passHppMedium, passHppTight
-from photonId import passPhoton, passPreselection
+from photonId import passPhoton, passPreselection, passPreselectionNoElectronVeto
 
 try:
     from progressbar import ProgressBar, ETA, Percentage, Bar, SimpleProgress
@@ -400,6 +400,9 @@ class AnalysisBase(object):
     def passPhotonPreselection(self,cand):
         return passPreselection(cand)
 
+    def passPhotonPreselectionNoElectronVeto(self,cand):
+        return passPreselectionNoElectronVeto(cand)
+
     def looseScale(self,cand):
         #key = 'CutbasedVeto' if abs(cand.eta())<1.479 else 'CutbasedLoose'
         if cand.collName=='muons': return self.leptonScales.getScale('MediumIDLooseIso',cand,doError=True)
@@ -433,6 +436,7 @@ class AnalysisBase(object):
         elif mode=='Tight': passMode = self.passTight
         elif mode=='Photon': passMode = self.passPhotonId
         elif mode=='PhotonPreselection': passMode = self.passPhotonPreselection
+        elif mode=='PhotonPreselectionNoElectronVeto': passMode = self.passPhotonPreselectionNoElectronVeto
         else: return []
         cands = []
         for coll in colls:
@@ -569,6 +573,7 @@ class AnalysisBase(object):
         if doId:
             self.tree.add(lambda cands: self.passPhotonId(cands[label]),           '{0}_passId'.format(label), 'I')
             self.tree.add(lambda cands: self.passPhotonPreselection(cands[label]), '{0}_passPreselection'.format(label), 'I')
+            self.tree.add(lambda cands: self.passPhotonPreselectionNoElectronVeto(cands[label]), '{0}_passPreselectionNoElectronVeto'.format(label), 'I')
 
     def genDeltaR(self,cand):
         '''Get the gen level deltaR'''

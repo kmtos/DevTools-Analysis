@@ -22,11 +22,14 @@ from DevTools.Analyzer.TauAnalysis import main as runTau
 from DevTools.Analyzer.TriggerCountAnalysis import main as runTriggerCount
 from DevTools.Analyzer.ThreeLeptonAnalysis import main as runThreeLepton
 from DevTools.Analyzer.ThreePhotonAnalysis import main as runThreePhoton
+from DevTools.Analyzer.TwoPhotonAnalysis import main as runTwoPhoton
+from DevTools.Analyzer.EGAnalysis import main as runEG
+from DevTools.Analyzer.MMGAnalysis import main as runMMG
 
 def parse_command_line(argv):
     parser = argparse.ArgumentParser(description='Submit analyzers')
 
-    parser.add_argument('analysis', type=str, choices=['ZZ', 'WZ', 'DY', 'ZFakeRate', 'Charge', 'TauCharge', 'Hpp3l', 'Hpp4l', 'Electron', 'Muon','Tau', 'DijetFakeRate', 'WTauFakeRate', 'WFakeRate','TriggerCount','ThreeLepton','ThreePhoton'], help='Analysis to submit')
+    parser.add_argument('analysis', type=str, choices=['ZZ', 'WZ', 'DY', 'ZFakeRate', 'Charge', 'TauCharge', 'Hpp3l', 'Hpp4l', 'Electron', 'Muon','Tau', 'DijetFakeRate', 'WTauFakeRate', 'WFakeRate','TriggerCount','ThreeLepton','ThreePhoton','TwoPhoton','EG','MMG'], help='Analysis to submit')
     parser.add_argument('shift', type=str, nargs='?', default='', choices=['','ElectronEnUp','ElectronEnDown','MuonEnUp','MuonEnDown','TauEnUp','TauEnDown','JetEnUp','JetEnDown','JetResUp','JetResDown','UnclusteredEnUp','UnclusteredEnDown'], help='Energy shift')
 
     return parser.parse_args(argv)
@@ -77,6 +80,12 @@ def main(argv=None):
         func = runThreeLepton
     elif args.analysis=='ThreePhoton':
         func = runThreePhoton
+    elif args.analysis=='TwoPhoton':
+        func = runTwoPhoton
+    elif args.analysis=='EG':
+        func = runEG
+    elif args.analysis=='MMG':
+        func = runMMG
     else:
         return 0
 

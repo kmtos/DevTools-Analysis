@@ -5,11 +5,9 @@ from Candidates import Photon
 def passPhoton(photon,version='80X'):
     return photon.mvaNonTrigWP90()
 
-def passPreselection(photon,version='80X'):
+def passPreselectionNoElectronVeto(photon,version='80X'):
     if photon.pt()<10: return False
     if photon.eta()>2.5: return False
-    # electron veto
-    if not photon.passElectronVeto(): return False
     # selections to match the online trigger requirements
     if photon.hadronicOverEM()>=0.08: return False
     if photon.isEB():
@@ -25,3 +23,8 @@ def passPreselection(photon,version='80X'):
             if photon.phoPhotonIsolation()>=4.0: return False  # TODO: verify this is PF
             if photon.trackIso()>=6.0: return False
     return True
+
+def passPreselection(photon,version='80X'):
+    # electron veto
+    if not photon.passElectronVeto(): return False
+    return passPreselectionNoElectronVeto(photon,version)
