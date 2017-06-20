@@ -26,7 +26,7 @@ from utilities import deltaR, deltaPhi
 from DevTools.Utilities.utilities import getCMSSWVersion
 from Candidates import *
 from leptonId import passHppLoose, passHppMedium, passHppTight
-from photonId import passPhoton, passPreselection, passPreselectionNoElectronVeto
+from photonId import passPhoton, passPreselection, passPreselectionNoElectronVeto, passElectronVeto
 
 try:
     from progressbar import ProgressBar, ETA, Percentage, Bar, SimpleProgress
@@ -397,6 +397,9 @@ class AnalysisBase(object):
     def passPhotonId(self,cand):
         return passPhoton(cand)
 
+    def passElectronVeto(self,cand):
+        return passElectronVeto(cand)
+
     def passPhotonPreselection(self,cand):
         return passPreselection(cand)
 
@@ -435,6 +438,7 @@ class AnalysisBase(object):
         elif mode=='Medium': passMode = self.passMedium
         elif mode=='Tight': passMode = self.passTight
         elif mode=='Photon': passMode = self.passPhotonId
+        elif mode=='ElectronVeto': passMode = self.passElectronVeto
         elif mode=='PhotonPreselection': passMode = self.passPhotonPreselection
         elif mode=='PhotonPreselectionNoElectronVeto': passMode = self.passPhotonPreselectionNoElectronVeto
         else: return []
@@ -507,19 +511,20 @@ class AnalysisBase(object):
         self.addCandVar(label,'pt','et','F')
         self.addCandVar(label,'phi','phi','F')
 
-    def addJet(self,label):
-        '''Add variables relevant for jets'''
+    def addCandidate(self,label):
+        '''Add variables relevant for all objects'''
         self.addCandVar(label,'pt','pt','F')
         self.addCandVar(label,'eta','eta','F')
         self.addCandVar(label,'phi','phi','F')
         self.addCandVar(label,'energy','energy','F')
 
+    def addJet(self,label):
+        '''Add variables relevant for jets'''
+        self.addCandidate(label)
+
     def addLepton(self,label,doId=False,doScales=False,doFakes=False,doErrors=False):
         '''Add variables relevant for leptons'''
-        self.addCandVar(label,'pt','pt','F')
-        self.addCandVar(label,'eta','eta','F')
-        self.addCandVar(label,'phi','phi','F')
-        self.addCandVar(label,'energy','energy','F')
+        self.addCandidate(label)
         self.addCandVar(label,'charge','charge','I')
         self.addCandVar(label,'dz','dz','F')
         self.addCandVar(label,'pdgId','pdgId','I')
@@ -563,15 +568,16 @@ class AnalysisBase(object):
 
     def addPhoton(self,label,doId=False,doScales=False,doFakes=False,doErrors=False):
         '''Add variables relevant for photons'''
-        self.addCandVar(label,'pt','pt','F')
-        self.addCandVar(label,'eta','eta','F')
-        self.addCandVar(label,'phi','phi','F')
-        self.addCandVar(label,'energy','energy','F')
+        self.addCandidate(label)
         self.addCandVar(label,'mvaNonTrigValues','mvaNonTrigValues','F')
         self.addCandVar(label,'mvaNonTrigCategories','mvaNonTrigCategories','F')
         self.addCandVar(label,'r9','r9','F')
+        self.addCandVar(label,'chargedIso','phoChargedIsolation','F')
+        self.addCandVar(label,'neutralHadronIso','phoNeutralHadronIsolation','F')
+        self.addCandVar(label,'photonIso','phoPhotonIsolation','F')
         if doId:
             self.tree.add(lambda cands: self.passPhotonId(cands[label]),           '{0}_passId'.format(label), 'I')
+            self.tree.add(lambda cands: self.passElectronVeto(cands[label]),       '{0}_passElectronVeto'.format(label), 'I')
             self.tree.add(lambda cands: self.passPhotonPreselection(cands[label]), '{0}_passPreselection'.format(label), 'I')
             self.tree.add(lambda cands: self.passPhotonPreselectionNoElectronVeto(cands[label]), '{0}_passPreselectionNoElectronVeto'.format(label), 'I')
 

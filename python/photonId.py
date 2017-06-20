@@ -24,7 +24,10 @@ def passPreselectionNoElectronVeto(photon,version='80X'):
             if photon.trackIso()>=6.0: return False
     return True
 
+def passElectronVeto(photon,version='80X'):
+    return photon.passElectronVeto()
+
 def passPreselection(photon,version='80X'):
     # electron veto
-    if not photon.passElectronVeto(): return False
+    if not passElectronVeto(photon,version): return False
     return passPreselectionNoElectronVeto(photon,version)
