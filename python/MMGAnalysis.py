@@ -76,7 +76,8 @@ class MMGAnalysis(AnalysisBase):
         # get leptons
         medLeps = self.getPassingCands('Medium',self.muons)
         if len(medLeps)<2: return candidate # need at least 2 leptons
-        phos = self.getPassingCands('PhotonPreselection',self.photons)
+        #phos = self.getPassingCands('PhotonPreselectionNoElectronVeto',self.photons)
+        phos = self.photons
 
         # get invariant masses
         bestZ = ()

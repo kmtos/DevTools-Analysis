@@ -54,16 +54,19 @@ class AnalysisBase(object):
         if not hasattr(self,'preselection'): self.preselection = '1'
         # input files
         self.fileNames = []
-        if isinstance(inputFileNames, basestring): # inputFiles is a file name
-            if os.path.isfile(inputFileNames):     # single file
-                if inputFileNames[-4:] == 'root':  # file is a root file
+        if os.path.isfile('PSet.py'):                # grab input files from crab pset
+            import PSet
+            self.fileNames = list(PSet.process.source.fileNames)
+        elif isinstance(inputFileNames, basestring): # inputFiles is a file name
+            if os.path.isfile(inputFileNames):       # single file
+                if inputFileNames[-4:] == 'root':    # file is a root file
                     self.fileNames += [inputFileNames]
-                else:                          # file is list of files
+                else:                                # file is list of files
                     with open(inputFileNames,'r') as f:
                         for line in f:
                             self.fileNames += [line.strip()]
         else:
-            self.fileNames = inputFileNames # already a python list or a cms.untracked.vstring()
+            self.fileNames = inputFileNames          # already a python list or a cms.untracked.vstring()
         if not isinstance(outputFileName, basestring): # its a cms.string(), get value
             outputFileName = outputFileName.value()
         # test for hdfs
@@ -237,17 +240,7 @@ class AnalysisBase(object):
                     total += 1
                     #tree.GetEntry(skimlist.Next())
                     self.pbar.update(total)
-                    # load objects
-                    self.event     = Event(tree)
-                    if self.event.isData(): self.shift = ''
-                    if not self.event.isData(): self.gen = [GenParticle(tree,entry=i) for i in range(tree.genParticles_count)]
-                    self.electrons = [Electron(tree,entry=i,shift=self.shift) for i in range(tree.electrons_count)]
-                    self.muons     = [Muon(tree,entry=i,shift=self.shift) for i in range(tree.muons_count)]
-                    self.taus      = [Tau(tree,entry=i,shift=self.shift) for i in range(tree.taus_count)]
-                    if hasattr(tree,'photons_counts'): self.photons   = [Photon(tree,entry=i,shift=self.shift) for i in range(tree.photons_count)]
-                    self.jets      = [Jet(tree,entry=i,shift=self.shift) for i in range(tree.jets_count)]
-                    self.pfmet     = Met(tree,shift=self.shift)
-                    # call per row action
+                    self.setupEvent(tree)
                     self.perRowAction()
                 tfile.Close('R')
             self.pbar.update(self.totalEntries)
@@ -275,19 +268,22 @@ class AnalysisBase(object):
                         hours, mins = divmod(mins,60)
                         logging.info('{0}: Processing event {1}/{2} - {3}:{4:02d}:{5:02d} remaining'.format(self.outputTreeName,total,self.totalEntries,hours,mins,secs))
                         self.flush()
-                    # load objects
-                    self.event     = Event(tree)
-                    if self.event.isData(): self.shift = ''
-                    if not self.event.isData(): self.gen = [GenParticle(tree,entry=i) for i in range(tree.genParticles_count)]
-                    self.electrons = [Electron(tree,entry=i,shift=self.shift) for i in range(tree.electrons_count)]
-                    self.muons     = [Muon(tree,entry=i,shift=self.shift) for i in range(tree.muons_count)]
-                    self.taus      = [Tau(tree,entry=i,shift=self.shift) for i in range(tree.taus_count)]
-                    if hasattr(tree, 'photons_count'): self.photons   = [Photon(tree,entry=i,shift=self.shift) for i in range(tree.photons_count)]
-                    self.jets      = [Jet(tree,entry=i,shift=self.shift) for i in range(tree.jets_count)]
-                    self.pfmet     = Met(tree,shift=self.shift)
-                    # call per row action
+                    self.setupEvent(tree)
                     self.perRowAction()
                 tfile.Close('R')
+
+    def setupEvent(self,tree):
+        '''Setup the event objects'''
+        # load objects
+        self.event     = Event(tree)
+        if self.event.isData(): self.shift = ''
+        if not self.event.isData(): self.gen = [GenParticle(tree,entry=i) for i in range(tree.genParticles_count)]
+        self.electrons = [Electron(tree,entry=i,shift=self.shift) for i in range(tree.electrons_count)]
+        self.muons     = [Muon(tree,entry=i,shift=self.shift) for i in range(tree.muons_count)]
+        self.taus      = [Tau(tree,entry=i,shift=self.shift) for i in range(tree.taus_count)]
+        if hasattr(tree, 'photons_count'): self.photons   = [Photon(tree,entry=i,shift=self.shift) for i in range(tree.photons_count)]
+        self.jets      = [Jet(tree,entry=i,shift=self.shift) for i in range(tree.jets_count)]
+        self.pfmet     = Met(tree,shift=self.shift)
 
     def perRowAction(self):
         '''Per row action, can be overridden'''

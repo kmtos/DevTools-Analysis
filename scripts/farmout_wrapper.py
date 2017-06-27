@@ -25,12 +25,13 @@ from DevTools.Analyzer.FourPhotonAnalysis import main as runFourPhoton
 from DevTools.Analyzer.ThreePhotonAnalysis import main as runThreePhoton
 from DevTools.Analyzer.TwoPhotonAnalysis import main as runTwoPhoton
 from DevTools.Analyzer.EGAnalysis import main as runEG
+from DevTools.Analyzer.DYGGAnalysis import main as runDYGG
 from DevTools.Analyzer.MMGAnalysis import main as runMMG
 
 def parse_command_line(argv):
     parser = argparse.ArgumentParser(description='Submit analyzers')
 
-    parser.add_argument('analysis', type=str, choices=['ZZ', 'WZ', 'DY', 'ZFakeRate', 'Charge', 'TauCharge', 'Hpp3l', 'Hpp4l', 'Electron', 'Muon','Tau', 'DijetFakeRate', 'WTauFakeRate', 'WFakeRate','TriggerCount','ThreeLepton','ThreePhoton','TwoPhoton','EG','MMG','FourPhoton'], help='Analysis to submit')
+    parser.add_argument('analysis', type=str, choices=['ZZ', 'WZ', 'DY', 'ZFakeRate', 'Charge', 'TauCharge', 'Hpp3l', 'Hpp4l', 'Electron', 'Muon','Tau', 'DijetFakeRate', 'WTauFakeRate', 'WFakeRate','TriggerCount','ThreeLepton','ThreePhoton','TwoPhoton','EG','MMG','FourPhoton','DYGG'], help='Analysis to submit')
     parser.add_argument('shift', type=str, nargs='?', default='', choices=['','ElectronEnUp','ElectronEnDown','MuonEnUp','MuonEnDown','TauEnUp','TauEnDown','JetEnUp','JetEnDown','JetResUp','JetResDown','UnclusteredEnUp','UnclusteredEnDown'], help='Energy shift')
 
     return parser.parse_args(argv)
@@ -87,6 +88,8 @@ def main(argv=None):
         func = runTwoPhoton
     elif args.analysis=='EG':
         func = runEG
+    elif args.analysis=='DYGG':
+        func = runDYGG
     elif args.analysis=='MMG':
         func = runMMG
     else:
