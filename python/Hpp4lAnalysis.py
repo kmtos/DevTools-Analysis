@@ -30,6 +30,7 @@ class Hpp4lAnalysis(AnalysisBase):
         super(Hpp4lAnalysis, self).__init__(outputFileName=outputFileName,outputTreeName=outputTreeName,**kwargs)
 
         # setup cut tree
+        self.cutTree.add(self.threeLoose,'metFilter')
         self.cutTree.add(self.fourLoose,'fourLooseLeptons')
         self.cutTree.add(self.trigger,'trigger')
 

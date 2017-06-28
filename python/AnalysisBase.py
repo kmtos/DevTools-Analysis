@@ -376,6 +376,28 @@ class AnalysisBase(object):
             if dataset in self.fileNames[0] and isData: break
         return False
 
+    def metFilter(self,cands):
+        filterList = [
+            'HBHENoiseFilter',
+            'HBHENoiseIsoFilter',
+            'globalTightHalo2016Filter',
+            'EcalDeadCellTriggerPrimitiveFilter',
+            'goodVertices',
+            'eeBadScFilter',
+            'noBadMuons',
+            'BadChargedCandidateFilter',
+        ]
+        notFilterList = [
+            'duplicateMuons',
+            'badMuons',
+        ]
+        for f in filterList:
+            if not getattr(self.event,f)(): return False
+        for f in notFilterList:
+            if getattr(self.event,f)(): return False
+        return True
+
+
     ##################
     ### Common IDs ###
     ##################
