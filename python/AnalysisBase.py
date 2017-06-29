@@ -377,6 +377,7 @@ class AnalysisBase(object):
         return False
 
     def metFilter(self,cands):
+        if not self.event.isData(): return True
         filterList = [
             'HBHENoiseFilter',
             'HBHENoiseIsoFilter',
@@ -384,17 +385,23 @@ class AnalysisBase(object):
             'EcalDeadCellTriggerPrimitiveFilter',
             'goodVertices',
             'eeBadScFilter',
-            'noBadMuons',
+            # Broken in current ntuples
+            #'noBadMuons',
             'BadChargedCandidateFilter',
         ]
         notFilterList = [
-            'duplicateMuons',
-            'badMuons',
+            # Broken in current ntuples
+            #'duplicateMuons',
+            #'badMuons',
         ]
         for f in filterList:
-            if not getattr(self.event,f)(): return False
+            if getattr(self.event,f)()==0:
+                logging.info('Rejecting event {0}:{1}:{2} for {3}={4}'.format(self.event.run(), self.event.lumi(), self.event.event(), f, getattr(self.event,f)()))
+                return False
         for f in notFilterList:
-            if getattr(self.event,f)(): return False
+            if getattr(self.event,f)()>0:
+                logging.info('Rejecting event {0}:{1}:{2} for {3}={4}'.format(self.event.run(), self.event.lumi(), self.event.event(), f, getattr(self.event,f)()))
+                return False
         return True
 
 

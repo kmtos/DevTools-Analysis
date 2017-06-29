@@ -28,7 +28,7 @@ class WZAnalysis(AnalysisBase):
         super(WZAnalysis, self).__init__(outputFileName=outputFileName,outputTreeName=outputTreeName,**kwargs)
 
         # setup cut tree
-        self.cutTree.add(self.threeLoose,'metFilter')
+        self.cutTree.add(self.metFilter,'metFilter')
         self.cutTree.add(self.threeLoose,'threeLooseLeptons')
         self.cutTree.add(self.vetoFourth,'noFourthMediumLepton')
         self.cutTree.add(self.trigger,'trigger')
