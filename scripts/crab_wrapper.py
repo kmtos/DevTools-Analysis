@@ -12,7 +12,7 @@ def parse_command_line(argv):
 
     # hack to deal with crab format
     argv = argv[1:] if argv[0].isdigit() else argv # first one is a job num
-    argv = ['--'+a if not a.startswith('-') else a for a in argv]
+    argv = ['--'+a if not a.startswith('-') and '=' in a else a for a in argv]
 
     parser.add_argument('--analysis', type=str, default='', help='Analysis to submit')
     parser.add_argument('--shift', type=str, nargs='?', default='', help='Energy shift')
