@@ -14,18 +14,18 @@ import operator
 
 import ROOT
 
-logger = logging.getLogger("EGAnalysis")
+logger = logging.getLogger("DYGGAnalysis")
 logging.basicConfig(level=logging.INFO, stream=sys.stderr, format='%(asctime)s.%(msecs)03d %(levelname)s %(name)s: %(message)s', datefmt='%Y-%m-%d %H:%M:%S')
 
-class EGAnalysis(AnalysisBase):
+class DYGGAnalysis(AnalysisBase):
     '''
     WZ analysis
     '''
 
     def __init__(self,**kwargs):
-        outputFileName = kwargs.pop('outputFileName','egTree.root')
-        outputTreeName = kwargs.pop('outputTreeName','EGTree')
-        super(EGAnalysis, self).__init__(outputFileName=outputFileName,outputTreeName=outputTreeName,**kwargs)
+        outputFileName = kwargs.pop('outputFileName','dyggTree.root')
+        outputTreeName = kwargs.pop('outputTreeName','DYGGTree')
+        super(DYGGAnalysis, self).__init__(outputFileName=outputFileName,outputTreeName=outputTreeName,**kwargs)
 
         # setup cut tree
         self.cutTree.add(self.trigger,'trigger')
@@ -44,11 +44,11 @@ class EGAnalysis(AnalysisBase):
         self.tree.add(self.triggerEfficiencyData, 'triggerEfficiencyData', 'F')
 
         # electron photon
-        self.addDiCandidate('eg')
+        self.addDiCandidate('z')
 
         # z leptons
-        self.addLepton('e',doId=True,doScales=True)
-        self.addPhoton('g',doId=True)
+        self.addPhoton('g1',doId=True)
+        self.addPhoton('g2',doId=True)
 
         # met
         self.addMet('met')
@@ -58,9 +58,9 @@ class EGAnalysis(AnalysisBase):
     ############################
     def selectCandidates(self):
         candidate = {
-            'e' : None,
-            'g' : None,
-            'eg': None,
+            'g1': None,
+            'g2': None,
+            'z' : None,
             'met': self.pfmet,
             'cleanJets': [],
             #'leadJet': Candidate(None),
@@ -69,33 +69,31 @@ class EGAnalysis(AnalysisBase):
         }
 
         gs = self.photons
-        es = self.getPassingCands('Medium',self.electrons)
-
-        if not es or not gs: return candidate
 
         best = ()
-        for e in es:
-            if e.pt()<30: continue
-            for g in gs:
-                if deltaR(e.eta(),e.phi(),g.eta(),g.phi())<0.4: continue
-                if self.passElectronVeto(g): continue
-                eg = DiCandidate(e,g)
-                if eg.M()<60 or eg.M()>120: continue
-                if not best: best = (e,g)
-                if e.pt()>best[0].pt():
-                    best = (e,g)
-                elif g.pt()>best[1].pt():
-                    best = (e,g)
+        for gCand in itertools.permutations(gs,2):
+            g1,g2 = gCand
+            if g1.pt()<g2.pt(): continue
+            if g1.pt()<30: continue
+            if self.passElectronVeto(g1): continue
+            if self.passElectronVeto(g2): continue
+            z = DiCandidate(g1,g2)
+            if z.M()<60 or z.M()>120: continue
+            if not best: best = gCand
+            if g1.pt()>best[0].pt():
+                best = gCand
+            elif g2.pt()>best[1].pt():
+                best = gCand
 
         if not best: return candidate
-        e,g = best
+        g1,g2 = best
 
-        candidate['e'] = e
-        candidate['g'] = g
-        candidate['eg'] = DiCandidate(e,g)
+        candidate['g1'] = g1
+        candidate['g2'] = g2
+        candidate['z'] = DiCandidate(g1,g2)
 
         goodGs = self.getPassingCands('Photon',self.photons)
-        candidate['cleanJets'] = self.cleanCands(self.jets,es+goodGs+[g],0.4)
+        candidate['cleanJets'] = self.cleanCands(self.jets,goodGs+[g1,g2],0.4)
 
         return candidate
 
@@ -130,7 +128,7 @@ class EGAnalysis(AnalysisBase):
         return self.triggerEfficiency(cands,mode='data')
 
     def triggerEfficiency(self,cands,mode='ratio'):
-        candList = [cands['e']]
+        candList = [cands['g1'],cands['g2']]
         triggerList = ['Ele27Tight']
         if mode=='data':
             return self.triggerScales.getDataEfficiency(triggerList,candList)
@@ -151,7 +149,7 @@ def parse_command_line(argv):
 
     parser.add_argument('--inputFiles', type=str, nargs='*', default=getTestFiles('dy',version='80XPhoton'), help='Input files')
     parser.add_argument('--inputFileList', type=str, default='', help='Input file list')
-    parser.add_argument('--outputFile', type=str, default='egTree.root', help='Output file')
+    parser.add_argument('--outputFile', type=str, default='dyggTree.root', help='Output file')
     parser.add_argument('--shift', type=str, default='', choices=['','ElectronEnUp','ElectronEnDown','MuonEnUp','MuonEnDown','TauEnUp','TauEnDown','JetEnUp','JetEnDown','JetResUp','JetResDown','UnclusteredEnUp','UnclusteredEnDown'], help='Energy shift')
 
     return parser.parse_args(argv)
@@ -162,9 +160,9 @@ def main(argv=None):
 
     args = parse_command_line(argv)
 
-    egAnalysis = EGAnalysis(
+    dyggAnalysis = DYGGAnalysis(
         outputFileName=args.outputFile,
-        outputTreeName='EGTree',
+        outputTreeName='DYGGTree',
         inputFileNames=args.inputFileList if args.inputFileList else args.inputFiles,
         inputTreeName='MiniTree',
         inputLumiName='LumiTree',
@@ -173,10 +171,10 @@ def main(argv=None):
     )
 
     try:
-       egAnalysis.analyze()
-       egAnalysis.finish()
+       dyggAnalysis.analyze()
+       dyggAnalysis.finish()
     except KeyboardInterrupt:
-       egAnalysis.finish()
+       dyggAnalysis.finish()
 
     return 0
 

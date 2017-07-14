@@ -2,35 +2,71 @@
 import argparse
 import sys
 import subprocess
+import os
 
-# import wz run script
-from DevTools.Analyzer.runWZAnalysis import main as runWZ
+# import run script
+from DevTools.Analyzer.runAnalysis import runAnalysis
+
+def parse_command_line(argv):
+    parser = argparse.ArgumentParser(description='Submit analyzers')
+
+    # hack to deal with crab format
+    argv = argv[1:] if argv[0].isdigit() else argv # first one is a job num
+    argv = ['--'+a if not a.startswith('-') and '=' in a else a for a in argv]
+
+    parser.add_argument('--analysis', type=str, default='', help='Analysis to submit')
+    parser.add_argument('--shift', type=str, nargs='?', default='', help='Energy shift')
+    parser.add_argument('--outputFile', type=str, nargs='?', default='crab.root', help='Output filename')
+
+    return parser.parse_args(argv)
+
+
 
 def main(argv=None):
     if argv is None:
         argv = sys.argv[1:]
 
+    args = parse_command_line(argv)
+
+    # add on the input and output
     # import the crab generated PSet.py
-    import PSet
-    fileList = list(PSet.process.source.fileNames)
+    argv = []
+    if os.path.isfile('PSet.py'):
+        import PSet
+        fileList = list(PSet.process.source.fileNames)
 
-    # add on the inputfiles
-    argv += ['--inputFiles'] + fileList
+        # add on the inputfiles
+        argv += ['--inputFiles'] + fileList
+    else:
+        print 'Warning: Failed to find PSet.py'
 
-    argv = argv[1:]
-    print argv
+    argv += ['--outputFile',args.outputFile,'--shift',args.shift]
 
-    # run the analyzer
-    status = runWZ(argv)
-    print status
+    status = runAnalysis(args.analysis,argv)
 
-    # and generate the job report xml
-    command = 'cmsRun -j FrameworkJobReport.xml -p PSet.py'
-    out = subprocess.Popen(command, shell=True, stdout=subprocess.PIPE, stderr=subprocess.STDOUT).communicate()[0]
-    print out
+    # write xml file
+    with open('FrameworkJobReport.xml','w') as f:
+        f.write(
+'''<FrameworkJobReport>
+<ReadBranches>
+</ReadBranches>
+<PerformanceReport>
+  <PerformanceSummary Metric="StorageStatistics">
+    <Metric Name="Parameter-untracked-bool-enabled" Value="true"/>
+    <Metric Name="Parameter-untracked-bool-stats" Value="true"/>
+    <Metric Name="Parameter-untracked-string-cacheHint" Value="application-only"/>
+    <Metric Name="Parameter-untracked-string-readHint" Value="auto-detect"/>
+    <Metric Name="ROOT-tfile-read-totalMegabytes" Value="0"/>
+    <Metric Name="ROOT-tfile-write-totalMegabytes" Value="0"/>
+  </PerformanceSummary>
+</PerformanceReport>
+<GeneratorInfo>
+</GeneratorInfo>
+</FrameworkJobReport>'''
+        )
 
     return status
 
 if __name__ == "__main__":
-    status = main()
-    sys.exit(status)
+    func = main()
+    sys.exit(func)

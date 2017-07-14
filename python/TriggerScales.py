@@ -480,7 +480,7 @@ class TriggerScales(object):
         return 0.
 
     def __getSingleEfficiency(self,rootNames,mode,cand,shift=''):
-        if cand.collName=='electrons':
+        if cand.collName=='electrons' or cand.collName=='photons': # special handling for photon as electron validation
             if 'Ele23_WPLoose' in rootNames:
                 return self.__getEfficiency('Ele23_WPLoose',mode,cand,shift=shift)
             elif 'Ele17_Ele12Leg1' in rootNames:
