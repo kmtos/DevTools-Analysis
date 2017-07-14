@@ -3,8 +3,11 @@ version=`python -c "from DevTools.Utilities.utilities import getCMSSWVersion; pr
 if [ "$version" == "76X" ]; then
     runPeriod="Collisions15"
     central=69000
-else
+elif [ "$version" == "80X" ]; then
     runPeriod="Collisions16"
+    central=69200
+else
+    runPeriod="Collisions17"
     central=69200
 fi
 lumimask=`python -c "from DevTools.Utilities.utilities import getJson; print getJson('$runPeriod')"`
