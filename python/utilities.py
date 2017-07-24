@@ -26,6 +26,7 @@ latestNtuples = {
     #'80X' : '2016-07-20_DevTools_80X_v1', # ICHEP 2016
     '80X' : '2017-02-28_DevTools_80X_v1', # Moriond 2017
     '80XPhoton' : '2017-06-06_DevTools_80X_photon_v1', # Moriond 2017
+    '80XQCD' : '2017-07-17_DevTools_80X_QCD_v1', # Moriond 2017
 }
 
 def getNtupleDirectory(version=None):
@@ -48,6 +49,7 @@ def getTestFiles(sample,n=1,version=None):
         #'dy'    : 'DYJetsToLL_M-50_TuneCUETP8M1_13TeV-amcatnloFXFX-pythia8',
         'dy'    : 'DYJetsToLL_M-50_TuneCUETP8M1_13TeV-madgraphMLM-pythia8',
         'w'     : 'WJetsToLNu_TuneCUETP8M1_13TeV-amcatnloFXFX-pythia8',
+        'qcd'   : 'QCD_Pt_300to470_TuneCUETP8M1_13TeV_pythia8',
         'SingleMuon'    : 'SingleMuon',
         'SingleElectron': 'SingleElectron',
         'DoubleMuon'    : 'DoubleMuon',

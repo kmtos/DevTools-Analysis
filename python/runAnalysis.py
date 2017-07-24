@@ -23,6 +23,7 @@ from DevTools.Analyzer.TwoPhotonAnalysis import main as runTwoPhoton
 from DevTools.Analyzer.EGAnalysis import main as runEG
 from DevTools.Analyzer.DYGGAnalysis import main as runDYGG
 from DevTools.Analyzer.MMGAnalysis import main as runMMG
+from DevTools.Analyzer.SingleJetAnalysis import main as runSingleJet
 
 
 def runAnalysis(analysis,argv):
@@ -71,6 +72,8 @@ def runAnalysis(analysis,argv):
         func = runDYGG
     elif analysis=='MMG':
         func = runMMG
+    elif analysis=='SingleJet':
+        func = runSingleJet
     else:
         return 0
 
