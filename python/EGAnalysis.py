@@ -32,13 +32,7 @@ class EGAnalysis(AnalysisBase):
 
         # setup analysis tree
 
-        # event counts
-        self.tree.add(lambda cands: self.numJets(cands['cleanJets'],'isLoose',30), 'numJetsLoose30', 'I')
-        self.tree.add(lambda cands: self.numJets(cands['cleanJets'],'isTight',30), 'numJetsTight30', 'I')
-        self.tree.add(lambda cands: self.numJets(cands['cleanJets'],'passCSVv2T',30), 'numBjetsTight30', 'I')
-
         # trigger
-        #self.addPhotonTriggers()
         self.tree.add(self.triggerEfficiency, 'triggerEfficiency', 'F')
         self.tree.add(self.triggerEfficiencyMC, 'triggerEfficiencyMC', 'F')
         self.tree.add(self.triggerEfficiencyData, 'triggerEfficiencyData', 'F')
@@ -62,10 +56,6 @@ class EGAnalysis(AnalysisBase):
             'g' : None,
             'eg': None,
             'met': self.pfmet,
-            'cleanJets': [],
-            #'leadJet': Candidate(None),
-            #'subleadJet': Candidate(None),
-            #'dijet': DiCandidate(Candidate(None),Candidate(None)),
         }
 
         gs = self.photons
@@ -78,7 +68,7 @@ class EGAnalysis(AnalysisBase):
             if e.pt()<30: continue
             for g in gs:
                 if deltaR(e.eta(),e.phi(),g.eta(),g.phi())<0.4: continue
-                if self.passElectronVeto(g): continue
+                #if self.passElectronVeto(g): continue
                 eg = DiCandidate(e,g)
                 if eg.M()<60 or eg.M()>120: continue
                 if not best: best = (e,g)
@@ -93,9 +83,6 @@ class EGAnalysis(AnalysisBase):
         candidate['e'] = e
         candidate['g'] = g
         candidate['eg'] = DiCandidate(e,g)
-
-        goodGs = self.getPassingCands('Photon',self.photons)
-        candidate['cleanJets'] = self.cleanCands(self.jets,es+goodGs+[g],0.4)
 
         return candidate
 

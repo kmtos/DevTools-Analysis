@@ -25,7 +25,7 @@ class MMGAnalysis(AnalysisBase):
         outputFileName = kwargs.pop('outputFileName','mmgTree.root')
         outputTreeName = kwargs.pop('outputTreeName','MMGTree')
         # setup a preselection
-        self.preselection = '(electrons_count>1 || muons_count>1)'
+        self.preselection = 'muons_count>1'
         super(MMGAnalysis, self).__init__(outputFileName=outputFileName,outputTreeName=outputTreeName,**kwargs)
 
 
@@ -34,11 +34,6 @@ class MMGAnalysis(AnalysisBase):
         self.cutTree.add(self.trigger,'trigger')
 
         # setup analysis tree
-
-        # event counts
-        self.tree.add(lambda cands: self.numJets(cands['cleanJets'],'isLoose',30), 'numJetsLoose30', 'I')
-        self.tree.add(lambda cands: self.numJets(cands['cleanJets'],'isTight',30), 'numJetsTight30', 'I')
-        self.tree.add(lambda cands: self.numJets(cands['cleanJets'],'passCSVv2T',30), 'numBjetsTight30', 'I')
 
         # trigger
         self.tree.add(lambda cands: self.event.Mu17_TrkIsoVVL_Mu8_TrkIsoVVL_DZPass(), 'pass_Mu17_TrkIsoVVL_Mu8_TrkIsoVVL_DZ', 'I')
@@ -54,7 +49,7 @@ class MMGAnalysis(AnalysisBase):
         self.addLepton('z2',doId=True,doScales=True)
 
         self.addComposite('zg')
-        self.addPhoton('g1',doId=True)
+        self.addPhoton('g',doId=True)
 
         # met
         self.addMet('met')
@@ -66,11 +61,10 @@ class MMGAnalysis(AnalysisBase):
         candidate = {
             'z1' : None,
             'z2' : None,
-            'g1' : None,
+            'g' : None,
             'z' : None,
             'zg' : None,
             'met': self.pfmet,
-            'cleanJets': [],
         }
 
         # get leptons
@@ -105,11 +99,8 @@ class MMGAnalysis(AnalysisBase):
         candidate['z1'] = m1
         candidate['z2'] = m2
         candidate['z'] = DiCandidate(m1,m2)
-        candidate['g1'] = g
+        candidate['g'] = g
         candidate['zg'] = CompositeCandidate(m1,m2,g)
-
-        goodGs = self.getPassingCands('Photon',self.photons)
-        candidate['cleanJets'] = self.cleanCands(self.jets,medLeps+goodGs+[m1,m2,g],0.4)
 
         return candidate
 

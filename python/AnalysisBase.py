@@ -169,7 +169,7 @@ class AnalysisBase(object):
             self.tree.add(lambda cands: self.zzGenWeight.weight(self.gen), 'qqZZkfactor', 'F')
         self.tree.add(lambda cands: self.event.numGenJets(), 'numGenJets', 'I')
         self.tree.add(lambda cands: self.event.genHT(), 'genHT', 'I')
-        self.tree.add(lambda cands: self.event.ptHat() if hasattr(self.event,'ptHat') and not self.event.isData() else 0, 'ptHat', 'F')
+        #self.tree.add(lambda cands: 0 if self.event.isData() else self.event.ptHat() if hasattr(self.event,'ptHat') else 0, 'ptHat', 'F')
         # scale shifts
         weightMap = {
             0: {'muR':1.0, 'muF':1.0},
