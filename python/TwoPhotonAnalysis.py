@@ -45,8 +45,8 @@ class TwoPhotonAnalysis(AnalysisBase):
 
         # z leptons
         self.addDiCandidate('gg')
-        self.addPhoton('g1',doId=True)
-        self.addPhoton('g2',doId=True)
+        self.addPhoton('g1',doId=True,doScales=True)
+        self.addPhoton('g2',doId=True,doScales=True)
 
         # met
         self.addMet('met')

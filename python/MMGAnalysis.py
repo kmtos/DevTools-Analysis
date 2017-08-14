@@ -49,7 +49,7 @@ class MMGAnalysis(AnalysisBase):
         self.addLepton('z2',doId=True,doScales=True)
 
         self.addComposite('zg')
-        self.addPhoton('g',doId=True)
+        self.addPhoton('g',doId=True,doScales=True)
 
         # met
         self.addMet('met')

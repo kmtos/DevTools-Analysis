@@ -42,7 +42,7 @@ class EGAnalysis(AnalysisBase):
 
         # z leptons
         self.addLepton('e',doId=True,doScales=True)
-        self.addPhoton('g',doId=True)
+        self.addPhoton('g',doId=True,doScales=True)
 
         # met
         self.addMet('met')

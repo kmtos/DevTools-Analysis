@@ -53,10 +53,10 @@ class FourPhotonAnalysis(AnalysisBase):
         self.addDiCandidate('gg23')
         self.addDiCandidate('gg24')
         self.addDiCandidate('gg34')
-        self.addPhoton('g1',doId=True)
-        self.addPhoton('g2',doId=True)
-        self.addPhoton('g3',doId=True)
-        self.addPhoton('g4',doId=True)
+        self.addPhoton('g1',doId=True,doScales=True)
+        self.addPhoton('g2',doId=True,doScales=True)
+        self.addPhoton('g3',doId=True,doScales=True)
+        self.addPhoton('g4',doId=True,doScales=True)
 
         # met
         self.addMet('met')

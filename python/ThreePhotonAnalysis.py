@@ -50,9 +50,9 @@ class ThreePhotonAnalysis(AnalysisBase):
         self.addDiCandidate('gg12')
         self.addDiCandidate('gg13')
         self.addDiCandidate('gg23')
-        self.addPhoton('g1',doId=True)
-        self.addPhoton('g2',doId=True)
-        self.addPhoton('g3',doId=True)
+        self.addPhoton('g1',doId=True,doScales=True)
+        self.addPhoton('g2',doId=True,doScales=True)
+        self.addPhoton('g3',doId=True,doScales=True)
 
         # met
         self.addMet('met')

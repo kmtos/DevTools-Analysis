@@ -90,6 +90,14 @@ class LeptonScales(object):
                        'HppLooseID','HppLooseIsoFromLooseID','HppMediumID','HppMediumIsoFromMediumID']:
             self.private_muon_80X[idName] = self.private_muon_80X_rootfile.Get(idName)
 
+        # photon
+        self.private_photon_80X = {}
+        path = '{0}/src/DevTools/Analyzer/data/scalefactors_photon_2016.root'.format(os.environ['CMSSW_BASE'])
+        self.private_photon_80X_rootfile = ROOT.TFile(path)
+        for idName in ['Preselection','MVA0p0','MVA0p0Pre']:
+            self.private_photon_80X[idName] = self.private_photon_80X_rootfile.Get(idName)
+
+
     def __exit__(self, type, value, traceback):
         self.finish()
 
@@ -105,6 +113,7 @@ class LeptonScales(object):
         self.electron_hzz_rootfile.Close()
         self.private_electron_80X_rootfile.Close()
         self.private_muon_80X_rootfile.Close()
+        self.private_photon_80X_rootfile.Close()
 
 
     def __parseAsymmErrors(self,graph):
@@ -187,6 +196,22 @@ class LeptonScales(object):
             err = 0.
         return val, err
 
+    def __getPhotonScale(self,leptonId,cand):
+        pt  = cand.pt()
+        eta = cand.eta()
+        if self.version=='80X' and leptonId in self.private_photon_80X:
+            if pt>100: pt = 99.
+            if pt<10: pt = 11.
+            hist = self.private_photon_80X[leptonId]
+            b = hist.FindBin(pt,eta)
+            val = hist.GetBinContent(b)
+            err = hist.GetBinError(b)
+        else:
+            logging.warning('Unknown ID {0}'.format(leptonId))
+            val = 1.
+            err = 0.
+        return val, err
+
     def __getTauScale(self,leptonId,cand):
         #pt  = cand.pt()
         #eta = cand.eta()
@@ -254,6 +279,8 @@ class LeptonScales(object):
             val, err = prodWithError((val,err),(valTrack,0. if errTrack!=errTrack else errTrack)) # bug with error from tgraphasymm, check for NaN
         elif cand.collName=='taus':
             val, err = self.__getTauScale(leptonId,cand)
+        elif cand.collName=='photons':
+            val, err = self.__getPhotonScale(leptonId,cand)
         else:
             val, err = 1., 0.
         return (val, val+err, max([0.,val-err])) if doError else val

@@ -450,6 +450,15 @@ class AnalysisBase(object):
         elif cand.collName=='electrons': return self.leptonScales.getScale('CutbasedTight',cand,doError=True)
         else: return [1.,1.,1.]
 
+    def photonPreselectionScale(self,cand):
+        return self.leptonScales.getScale('Preselection',cand,doError=True)
+
+    def photonMVAScale(self,cand):
+        return self.leptonScales.getScale('MVA0p0',cand,doError=True)
+
+    def photonMVAPreselectionScale(self,cand):
+        return self.leptonScales.getScale('MVA0p0Pre',cand,doError=True)
+
     def mediumFakeRate(self,cand):
         return self.fakeRates.getFakeRate(cand,'HppMedium','HppLoose',doError=True)
 
@@ -606,6 +615,16 @@ class AnalysisBase(object):
             self.tree.add(lambda cands: self.passElectronVeto(cands[label]),       '{0}_passElectronVeto'.format(label), 'I')
             self.tree.add(lambda cands: self.passPhotonPreselection(cands[label]), '{0}_passPreselection'.format(label), 'I')
             self.tree.add(lambda cands: self.passPhotonPreselectionNoElectronVeto(cands[label]), '{0}_passPreselectionNoElectronVeto'.format(label), 'I')
+        if doScales:
+            self.tree.add(lambda cands: self.photonPreselectionScale(cands[label])[0],                  '{0}_preselectionScale'.format(label), 'F')
+            if doErrors: self.tree.add(lambda cands: self.photonPreselectionScale(cands[label])[1],     '{0}_preselectionScaleUp'.format(label), 'F')
+            if doErrors: self.tree.add(lambda cands: self.photonPreselectionScale(cands[label])[2],     '{0}_preselectionScaleDown'.format(label), 'F')
+            self.tree.add(lambda cands: self.photonMVAScale(cands[label])[0],                           '{0}_mvaScale'.format(label), 'F')
+            if doErrors: self.tree.add(lambda cands: self.photonMVAScale(cands[label])[1],              '{0}_mvaScaleUp'.format(label), 'F')
+            if doErrors: self.tree.add(lambda cands: self.photonMVAScale(cands[label])[2],              '{0}_mvaScaleDown'.format(label), 'F')
+            self.tree.add(lambda cands: self.photonMVAPreselectionScale(cands[label])[0],               '{0}_mvaPreselectionScale'.format(label), 'F')
+            if doErrors: self.tree.add(lambda cands: self.photonMVAPreselectionScale(cands[label])[1],  '{0}_mvaPreselectionScaleUp'.format(label), 'F')
+            if doErrors: self.tree.add(lambda cands: self.photonMVAPreselectionScale(cands[label])[2],  '{0}_mvaPreselectionScaleDown'.format(label), 'F')
 
     def genDeltaR(self,cand):
         '''Get the gen level deltaR'''
