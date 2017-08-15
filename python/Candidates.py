@@ -48,7 +48,10 @@ class Candidate(object):
         '''Default variable access from tree.'''
         if not self.tree: return 0
         varName = '{0}_{1}'.format(self.collName,var)
-        return getattr(self.tree,varName)[self.entry]
+        if self.entry<0: # for flat trees
+            return getattr(self.tree,varName)
+        else: # for vector branches
+            return getattr(self.tree,varName)[self.entry]
 
     def p4(self):
         p4 = ROOT.TLorentzVector()
