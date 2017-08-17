@@ -65,6 +65,7 @@ class TreeUpdaterBase(object):
         self.numEvents = 0
         self.summedWeights = 0
         logging.info('Getting information')
+        if len(self.fileNames)==0: logging.warning('No files to process')
         if len(self.fileNames)>1: logging.warning('More than one file requested, only processing the first file')
         for f,fName in enumerate(self.fileNames):
             if fName.startswith('/store'): fName = '{0}/{1}'.format('/hdfs' if self.hasHDFS else 'root://cmsxrootd.hep.wisc.edu/',fName)
@@ -97,6 +98,8 @@ class TreeUpdaterBase(object):
         self.oldtree = self.tfile.Get(self.treename)
         self.outfile = ROOT.TFile(outputFileName,"recreate")
         self.tree = self.oldtree.CloneTree(0)
+        summedWeights = self.tfile.Get('summedWeights')
+        self.summedWeights = summedWeights.GetBinContent(1)
 
     def __exit__(self, type, value, traceback):
         self.finish()
@@ -109,6 +112,8 @@ class TreeUpdaterBase(object):
         logging.info('Finishing')
         if hasattr(self,'outfile'):
             self.outfile.cd()
+            cutflowHist = ROOT.TH1F('summedWeights','summedWeights',1,0,1)
+            cutflowHist.SetBinContent(1,self.summedWeights)
             self.outfile.Write()
             self.outfile.Close()
         if hasattr(self,'leptonScales'): self.leptonScales.finish()
