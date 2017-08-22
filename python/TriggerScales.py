@@ -8,7 +8,7 @@ import ROOT
 import operator
 
 from DevTools.Utilities.utilities import *
-from DevTools.Analyzer.Candidate import *
+from DevTools.Analyzer.Candidates import *
 
 def product(iterable):
     if not iterable: return 0. # case of empty list
@@ -584,7 +584,7 @@ class TriggerScales(object):
                                      self.__hasDouble(triggers,'taus')))):
             val = 1-(
                 # none pass single
-                product([1-self.__getSingleEfficiency(triggers,mode,cand,shift=shift) for cand in cands if any([isinstance(cand,c) for c in ['electrons','muons']])]) # only electron/muon single triggers
+                product([1-self.__getSingleEfficiency(triggers,mode,cand,shift=shift) for cand in cands if any([isinstance(cand,c) for c in [Electron,Muon]])]) # only electron/muon single triggers
             )*min([
                 # none pass lead
                 product([1-self.__getLeadEfficiency(triggers,mode,cand,shift=shift) for cand in cands])
@@ -592,7 +592,7 @@ class TriggerScales(object):
                 +sum([self.__getLeadEfficiency(triggers,mode,lead,shift=shift)
                       *product([1-self.__getTrailEfficiency(triggers,mode,trail,shift=shift) if trail!=lead else 1. for trail in cands if (
                                        (isinstance(trail,Tau) and isinstance(lead,Tau)) or                                                                      # no cross trigger with taus
-                                       (any([isinstance(trail,c) for c in ['electrons','muons']]) and any([isinstance(lead,c) for c in ['electrons','muons']])) # allow cross triggers with e/m
+                                       (any([isinstance(trail,c) for c in [Electron,Muon]]) and any([isinstance(lead,c) for c in [Electron,Muon]])) # allow cross triggers with e/m
                                    )
                                ]) for lead in cands])
                 # TODO: DZ not included ???
