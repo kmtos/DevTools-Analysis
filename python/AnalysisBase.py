@@ -74,7 +74,7 @@ class AnalysisBase(object):
         self.hasHDFS = False
         # input tchain
         self.treename = '{0}/{1}'.format(inputTreeDirectory,inputTreeName)
-        luminame = '{0}/{1}'.format(inputTreeDirectory,inputLumiName)
+        luminame = '{0}/{1}'.format(inputTreeDirectory,inputLumiName) if inputLumiName else ''
         #tchainLumi = ROOT.TChain(luminame)
         self.totalEntries = 0
         self.numLumis = 0
@@ -100,11 +100,12 @@ class AnalysisBase(object):
                     self.version = ''.join([ver[1],ver[2],'X'])
                 else:
                     self.version = getCMSSWVersion()
-            lumitree = tfile.Get(luminame)
-            for entry in lumitree:
-                self.numLumis += 1
-                self.numEvents += lumitree.nevents
-                self.summedWeights += lumitree.summedWeights
+            if luminame:
+                lumitree = tfile.Get(luminame)
+                for entry in lumitree:
+                    self.numLumis += 1
+                    self.numEvents += lumitree.nevents
+                    self.summedWeights += lumitree.summedWeights
             tfile.Close('R')
             #tchainLumi.Add(fName)
         # get the lumi info
