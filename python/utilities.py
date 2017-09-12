@@ -50,6 +50,7 @@ def getTestFiles(sample,n=1,version=None):
         'dy'    : 'DYJetsToLL_M-50_TuneCUETP8M1_13TeV-madgraphMLM-pythia8',
         'w'     : 'WJetsToLNu_TuneCUETP8M1_13TeV-amcatnloFXFX-pythia8',
         'qcd'   : 'QCD_Pt_300to470_TuneCUETP8M1_13TeV_pythia8',
+        'gjet'  : 'GJet_Pt-40toInf_DoubleEMEnriched_MGG-80toInf_TuneCUETP8M1_13TeV_Pythia8',
         'SingleMuon'    : 'SingleMuon',
         'SingleElectron': 'SingleElectron',
         'DoubleMuon'    : 'DoubleMuon',
