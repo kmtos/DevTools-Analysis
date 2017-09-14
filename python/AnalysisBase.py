@@ -648,6 +648,7 @@ class AnalysisBase(object):
     def addDiCandidate(self,label):
         '''Add variables relevant for a two object candidate'''
         self.addCandVar(label,'mass','M','F')
+        self.addCandVar(label,'M2','M2','F')
         self.addCandVar(label,'pt','Pt','F')
         self.addCandVar(label,'eta','Eta','F')
         self.addCandVar(label,'phi','Phi','F')
@@ -667,6 +668,7 @@ class AnalysisBase(object):
     def addLeptonMet(self,label):
         '''Add variables related to a lepton + met'''
         self.addCandVar(label,'mt','Mt','F')
+        self.addCandVar(label,'mt2','Mt2','F')
         self.addCandVar(label,'pt','Pt','F')
         self.addCandVar(label,'eta','Eta','F')
         self.addCandVar(label,'phi','Phi','F')
@@ -675,6 +677,7 @@ class AnalysisBase(object):
     def addComposite(self,label):
         '''Add variables related to multi object variables'''
         self.addCandVar(label,'mass','M','F')
+        self.addCandVar(label,'M2','M2','F')
         self.addCandVar(label,'pt','Pt','F')
         self.addCandVar(label,'eta','Eta','F')
         self.addCandVar(label,'phi','Phi','F')
@@ -683,6 +686,7 @@ class AnalysisBase(object):
     def addCompositeMet(self,label):
         '''Add variables related to multi object variables'''
         self.addCandVar(label,'mt','Mt','F')
+        self.addCandVar(label,'mt2','Mt2','F')
         self.addCandVar(label,'pt','Pt','F')
         self.addCandVar(label,'eta','Eta','F')
         self.addCandVar(label,'phi','Phi','F')

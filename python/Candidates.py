@@ -324,8 +324,14 @@ class MetCompositeCandidate(CompositeCandidate):
         candP4 = self.candP4()
         return math.sqrt(abs((candP4.Et()+metP4.Et())**2 - ((candP4+metP4).Pt())**2))
 
+    def mt2(self):
+        return self.mt()**2
+
     def Mt(self):
         return self.mt()
+
+    def Mt2(self):
+        return self.mt2()
 
     def deltaPhi(self):
         candP4 = self.candP4()
