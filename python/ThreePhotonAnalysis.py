@@ -48,13 +48,13 @@ class ThreePhotonAnalysis(AnalysisBase):
 
         # z leptons
         self.addDiCandidate('gg12')
-        self.tree.add(lambda cands: ROOT.TMath.ACos(2*cands['gg12'].M()/cands['ggg'].M())/ROOT.TMath.Pi(), 'gg12_mPrime', 'F')
+        self.tree.add(lambda cands: ROOT.TMath.ACos(2*cands['gg12'].M()/cands['ggg'].M()-1)/ROOT.TMath.Pi(), 'gg12_mPrime', 'F')
         self.tree.add(lambda cands: cands['gg12Boost'].Theta()/ROOT.TMath.Pi(), 'gg12_thetaPrime', 'F')
         self.addDiCandidate('gg13')
-        self.tree.add(lambda cands: ROOT.TMath.ACos(2*cands['gg13'].M()/cands['ggg'].M())/ROOT.TMath.Pi(), 'gg13_mPrime', 'F')
+        self.tree.add(lambda cands: ROOT.TMath.ACos(2*cands['gg13'].M()/cands['ggg'].M()-1)/ROOT.TMath.Pi(), 'gg13_mPrime', 'F')
         self.tree.add(lambda cands: cands['gg13Boost'].Theta()/ROOT.TMath.Pi(), 'gg13_thetaPrime', 'F')
         self.addDiCandidate('gg23')
-        self.tree.add(lambda cands: ROOT.TMath.ACos(2*cands['gg23'].M()/cands['ggg'].M())/ROOT.TMath.Pi(), 'gg23_mPrime', 'F')
+        self.tree.add(lambda cands: ROOT.TMath.ACos(2*cands['gg23'].M()/cands['ggg'].M()-1)/ROOT.TMath.Pi(), 'gg23_mPrime', 'F')
         self.tree.add(lambda cands: cands['gg23Boost'].Theta()/ROOT.TMath.Pi(), 'gg23_thetaPrime', 'F')
         self.addPhoton('g1',doId=True,doScales=True)
         self.addPhoton('g2',doId=True,doScales=True)
