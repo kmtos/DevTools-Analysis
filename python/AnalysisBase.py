@@ -690,4 +690,3 @@ class AnalysisBase(object):
         self.addCandVar(label,'pt','Pt','F')
         self.addCandVar(label,'eta','Eta','F')
         self.addCandVar(label,'phi','Phi','F')
-

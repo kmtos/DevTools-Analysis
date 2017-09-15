@@ -48,8 +48,14 @@ class ThreePhotonAnalysis(AnalysisBase):
 
         # z leptons
         self.addDiCandidate('gg12')
+        self.tree.add(lambda cands: ROOT.TMath.ACos(2*cands['gg12'].M()/cands['ggg'].M())/ROOT.TMath.Pi(), 'gg12_mPrime', 'F')
+        self.tree.add(lambda cands: cands['gg12Boost'].Theta()/ROOT.TMath.Pi(), 'gg12_thetaPrime', 'F')
         self.addDiCandidate('gg13')
+        self.tree.add(lambda cands: ROOT.TMath.ACos(2*cands['gg13'].M()/cands['ggg'].M())/ROOT.TMath.Pi(), 'gg13_mPrime', 'F')
+        self.tree.add(lambda cands: cands['gg13Boost'].Theta()/ROOT.TMath.Pi(), 'gg13_thetaPrime', 'F')
         self.addDiCandidate('gg23')
+        self.tree.add(lambda cands: ROOT.TMath.ACos(2*cands['gg23'].M()/cands['ggg'].M())/ROOT.TMath.Pi(), 'gg23_mPrime', 'F')
+        self.tree.add(lambda cands: cands['gg23Boost'].Theta()/ROOT.TMath.Pi(), 'gg23_thetaPrime', 'F')
         self.addPhoton('g1',doId=True,doScales=True)
         self.addPhoton('g2',doId=True,doScales=True)
         self.addPhoton('g3',doId=True,doScales=True)
@@ -109,6 +115,38 @@ class ThreePhotonAnalysis(AnalysisBase):
 
         goodGs = self.getPassingCands('Photon',self.photons)
         candidate['cleanJets'] = self.cleanCands(self.jets,goodGs+[g1,g2,g3],0.4)
+
+        # boosted candidates
+        candidate['gg12Boost'] = candidate['gg12'].p4()
+        candidate['gg13Boost'] = candidate['gg13'].p4()
+        candidate['gg23Boost'] = candidate['gg23'].p4()
+        candidate['gg12Boost'].Boost(-candidate['gg12'].BoostVector())
+        candidate['gg13Boost'].Boost(-candidate['gg13'].BoostVector())
+        candidate['gg23Boost'].Boost(-candidate['gg23'].BoostVector())
+
+        #g1 = candidate['g1']
+        #g2 = candidate['g2']
+        #gg12 = candidate['gg12']
+
+        #g1p4 = g1.p4()
+        #g2p4 = g2.p4()
+        #gg12p4 = gg12.p4()
+
+        #print 'original'
+
+        #print 'g1', g1p4.Px(), g1p4.Py(), g1p4.Pz(), g1p4.E(), g1p4.Theta()
+        #print 'g2', g2p4.Px(), g2p4.Py(), g2p4.Pz(), g2p4.E(), g2p4.Theta()
+        #print 'gg12', gg12p4.Px(), gg12p4.Py(), gg12p4.Pz(), gg12p4.E(), gg12p4.Theta()
+
+        #print 'boosting'
+
+        #g1p4.Boost(-gg12.BoostVector())
+        #g2p4.Boost(-gg12.BoostVector())
+        #gg12p4.Boost(-gg12.BoostVector())
+
+        #print 'g1', g1p4.Px(), g1p4.Py(), g1p4.Pz(), g1p4.E(), g1p4.Theta()
+        #print 'g2', g2p4.Px(), g2p4.Py(), g2p4.Pz(), g2p4.E(), g2p4.Theta()
+        #print 'gg12', gg12p4.Px(), gg12p4.Py(), gg12p4.Pz(), gg12p4.E(), gg12p4.Theta()
 
         return candidate
 
