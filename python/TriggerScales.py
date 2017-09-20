@@ -2,6 +2,7 @@ import os
 import sys
 import logging
 import math
+import json
 
 import ROOT
 
@@ -105,20 +106,28 @@ class TriggerScales(object):
                     'DATA' : self.singleMu_rootfile_80X_GH.Get('{0}/efficienciesDATA/pt_abseta_DATA'.format(directory)),
                 }
 
-        # tau https://indico.cern.ch/event/544712/contributions/2213574/attachments/1295299/1930984/htt_tau_trigger_17_6_2016.pdf
-        # https://github.com/rmanzoni/triggerSF/tree/diTauICHEP2016/di-tau
-        self.tau_efficiencies_2016 = {
-            'MediumIsoPFTau35_Trk_eta2p1': {
-                #'val'    : {'m0' : 3.86506E+01, 'sigma' : 5.81155E+00, 'alpha' : 5.82783E+00, 'n' : 3.38903E+00, 'norm' : 9.33449E+00,}, # no iso
-                'val'    : {'m0': 38.284513544375116, 'sigma': 5.325716928817435, 'alpha': 6.450107655090677, 'n': 1.6488772300498389, 'norm': 0.9999999971876338,}, # no iso
-            },
-            'LooseIsoPFTau20_SingleL1' : {
-                'val'    : {'m0' : 2.14111E+01, 'sigma' : 1.05522E+00, 'alpha' : 1.32782E+00, 'n' : 1.50352E+00, 'norm' : 9.96428E-01,}, # no iso
-            },
-            'LooseIsoPFTau20' : {
-                'val'    : {'m0' : 2.13600E+01, 'sigma' : 8.1845E-01, 'alpha' : 6.5401E-01, 'n' : 1.71559E+00, 'norm' : 1.00000E+00,}, # no iso
-            },
+        # tau https://indico.cern.ch/event/605406/contributions/2482759/attachments/1414963/2165912/tau_leg_triggers2016.pdf
+        # https://raw.githubusercontent.com/rmanzoni/triggerSF/moriond17/di-tau/
+        path = '{0}/src/DevTools/Analyzer/data/fitresults_tt_moriond2017.json'.format(os.environ['CMSSW_BASE'])
+        with open(path) as data_file:
+             fitresults = json.load(data_file)
+        self.tau_efficiencies_2016 = {}
+        self.tau_efficiencies_2016['MediumIsoPFTau35_Trk_eta2p1'] = {}
+        self.tau_efficiencies_2016['MediumIsoPFTau35_Trk_eta2p1']['MC'] = {
+            'm0'   : fitresults['mc_genuine_VLooseIso_dm0']['m_{0}'],
+            'sigma': fitresults['mc_genuine_VLooseIso_dm0']['sigma'],
+            'alpha': fitresults['mc_genuine_VLooseIso_dm0']['alpha'],
+            'n'    : fitresults['mc_genuine_VLooseIso_dm0']['n'],
+            'norm' : fitresults['mc_genuine_VLooseIso_dm0']['norm'],
         }
+        self.tau_efficiencies_2016['MediumIsoPFTau35_Trk_eta2p1']['DATA'] = {
+            'm0'   : fitresults['data_genuine_VLooseIso_dm0']['m_{0}'],
+            'sigma': fitresults['data_genuine_VLooseIso_dm0']['sigma'],
+            'alpha': fitresults['data_genuine_VLooseIso_dm0']['alpha'],
+            'n'    : fitresults['data_genuine_VLooseIso_dm0']['n'],
+            'norm' : fitresults['data_genuine_VLooseIso_dm0']['norm'],
+        }
+
 
         # private electron
         self.private_electron_80X = {}
@@ -198,22 +207,13 @@ class TriggerScales(object):
                 }]
         return scales
 
-    def __crystalball_fit(self,pt,mode,shift=''):
+    def __crystalball_fit(self,pt,rootName,mode,shift=''):
         if self.version=='80X' and mode in self.tau_efficiencies_2016: # 2016
-            m0    = self.tau_efficiencies_2016[mode]['val']['m0']
-            sigma = self.tau_efficiencies_2016[mode]['val']['sigma']
-            alpha = self.tau_efficiencies_2016[mode]['val']['alpha']
-            n     = self.tau_efficiencies_2016[mode]['val']['n']
-            norm  = self.tau_efficiencies_2016[mode]['val']['norm']
-        elif self.version=='76X' and mode in self.doubleTau_efficiencies:
-            key = 'val'
-            if shift=='up': key = 'errUp'
-            if shift=='down': key = 'errDown'
-            m0    = self.doubleTau_efficiencies[mode][key]['m0']
-            sigma = self.doubleTau_efficiencies[mode][key]['sigma']
-            alpha = self.doubleTau_efficiencies[mode][key]['alpha']
-            n     = self.doubleTau_efficiencies[mode][key]['n']
-            norm  = self.doubleTau_efficiencies[mode][key]['norm']
+            m0    = self.tau_efficiencies_2016[rootName][mode]['m0']
+            sigma = self.tau_efficiencies_2016[rootName][mode]['sigma']
+            alpha = self.tau_efficiencies_2016[rootName][mode]['alpha']
+            n     = self.tau_efficiencies_2016[rootName][mode]['n']
+            norm  = self.tau_efficiencies_2016[rootName][mode]['norm']
         else:
             return 0.
         x = pt
@@ -429,12 +429,12 @@ class TriggerScales(object):
                         return val
         elif isinstance(cand,Tau):
             if self.version=='76X':
-                eff = self.__crystalball_fit(pt,mode,shift=shift)
+                eff = self.__crystalball_fit(pt,rootName,mode,shift=shift)
                 if eff > 1.: eff = 1.
                 if eff < 0.: eff = 0.
                 return eff
             elif self.version=='80X':
-                eff = self.__crystalball_fit(pt,rootName,shift=shift)
+                eff = self.__crystalball_fit(pt,rootName,mode,shift=shift)
                 if eff > 1.: eff = 1.
                 if eff < 0.: eff = 0.
                 return eff
@@ -474,10 +474,6 @@ class TriggerScales(object):
         elif isinstance(cand,Tau):
             if 'DoublePFTau35' in rootNames:
                 return self.__getEfficiency('MediumIsoPFTau35_Trk_eta2p1',mode,cand,shift=shift)
-            if 'Ele24Tau20SingleL1' in rootNames:
-                return self.__getEfficiency('LooseIsoPFTau20_SingleL1',mode,cand,shift=shift)
-            if 'Mu19Tau20SingleL1' in rootNames:
-                return self.__getEfficiency('LooseIsoPFTau20_SingleL1',mode,cand,shift=shift)
         return 0.
 
     def __getSingleEfficiency(self,rootNames,mode,cand,shift=''):
