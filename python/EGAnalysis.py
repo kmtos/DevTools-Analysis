@@ -66,11 +66,10 @@ class EGAnalysis(AnalysisBase):
         best = ()
         for e in es:
             if e.pt()<30: continue
+            if abs(e.eta())>2.17: continue
             for g in gs:
                 if deltaR(e.eta(),e.phi(),g.eta(),g.phi())<0.4: continue
                 #if self.passElectronVeto(g): continue
-                eg = DiCandidate(e,g)
-                if eg.M()<60 or eg.M()>120: continue
                 if not best: best = (e,g)
                 if e.pt()>best[0].pt():
                     best = (e,g)
@@ -79,10 +78,12 @@ class EGAnalysis(AnalysisBase):
 
         if not best: return candidate
         e,g = best
+        eg = DiCandidate(e,g)
+        if eg.M()<60 or eg.M()>120: return candidate
 
         candidate['e'] = e
         candidate['g'] = g
-        candidate['eg'] = DiCandidate(e,g)
+        candidate['eg'] = eg
 
         return candidate
 
