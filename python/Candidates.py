@@ -71,14 +71,14 @@ class Muon(Candidate):
 
     def pt(self):
         var = 'rochesterPt'
-        var = 'pt'
+        #var = 'pt'
         if self.shift=='MuonEnUp': var = 'pt_muonEnUp'
         if self.shift=='MuonEnDown': var = 'pt_muonEnDown'
         return self.get(var)
 
     def energy(self):
         var = 'rochesterEnergy'
-        var = 'energy'
+        #var = 'energy'
         if self.shift=='MuonEnUp': var = 'energy_muonEnUp'
         if self.shift=='MuonEnDown': var = 'energy_muonEnDown'
         return self.get(var)

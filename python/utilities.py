@@ -24,9 +24,8 @@ def deltaR(eta0,phi0,eta1,phi1):
 latestNtuples = {
     '76X' : '2016-09-28_DevTools_76X_v1',
     #'80X' : '2016-07-20_DevTools_80X_v1', # ICHEP 2016
-    '80X' : '2017-02-28_DevTools_80X_v1', # Moriond 2017
-    '80XPhoton' : '2017-06-06_DevTools_80X_photon_v1', # Moriond 2017
-    '80XQCD' : '2017-07-17_DevTools_80X_QCD_v1', # Moriond 2017
+    '80X' : '2017-09-28_DevTools_80X_v1', # Moriond 2017
+    '80XPhoton' : '2017-09-28_DevTools_80X_v1', # Moriond 2017
 }
 
 def getNtupleDirectory(version=None):
