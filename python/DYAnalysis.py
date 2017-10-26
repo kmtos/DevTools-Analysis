@@ -141,11 +141,17 @@ class DYAnalysis(AnalysisBase):
         for zpair in itertools.combinations(medLeps,2):
             if zpair[0].collName!=zpair[1].collName: continue # SF
             if zpair[0].charge()==zpair[1].charge(): continue # OS
-            z = DiCandidate(*zpair)
-            massdiff = abs(z.M()-ZMASS)
-            if massdiff<bestMassdiff:
-                bestZ = zpair
-                bestMassdiff = massdiff
+            z = [zpair[0],zpair[1]] if zpair[0].pt()>zpair[1].pt() else [zpair[1],zpair[0]]
+            if not bestZ: bestZ = z
+            if z[0].pt()>bestZ[0].pt():
+                bestZ = z
+            if z[0].pt()==bestZ[0].pt() and z[1].pt()>bestZ[1].pt():
+                bestZ = z
+            #z = DiCandidate(*zpair)
+            #massdiff = abs(z.M()-ZMASS)
+            #if massdiff<bestMassdiff:
+            #    bestZ = zpair
+            #    bestMassdiff = massdiff
 
         if not bestZ: return candidate # need a z candidate
 
