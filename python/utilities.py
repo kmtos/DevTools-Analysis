@@ -26,6 +26,7 @@ latestNtuples = {
     #'80X' : '2016-07-20_DevTools_80X_v1', # ICHEP 2016
     '80X' : '2017-09-28_DevTools_80X_v1', # Moriond 2017
     '80XPhoton' : '2017-09-28_DevTools_80X_v1', # Moriond 2017
+    '80XMuMuTauTau' : '2017-10-31_DevTools_MuMuTauTauSkim_80X_v2', # Moriond 2017
 }
 
 def getNtupleDirectory(version=None):
@@ -56,6 +57,7 @@ def getTestFiles(sample,n=1,version=None):
         'DoubleEG'      : 'DoubleEG',
         'MuonEG'        : 'MuonEG',
         'Tau'           : 'Tau',
+        'haa'           : 'SUSYGluGluToHToAA_AToMuMu_AToTauTau_M-15_TuneCUETP8M1_13TeV_madgraph_pythia8',
     }
 
     if sample not in sampleMap: return []
