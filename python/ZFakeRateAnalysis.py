@@ -234,7 +234,7 @@ class ZFakeRateAnalysis(AnalysisBase):
 
     def triggerEfficiency(self,cands,mode='ratio'):
         candList = [cands[c] for c in ['z1','z2']]
-        if candList[0]..__class__.__name__=='Electron':
+        if candList[0].__class__.__name__=='Electron':
             triggerList = ['Ele23_WPLoose','Ele17_Ele12'] if self.version=='76X' else ['Ele27Tight','Ele23Ele12']
         else:
             triggerList = ['IsoMu20_OR_IsoTkMu20','Mu17_Mu8'] if self.version=='76X' else ['IsoMu24_OR_IsoTkMu24','Mu17Mu8']
