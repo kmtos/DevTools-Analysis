@@ -15,18 +15,18 @@ import operator
 
 import ROOT
 
-logger = logging.getLogger("MuMuTauTauAnalysis")
+logger = logging.getLogger("MuMuTauFakeRateAnalysis")
 logging.basicConfig(level=logging.INFO, stream=sys.stderr,format='%(asctime)s.%(msecs)03d %(levelname)s %(name)s: %(message)s', datefmt='%Y-%m-%d %H:%M:%S')
 
-class MuMuTauTauAnalysis(AnalysisBase):
+class MuMuTauFakeRateAnalysis(AnalysisBase):
     '''
-    MuMuTauTau analysis
+    MuMuTauFakeRate analysis
     '''
 
     def __init__(self,**kwargs):
-        outputFileName = kwargs.pop('outputFileName','muMuTauTauTree.root')
-        outputTreeName = kwargs.pop('outputTreeName','MuMuTauTauTree')
-        super(MuMuTauTauAnalysis, self).__init__(outputFileName=outputFileName,outputTreeName=outputTreeName,**kwargs)
+        outputFileName = kwargs.pop('outputFileName','muMuTauFakeRateTree.root')
+        outputTreeName = kwargs.pop('outputTreeName','MuMuTauFakeRateTree')
+        super(MuMuTauFakeRateAnalysis, self).__init__(outputFileName=outputFileName,outputTreeName=outputTreeName,**kwargs)
 
         # setup cut tree
         self.cutTree.add(self.metFilter,'metFilter')
@@ -35,23 +35,12 @@ class MuMuTauTauAnalysis(AnalysisBase):
         # setup analysis tree
 
         # event counts
-        self.tree.add(lambda cands: self.numJets(cands['cleanJets'],'isLoose',30), 'numJetsLoose30', 'I')
-        self.tree.add(lambda cands: self.numJets(cands['cleanJets'],'isTight',30), 'numJetsTight30', 'I')
-        self.tree.add(lambda cands: self.numJets(cands['cleanJets'],'passCSVv2T',30), 'numBjetsTight30', 'I')
         self.tree.add(lambda cands: len(self.getCands(self.electrons,self.passLoose)), 'numLooseElectrons', 'I')
         self.tree.add(lambda cands: len(self.getCands(self.electrons,self.passTight)), 'numTightElectrons', 'I')
         self.tree.add(lambda cands: len(self.getCands(self.muons,self.passLoose)), 'numLooseMuons', 'I')
         self.tree.add(lambda cands: len(self.getCands(self.muons,self.passTight)), 'numTightMuons', 'I')
         self.tree.add(lambda cands: len(self.getCands(self.taus,self.passLoose)), 'numLooseTaus', 'I')
         self.tree.add(lambda cands: len(self.getCands(self.taus,self.passTight)), 'numTightTaus', 'I')
-
-        # trigger
-        if self.version=='76X':
-            self.tree.add(lambda cands: self.event.IsoMu20Pass(), 'pass_IsoMu20', 'I')
-            self.tree.add(lambda cands: self.event.IsoTkMu20Pass(), 'pass_IsoTkMu20', 'I')
-        else:
-            self.tree.add(lambda cands: self.event.IsoMu24Pass(), 'pass_IsoMu24', 'I')
-            self.tree.add(lambda cands: self.event.IsoTkMu24Pass(), 'pass_IsoTkMu24', 'I')
 
         self.tree.add(lambda cands: self.triggerEfficiency(cands)[0], 'triggerEfficiency', 'F')
         self.tree.add(lambda cands: self.triggerEfficiency(cands)[1], 'triggerEfficiencyUp', 'F')
@@ -63,31 +52,20 @@ class MuMuTauTauAnalysis(AnalysisBase):
         self.tree.add(lambda cands: self.triggerEfficiencyData(cands)[1], 'triggerEfficiencyDataUp', 'F')
         self.tree.add(lambda cands: self.triggerEfficiencyData(cands)[2], 'triggerEfficiencyDataDown', 'F')
 
-        # h
-        self.addComposite('h')
-        self.addCompositeMet('hmet')
+        # z leptons
+        self.addDiLepton('z')
+        self.addLepton('z1')
+        self.addDetailedMuon('z1')
+        self.addLepton('z2')
+        self.addDetailedMuon('z2')
 
-        # hpp leptons
-        self.addDiLepton('amm')
-        self.addCompositeMet('ammmet')
-        self.addLepton('am1')
-        self.addDetailedMuon('am1')
-        self.addLepton('am2')
-        self.addDetailedMuon('am2')
-
-        # hmm leptons
-        self.addDiLepton('att')
-        self.addCompositeMet('attmet')
-        self.addLepton('atm')
-        self.addDetailedMuon('atm')
-        self.addLepton('ath')
-        self.addDetailedTau('ath')
+        # tau
+        self.addLepton('t')
+        self.addDetailedTau('t')
 
         # met
         self.addMet('met')
 
-        # other event
-        self.tree.add(lambda cands: sum([x.pt() for x in cands['cleanJets']]), 'ht', 'F')
 
     ############################
     ### Additional functions ###
@@ -151,82 +129,54 @@ class MuMuTauTauAnalysis(AnalysisBase):
     ############################
     def selectCandidates(self):
         candidate = {
-            'am1' : None,
-            'am2' : None,
-            'atm' : None,
-            'ath' : None,
-            'amm' : None,
-            'ammmet' : None,
-            'att' : None,
-            'attmet' : None,
-            'h' : None,
-            'hmet' : None,
+            'z1' : None,
+            'z2' : None,
+            't' : None,
+            'z' : None,
             'met': self.pfmet,
-            'cleanJets' : [],
         }
 
         # get leptons
         muons = [m for m in self.muons if self.passMuon(m)]
         taus = [t for t in self.taus if self.passTau(t)]
         leps = muons+taus
-        if len(muons)<3: return candidate
+        if len(muons)<2: return candidate
         if len(taus)<1: return candidate
 
 
         # get the candidates
-        hCand = []
-        mmDeltaR = 999
-        ttDeltaR = 999
-        for quad in itertools.permutations(leps,4):
-            # require mmmt
-            if not (quad[0].__class__.__name__=='Muon': continue
-            if not (quad[1].__class__.__name__=='Muon': continue
-            if not (quad[2].__class__.__name__=='Muon': continue
-            if not (quad[3].__class__.__name__=='Tau': continue
+        zCand = []
+        for mm in itertools.permutations(muons,2):
+            m1 = mm[0]
+            m2 = mm[1]
             # charge OS
-            if quad[0].charge()==quad[1].charge(): continue
-            if quad[2].charge()==quad[3].charge(): continue
+            if m1.charge()==m2.charge(): continue
             # require lead m pt>25
-            if quad[0].pt()<25: continue
+            if m1.pt()<20: continue
+            if m2.pt()<10: continue
             # make composites
-            amm = DiCandidate(quad[0],quad[1])
-            att = DiCandidate(quad[2],quad[3])
-            # skim level selections
-            #if amm.M()>30: continue
-            #if amm.deltaR()>1.5: continue
-            # choose best
-            if not hCand: hCand = quad
+            z = DiCandidate(m1,m2)
+            if not zCand: zCand = mm
             better = True
-            if amm.deltaR()>mmDeltaR:
+            if zCand[0].pt()>m1.pt():
                 better = False
-            elif att.deltaR()>ttDeltaR:
+            elif zCand[1].pt()>m2.pt():
                 better = False
-            if better: hCand = quad
+            if better: zCand = mm
                 
-        if not hCand: return candidate
+        if not zCand: return candidate
 
-        am1 = hCand[0] if hCand[0].pt()>hCand[1].pt() else hCand[1]
-        am2 = hCand[1] if hCand[0].pt()>hCand[1].pt() else hCand[0]
-        atm = hCand[2]
-        ath = hCand[3]
+        m1 = zCand[0] if zCand[0].pt()>zCand[1].pt() else zCand[1]
+        m2 = zCand[1] if zCand[0].pt()>zCand[1].pt() else zCand[0]
 
-        amm = DiCandidate(am1,am2)
-        if amm.M()>30: return candidate
-        if amm.deltaR()>1.5: return candidate
+        z = DiCandidate(m1,m2)
+        if z.M()>120: return candidate
+        if z.M()<60: return candidate
 
-        candidate['am1'] = am1
-        candidate['am2'] = am2
-        candidate['atm'] = atm
-        candidate['ath'] = ath
-        candidate['amm'] = DiCandidate(am1,am2)
-        candidate['ammmet'] = MetCompositeCandidate(self.pfmet,am1,am2)
-        candidate['att'] = DiCandidate(atm,ath)
-        candidate['attmet'] = MetCompositeCandidate(self.pfmet,atm,ath)
-        candidate['h'] = CompositeCandidate(am1,am2,atm,ath)
-        candidate['hmet'] = MetCompositeCandidate(self.pfmet,am1,am2,atm,ath)
-
-        # clean the jets
-        candidate['cleanJets'] = self.cleanCands(self.jets,[am1,am2,atm,ath],0.4)
+        candidate['z1'] = m1
+        candidate['z2'] = m2
+        candidate['t'] = taus[0]
+        candidate['z'] = DiCandidate(m1,m2)
 
         return candidate
 
@@ -238,18 +188,16 @@ class MuMuTauTauAnalysis(AnalysisBase):
         isData = self.event.isData()>0.5
         if self.version=='76X':
             triggerNames = {
-                'SingleMuon'     : [
-                    'IsoMu20',
-                    'IsoTkMu20',
+                'DoubleMuon'     : [
+                    'Mu17_TrkIsoVVL_Mu8_TrkIsoVVL_DZ',
+                    'Mu17_TrkIsoVVL_TkMu8_TrkIsoVVL_DZ',
                 ],
             }
         else:
             triggerNames = {
-                'SingleMuon'     : [
-                    'IsoMu24',
-                    'IsoTkMu24',
-                    #'Mu45_eta2p1',
-                    #'Mu50',
+                'DoubleMuon'     : [
+                    'Mu17_TrkIsoVVL_Mu8_TrkIsoVVL_DZ',
+                    'Mu17_TrkIsoVVL_TkMu8_TrkIsoVVL_DZ',
                 ],
             }
         # the order here defines the heirarchy
@@ -257,7 +205,7 @@ class MuMuTauTauAnalysis(AnalysisBase):
         # second dataset, if a trigger in the first dataset is found, reject event
         # so forth
         datasets = [
-            'SingleMuon',
+            'DoubleMuon',
         ]
         return self.checkTrigger(*datasets,**triggerNames)
 
@@ -268,8 +216,8 @@ class MuMuTauTauAnalysis(AnalysisBase):
         return self.triggerEfficiency(cands,mode='data')
 
     def triggerEfficiency(self,cands,mode='ratio'):
-        candList = [cands[c] for c in ['am1','am2','atm','ath']]
-        triggerList = ['IsoMu20_OR_IsoTkMu20'] if self.version=='76X' else ['IsoMu24_OR_IsoTkMu24']
+        candList = [cands[c] for c in ['z1','z2']]
+        triggerList = ['Mu17_Mu8'] if self.version=='76X' else ['Mu17Mu8']
         if mode=='data':
             return self.triggerScales.getDataEfficiency(triggerList,candList,doError=True)
         elif mode=='mc':
@@ -286,9 +234,9 @@ class MuMuTauTauAnalysis(AnalysisBase):
 def parse_command_line(argv):
     parser = argparse.ArgumentParser(description='Run analyzer')
 
-    parser.add_argument('--inputFiles', type=str, nargs='*', default=getTestFiles('haa',version='80XMuMuTauTau'), help='Input files')
+    parser.add_argument('--inputFiles', type=str, nargs='*', default=getTestFiles('dy',version='80XMuMuTauTauZSkim'), help='Input files')
     parser.add_argument('--inputFileList', type=str, default='', help='Input file list')
-    parser.add_argument('--outputFile', type=str, default='muMuTauTauTree.root', help='Output file')
+    parser.add_argument('--outputFile', type=str, default='muMuTauFakeRateTree.root', help='Output file')
     parser.add_argument('--shift', type=str, default='', choices=['','ElectronEnUp','ElectronEnDown','MuonEnUp','MuonEnDown','TauEnUp','TauEnDown','JetEnUp','JetEnDown','JetResUp','JetResDown','UnclusteredEnUp','UnclusteredEnDown'], help='Energy shift')
 
     return parser.parse_args(argv)
@@ -299,9 +247,9 @@ def main(argv=None):
 
     args = parse_command_line(argv)
 
-    muMuTauTauAnalysis = MuMuTauTauAnalysis(
+    muMuTauFakeRateAnalysis = MuMuTauFakeRateAnalysis(
         outputFileName=args.outputFile,
-        outputTreeName='MuMuTauTauTree',
+        outputTreeName='MuMuTauFakeRateTree',
         inputFileNames=args.inputFileList if args.inputFileList else args.inputFiles,
         inputTreeName='MiniTree',
         inputLumiName='LumiTree',
@@ -310,10 +258,10 @@ def main(argv=None):
     )
 
     try:
-       muMuTauTauAnalysis.analyze()
-       muMuTauTauAnalysis.finish()
+       muMuTauFakeRateAnalysis.analyze()
+       muMuTauFakeRateAnalysis.finish()
     except KeyboardInterrupt:
-       muMuTauTauAnalysis.finish()
+       muMuTauFakeRateAnalysis.finish()
 
     return 0
 

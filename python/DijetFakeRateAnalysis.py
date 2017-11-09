@@ -151,7 +151,7 @@ class DijetFakeRateAnalysis(AnalysisBase):
         }
         # here we need to accept only a specific trigger after a certain pt threshold
         pt = cands['l1'].pt()
-        dataset = 'DoubleEG' if isinstance(cands['l1'],Electron) else 'DoubleMuon'
+        dataset = 'DoubleEG' if cands['l1'].__class__.__name__=='Electron' else 'DoubleMuon'
         # accept the event only if it is triggered in the current dataset
         reject = True if isData else False
         if dataset in self.fileNames[0]: reject = False
@@ -175,7 +175,7 @@ class DijetFakeRateAnalysis(AnalysisBase):
         candList = [cands['l1']]
         # select via pt and flavor
         pt = cands['l1'].pt()
-        if isinstance(cands['l1'],Electron):
+        if cands['l1'].__class__.__name__=='Electron':
             #triggerList = ['Ele17_Ele12Leg2'] if self.version=='76X' else ['Ele23Ele12Leg2']
             if pt<25:
                 triggerList = ['Ele17_Ele12Leg2'] if self.version=='76X' else ['Ele23Ele12Leg2']
@@ -197,7 +197,7 @@ class DijetFakeRateAnalysis(AnalysisBase):
     def triggerPrescale(self,cands):
         # select via pt and flavor
         pt = cands['l1'].pt()
-        if isinstance(cands['l1'],Electron):
+        if cands['l1'].__class__.__name__=='Electron':
             #trigger = 'Ele17_Ele12Leg2'
             if pt<25:
                 trigger = 'Ele23_Ele12Leg2'

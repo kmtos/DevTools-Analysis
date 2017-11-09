@@ -163,7 +163,7 @@ class LLGAnalysis(AnalysisBase):
 
     def triggerEfficiency(self,cands,mode='ratio'):
         candList = [cands[c] for c in ['l1','l2']]
-        triggerList = ['Ele23Ele12'] if isinstance(candList[0],Electron) else ['Mu17Mu8']
+        triggerList = ['Ele23Ele12'] if candList[0].__class__.__name__=='Electron' else ['Mu17Mu8']
         if mode=='data':
             return self.triggerScales.getDataEfficiency(triggerList,candList)
         elif mode=='mc':

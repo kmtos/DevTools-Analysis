@@ -23,9 +23,9 @@ def passHZZLooseMuon(muon):
     return True
 
 def passHZZLoose(cand):
-    if isinstance(cand,Electron): return passHZZLooseElectron(cand)
-    if isinstance(cand,Muon):     return passHZZLooseMuon(cand)
-    if isinstance(cand,Tau):      return passHppLooseTau(cand)
+    if cand.__class__.__name__=='Electron': return passHZZLooseElectron(cand)
+    if cand.__class__.__name__=='Muon':     return passHZZLooseMuon(cand)
+    if cand.__class__.__name__=='Tau':      return passHppLooseTau(cand)
     return False
 
 def passHZZTightElectron(electron):
@@ -55,9 +55,9 @@ def passHZZTightMuon(muon):
     return muon.isPFMuon()
 
 def passHZZTight(cand):
-    if isinstance(cand,Electron): return passHZZTightElectron(cand)
-    if isinstance(cand,Muon):     return passHZZTightMuon(cand)
-    if isinstance(cand,Tau):      return passHppMediumTau(cand)
+    if cand.__class__.__name__=='Electron': return passHZZTightElectron(cand)
+    if cand.__class__.__name__=='Muon':     return passHZZTightMuon(cand)
+    if cand.__class__.__name__=='Tau':      return passHppMediumTau(cand)
     return False
 
 #########################
@@ -94,8 +94,8 @@ def passWZLooseMuon(muon,version='80X'):
     return True
 
 def passWZLoose(cand,version='80X'):
-    if isinstance(cand,Electron): return passWZLooseElectron(cand,version=version)
-    if isinstance(cand,Muon):     return passWZLooseMuon(cand,version=version)
+    if cand.__class__.__name__=='Electron': return passWZLooseElectron(cand,version=version)
+    if cand.__class__.__name__=='Muon':     return passWZLooseMuon(cand,version=version)
     return False
 
 def passWZMediumElectron(electron,version='80X'):
@@ -109,8 +109,8 @@ def passWZMediumMuon(muon,version='80X'):
     return True
 
 def passWZMedium(cand,version='80X'):
-    if isinstance(cand,Electron): return passWZMediumElectron(cand,version=version)
-    if isinstance(cand,Muon):     return passWZMediumMuon(cand,version=version)
+    if cand.__class__.__name__=='Electron': return passWZMediumElectron(cand,version=version)
+    if cand.__class__.__name__=='Muon':     return passWZMediumMuon(cand,version=version)
     return False
 
 def passWZTightElectron(electron,version='80X'):
@@ -122,8 +122,8 @@ def passWZTightMuon(muon,version='80X'):
     return passWZMediumMuon(muon,version=version)
 
 def passWZTight(cand,version='80X'):
-    if isinstance(cand,Electron): return passWZTightElectron(cand,version=version)
-    if isinstance(cand,Muon):     return passWZTightMuon(cand,version=version)
+    if cand.__class__.__name__=='Electron': return passWZTightElectron(cand,version=version)
+    if cand.__class__.__name__=='Muon':     return passWZTightMuon(cand,version=version)
     return False
 
 ###############
@@ -178,9 +178,9 @@ def passHppLooseTau(tau):
     return True
 
 def passHppLoose(cand,version='80X'):
-    if isinstance(cand,Electron): return passHppLooseElectron(cand)
-    if isinstance(cand,Muon):     return passHppLooseMuon(cand,version=version) #if version=='76X' else passHppLooseMuonICHEP(cand)
-    if isinstance(cand,Tau):      return passHppLooseTau(cand)
+    if cand.__class__.__name__=='Electron': return passHppLooseElectron(cand)
+    if cand.__class__.__name__=='Muon':     return passHppLooseMuon(cand,version=version) #if version=='76X' else passHppLooseMuonICHEP(cand)
+    if cand.__class__.__name__=='Tau':      return passHppLooseTau(cand)
     return False
 
 def passHppMediumElectron(electron):
@@ -200,9 +200,9 @@ def passHppMediumTau(tau):
     return True
 
 def passHppMedium(cand,version='80X'):
-    if isinstance(cand,Electron): return passHppMediumElectron(cand)
-    if isinstance(cand,Muon):     return passHppMediumMuon(cand,version=version) #if version=='76X' else passHppMediumMuonICHEP(cand)
-    if isinstance(cand,Tau):      return passHppMediumTau(cand)
+    if cand.__class__.__name__=='Electron': return passHppMediumElectron(cand)
+    if cand.__class__.__name__=='Muon':     return passHppMediumMuon(cand,version=version) #if version=='76X' else passHppMediumMuonICHEP(cand)
+    if cand.__class__.__name__=='Tau':      return passHppMediumTau(cand)
     return False
 
 def passHppTightElectron(electron):
@@ -224,9 +224,9 @@ def passHppTightTau(tau):
     return True
 
 def passHppTight(cand,version='80X'):
-    if isinstance(cand,Electron): return passHppTightElectron(cand)
-    if isinstance(cand,Muon):     return passHppTightMuon(cand,version=version) #if version=='76X' else passHppMediumMuonICHEP(cand)
-    if isinstance(cand,Tau):      return passHppTightTau(cand)
+    if cand.__class__.__name__=='Electron': return passHppTightElectron(cand)
+    if cand.__class__.__name__=='Muon':     return passHppTightMuon(cand,version=version) #if version=='76X' else passHppMediumMuonICHEP(cand)
+    if cand.__class__.__name__=='Tau':      return passHppTightTau(cand)
     return False
 
 ###############
@@ -262,8 +262,8 @@ def passWZ2017LooseMuon(muon):
     return True
 
 def passWZ2017Loose(cand,version='80X'):
-    if isinstance(cand,Electron): return passWZ2017LooseElectron(cand)
-    if isinstance(cand,Muon):     return passWZ2017LooseMuon(cand)
+    if cand.__class__.__name__=='Electron': return passWZ2017LooseElectron(cand)
+    if cand.__class__.__name__=='Muon':     return passWZ2017LooseMuon(cand)
     return False
 
 
@@ -278,8 +278,8 @@ def passWZ2017MediumMuon(muon):
     return True
 
 def passWZ2017Medium(cand,version='80X'):
-    if isinstance(cand,Electron): return passWZ2017MediumElectron(cand)
-    if isinstance(cand,Muon):     return passWZ2017MediumMuon(cand)
+    if cand.__class__.__name__=='Electron': return passWZ2017MediumElectron(cand)
+    if cand.__class__.__name__=='Muon':     return passWZ2017MediumMuon(cand)
     return False
 
 
@@ -292,8 +292,8 @@ def passWZ2017TightMuon(muon):
     return passWZ2017MediumMuon(muon)
 
 def passWZ2017Tight(cand,version='80X'):
-    if isinstance(cand,Electron): return passWZ2017TightElectron(cand)
-    if isinstance(cand,Muon):     return passWZ2017TightMuon(cand)
+    if cand.__class__.__name__=='Electron': return passWZ2017TightElectron(cand)
+    if cand.__class__.__name__=='Muon':     return passWZ2017TightMuon(cand)
     return False
 
 

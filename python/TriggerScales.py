@@ -9,7 +9,6 @@ import ROOT
 import operator
 
 from DevTools.Utilities.utilities import *
-from DevTools.Analyzer.Candidates import *
 
 def product(iterable):
     if not iterable: return 0. # case of empty list
@@ -261,7 +260,7 @@ class TriggerScales(object):
     def __getEfficiency(self,rootName,mode,cand,shift=''):
         pt = cand.pt()
         eta = cand.eta()
-        if isinstance(cand,Muon):
+        if cand.__class__.__name__=='Muon':
             if self.version=='76X':
                 # Muon POG
                 # ignore Run2015C, reweight isomu via hlt trigger
@@ -368,7 +367,7 @@ class TriggerScales(object):
                         return max([val-err,0.])
                     else:
                         return val
-        elif isinstance(cand,Electron):
+        elif cand.__class__.__name__=='Electron':
             if self.version=='76X':
                 # HWW
                 if rootName=='Ele23_WPLoose':
@@ -427,7 +426,7 @@ class TriggerScales(object):
                         return max([val-err,0.])
                     else:
                         return val
-        elif isinstance(cand,Tau):
+        elif cand.__class__.__name__=='Tau':
             if self.version=='76X':
                 eff = self.__crystalball_fit(pt,rootName,mode,shift=shift)
                 if eff > 1.: eff = 1.
@@ -441,43 +440,44 @@ class TriggerScales(object):
         return 0.
 
     def __getLeadEfficiency(self,rootNames,mode,cand,shift=''):
-        if isinstance(cand,Electron):
+        if cand.__class__.__name__=='Electron':
             if 'Ele17_Ele12' in rootNames:
                 return self.__getEfficiency('Ele17_Ele12Leg1',mode,cand,shift=shift)
             if 'Ele23Ele12' in rootNames:
                 return self.__getEfficiency('Ele23Ele12Leg1',mode,cand,shift=shift)
             if 'Ele24Tau20SingleL1' in rootNames:
                 return self.__getEfficiency('Ele24Tau20LegSingleL1',mode,cand,shift=shift)
-        elif isinstance(cand,Muon):
+        elif cand.__class__.__name__=='Muon':
             if 'Mu17_Mu8' in rootNames:
                 return self.__getEfficiency('Mu17_Mu8Leg1',mode,cand,shift=shift)
             if 'Mu17Mu8' in rootNames:
                 return self.__getEfficiency('Mu17Mu8Leg1',mode,cand,shift=shift)
             if 'Mu19Tau20SingleL1' in rootNames:
                 return self.__getEfficiency('Mu19Tau20LegSingleL1',mode,cand,shift=shift)
-        elif isinstance(cand,Tau):
+        elif cand.__class__.__name__=='Tau':
             if 'DoublePFTau35' in rootNames:
                 return self.__getEfficiency('MediumIsoPFTau35_Trk_eta2p1',mode,cand,shift=shift)
         return 0.
 
     def __getTrailEfficiency(self,rootNames,mode,cand,shift=''):
-        if isinstance(cand,Electron):
+        if cand.__class__.__name__=='Electron':
             if 'Ele17_Ele12' in rootNames:
                 return self.__getEfficiency('Ele17_Ele12Leg2',mode,cand,shift=shift)
             if 'Ele23Ele12' in rootNames:
                 return self.__getEfficiency('Ele23Ele12Leg2',mode,cand,shift=shift)
-        elif isinstance(cand,Muon):
+        elif cand.__class__.__name__=='Muon':
             if 'Mu17_Mu8' in rootNames:
                 return self.__getEfficiency('Mu17_Mu8Leg2',mode,cand,shift=shift)
             if 'Mu17Mu8' in rootNames:
                 return self.__getEfficiency('Mu17Mu8Leg2',mode,cand,shift=shift)
-        elif isinstance(cand,Tau):
+        elif cand.__class__.__name__=='Tau':
             if 'DoublePFTau35' in rootNames:
                 return self.__getEfficiency('MediumIsoPFTau35_Trk_eta2p1',mode,cand,shift=shift)
         return 0.
 
     def __getSingleEfficiency(self,rootNames,mode,cand,shift=''):
-        if isinstance(cand,Electron) or isinstance(cand,Photon): # special handling for photon as electron validation
+        # special handling for photon as electron validation
+        if cand.__class__.__name__ in ['Electron','Photon']:
             if 'Ele23_WPLoose' in rootNames:
                 return self.__getEfficiency('Ele23_WPLoose',mode,cand,shift=shift)
             elif 'Ele17_Ele12Leg1' in rootNames:
@@ -498,7 +498,7 @@ class TriggerScales(object):
                 return self.__getEfficiency('Ele23Ele12Leg1',mode,cand,shift=shift)
             elif 'Ele23Ele12Leg2' in rootNames:
                 return self.__getEfficiency('Ele23Ele12Leg2',mode,cand,shift=shift)
-        elif isinstance(cand,Muon):
+        elif cand.__class__.__name__=='Muon':
             if 'IsoMu20_OR_IsoTkMu20' in rootNames:
                 return self.__getEfficiency('IsoMu20_OR_IsoTkMu20',mode,cand,shift=shift)
             elif 'Mu45_eta2p1' in rootNames:
@@ -523,7 +523,7 @@ class TriggerScales(object):
                 return self.__getEfficiency('Mu17Mu8Leg1',mode,cand,shift=shift)
             elif 'Mu17Mu8Leg2' in rootNames:
                 return self.__getEfficiency('Mu17Mu8Leg2',mode,cand,shift=shift)
-        elif isinstance(cand,Tau):
+        elif cand.__class__.__name__=='Tau':
             return 0.
         return 0.
 
@@ -580,15 +580,15 @@ class TriggerScales(object):
                                      self.__hasDouble(triggers,'taus')))):
             val = 1-(
                 # none pass single
-                product([1-self.__getSingleEfficiency(triggers,mode,cand,shift=shift) for cand in cands if any([isinstance(cand,c) for c in [Electron,Muon]])]) # only electron/muon single triggers
+                product([1-self.__getSingleEfficiency(triggers,mode,cand,shift=shift) for cand in cands if cand.__class__.__name__ in ['Electron','Muon']]) # only electron/muon single triggers
             )*min([
                 # none pass lead
                 product([1-self.__getLeadEfficiency(triggers,mode,cand,shift=shift) for cand in cands])
                 # one pass lead, none pass trail
                 +sum([self.__getLeadEfficiency(triggers,mode,lead,shift=shift)
                       *product([1-self.__getTrailEfficiency(triggers,mode,trail,shift=shift) if trail!=lead else 1. for trail in cands if (
-                                       (isinstance(trail,Tau) and isinstance(lead,Tau)) or                                                                      # no cross trigger with taus
-                                       (any([isinstance(trail,c) for c in [Electron,Muon]]) and any([isinstance(lead,c) for c in [Electron,Muon]])) # allow cross triggers with e/m
+                                       (trail.__class__.__name__=='Tau' and lead.__class__.__name__=='Tau') or                               # no cross trigger with taus
+                                       (trail.__class__.__name__ in ['Electron','Muon'] and lead.__class__.__name__ in ['Electron','Muon'])  # allow cross triggers with e/m
                                    )
                                ]) for lead in cands])
                 # TODO: DZ not included ???

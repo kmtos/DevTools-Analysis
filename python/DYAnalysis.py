@@ -231,7 +231,7 @@ class DYAnalysis(AnalysisBase):
         # second dataset, if a trigger in the first dataset is found, reject event
         # so forth
         if not cands['z1']: return False
-        if isinstance(cands['z1'],Electron):
+        if cands['z1'].__class__.__name__=='Electron':
             datasets = [
                 'DoubleEG', 
                 'SingleElectron',
@@ -251,7 +251,7 @@ class DYAnalysis(AnalysisBase):
 
     def triggerEfficiency(self,cands,mode='ratio'):
         candList = [cands[c] for c in ['z1','z2']]
-        if isinstance(candList[0],Electron):
+        if candList[0].__class__.__name__=='Electron':
             triggerList = ['Ele23_WPLoose','Ele17_Ele12'] if self.version=='76X' else ['Ele27Tight','Ele23Ele12']
         else:
             triggerList = ['IsoMu20_OR_IsoTkMu20','Mu17_Mu8'] if self.version=='76X' else ['IsoMu24_OR_IsoTkMu24','Mu17Mu8']

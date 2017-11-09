@@ -27,6 +27,7 @@ latestNtuples = {
     '80X' : '2017-09-28_DevTools_80X_v1', # Moriond 2017
     '80XPhoton' : '2017-09-28_DevTools_80X_v1', # Moriond 2017
     '80XMuMuTauTau' : '2017-10-31_DevTools_MuMuTauTauSkim_80X_v2', # Moriond 2017
+    '80XMuMuTauTauZSkim' : '2017-11-08_DevTools_MuMuTauTauZSkim_80X_v1', # Moriond 2017
 }
 
 def getNtupleDirectory(version=None):
@@ -46,8 +47,8 @@ def getTestFiles(sample,n=1,version=None):
         'hpp4l' : 'HPlusPlusHMinusMinusHTo4L_M-500_13TeV-pythia8' if version=='76X' else 'HPlusPlusHMinusMinusHTo4L_M-500_TuneCUETP8M1_13TeV_pythia8',
         'hppr4l': 'HPlusPlusHMinusMinusHRTo4L_M-500_13TeV-pythia8' if version=='76X' else 'HPlusPlusHMinusMinusHRTo4L_M-500_TuneCUETP8M1_13TeV_pythia8',
         'hpp3l' : 'HPlusPlusHMinusHTo3L_M-500_TuneCUETP8M1_13TeV_calchep-pythia8' if version=='76X' else 'HPlusPlusHMinusHTo3L_M-500_13TeV-calchep-pythia8',
-        #'dy'    : 'DYJetsToLL_M-50_TuneCUETP8M1_13TeV-amcatnloFXFX-pythia8',
-        'dy'    : 'DYJetsToLL_M-50_TuneCUETP8M1_13TeV-madgraphMLM-pythia8',
+        'dy'    : 'DYJetsToLL_M-50_TuneCUETP8M1_13TeV-amcatnloFXFX-pythia8',
+        #'dy'    : 'DYJetsToLL_M-50_TuneCUETP8M1_13TeV-madgraphMLM-pythia8',
         'w'     : 'WJetsToLNu_TuneCUETP8M1_13TeV-amcatnloFXFX-pythia8',
         'qcd'   : 'QCD_Pt_300to470_TuneCUETP8M1_13TeV_pythia8',
         'gjet'  : 'GJet_Pt-40toInf_DoubleEMEnriched_MGG-80toInf_TuneCUETP8M1_13TeV_Pythia8',

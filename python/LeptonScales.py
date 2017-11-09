@@ -5,7 +5,6 @@ import logging
 import ROOT
 
 from DevTools.Utilities.utilities import *
-from Candidates import *
 
 class LeptonScales(object):
     '''Class to access the lepton scales for a given ID.'''
@@ -247,7 +246,7 @@ class LeptonScales(object):
 
     def getScale(self,leptonId,cand,doError=False):
         '''Get the scale to apply to MC (eff_data/eff_mc)'''
-        if isinstance(cand,Electron):
+        if cand.__class__.__name__=='Electron':
             idval = self.__getElectronScale(leptonId,cand)
             trackval = self.__getElectronScale('GSFTracking',cand)
             if (cand.pt()<20 or cand.pt()>80) and self.version=='80X':
@@ -256,7 +255,7 @@ class LeptonScales(object):
                 val, err = prodWithError(idval,trackval,(1.,0.01))
             else:
                 val, err = prodWithError(idval,trackval)
-        elif isinstance(cand,Muon):
+        elif cand.__class__.__name__=='Muon':
             if leptonId == 'TightIDTightIso':
                 idname, isoname = ('TightID', 'TightRelIsoTightID') if self.version=='76X' else ('TightID', 'TightIsoFromTightID')
             elif leptonId == 'MediumIDTightIso':
@@ -278,9 +277,9 @@ class LeptonScales(object):
             valTrack, errTrack = self.__getMuonTrackingScale(cand)
             #val, err = prodWithError((val,err),(valTrack,errTrack))
             val, err = prodWithError((val,err),(valTrack,0. if errTrack!=errTrack else errTrack)) # bug with error from tgraphasymm, check for NaN
-        elif isinstance(cand,Tau):
+        elif cand.__class__.__name__=='Tau':
             val, err = self.__getTauScale(leptonId,cand)
-        elif isinstance(cand,Photon):
+        elif cand.__class__.__name__=='Photon':
             val, err = self.__getPhotonScale(leptonId,cand)
         else:
             val, err = 1., 0.

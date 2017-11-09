@@ -162,7 +162,7 @@ class WFakeRateAnalysis(AnalysisBase):
         # first dataset, any trigger passes
         # second dataset, if a trigger in the first dataset is found, reject event
         # so forth
-        if isinstance(cands['t'],Electron):
+        if cands['t'].__class__.__name__=='Electron':
             datasets = ['SingleElectron']
         else:
             datasets = ['SingleMuon']
@@ -176,7 +176,7 @@ class WFakeRateAnalysis(AnalysisBase):
 
     def triggerEfficiency(self,cands,mode='ratio'):
         candList = [cands['t']]
-        if isinstance(cands['t'],Electron):
+        if cands['t'].__class__.__name__=='Electron':
             triggerList = ['Ele23_WPLoose'] if self.version=='76X' else ['Ele27Tight']
         else:
             triggerList = ['IsoMu20_OR_IsoTkMu20'] if self.version=='76X' else ['IsoMu24_OR_IsoTkMu24']
