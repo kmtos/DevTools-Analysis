@@ -26,7 +26,7 @@ from DevTools.Analyzer.MMGAnalysis import main as runMMG
 from DevTools.Analyzer.LLGAnalysis import main as runLLG
 from DevTools.Analyzer.SingleJetAnalysis import main as runSingleJet
 from DevTools.Analyzer.MuMuTauTauAnalysis import main as runMuMuTauTau
-from DevTools.Analyzer.MuMuTauTauAnalysis import main as runMuMuTauFakeRate
+from DevTools.Analyzer.MuMuTauFakeRateAnalysis import main as runMuMuTauFakeRate
 
 
 def runAnalysis(analysis,argv):
