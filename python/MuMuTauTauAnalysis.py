@@ -179,10 +179,10 @@ class MuMuTauTauAnalysis(AnalysisBase):
         ttDeltaR = 999
         for quad in itertools.permutations(leps,4):
             # require mmmt
-            if not (quad[0].__class__.__name__=='Muon': continue
-            if not (quad[1].__class__.__name__=='Muon': continue
-            if not (quad[2].__class__.__name__=='Muon': continue
-            if not (quad[3].__class__.__name__=='Tau': continue
+            if not quad[0].__class__.__name__=='Muon': continue
+            if not quad[1].__class__.__name__=='Muon': continue
+            if not quad[2].__class__.__name__=='Muon': continue
+            if not quad[3].__class__.__name__=='Tau': continue
             # charge OS
             if quad[0].charge()==quad[1].charge(): continue
             if quad[2].charge()==quad[3].charge(): continue
