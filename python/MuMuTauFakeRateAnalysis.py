@@ -60,8 +60,11 @@ class MuMuTauFakeRateAnalysis(AnalysisBase):
         self.addDetailedMuon('z2')
 
         # tau
+        self.addDiLepton('mt')
         self.addLepton('t')
         self.addDetailedTau('t')
+        self.addLepton('m')
+        self.addDetailedMuon('m')
 
         # met
         self.addMet('met')
@@ -111,7 +114,7 @@ class MuMuTauFakeRateAnalysis(AnalysisBase):
         self.addCandVar(label,'bestTrackPt','bestTrackPt','F')
         self.addCandVar(label,'trackerStandaloneMatch','trackerStandaloneMatch','F')
         self.addCandVar(label,'relPFIsoDeltaBetaR04','relPFIsoDeltaBetaR04','F')
-        self.tree.add(lambda cands: cands[label].trackIso()/cands[label].pt(), '{0}_trackRelIso'.format(label), 'F')
+        self.tree.add(lambda cands: cands[label].trackIso()/cands[label].pt() if cands[label].pt() else 0., '{0}_trackRelIso'.format(label), 'F')
 
     def passMuon(self,cand):
         if cand.pt()<3: return False
@@ -133,6 +136,8 @@ class MuMuTauFakeRateAnalysis(AnalysisBase):
             'z2' : None,
             't' : None,
             'z' : None,
+            'm': None,
+            'mt': None,
             'met': self.pfmet,
         }
 
@@ -169,6 +174,17 @@ class MuMuTauFakeRateAnalysis(AnalysisBase):
         m1 = zCand[0] if zCand[0].pt()>zCand[1].pt() else zCand[1]
         m2 = zCand[1] if zCand[0].pt()>zCand[1].pt() else zCand[0]
 
+        # highest pt tau with DR>0.8 from selected muons
+        goodTaus = [t for t in taus if deltaR(t.eta(),t.phi(),m1.eta(),m1.phi())>0.8 and deltaR(t.eta(),t.phi(),m2.eta(),m2.phi())>0.8]
+        if len(goodTaus)==0: return candidate
+
+        t = goodTaus[0]
+
+        # find if there is a muon nearby
+        otherMuons = [m for m in muons if m!=m1 and m!=m2 and deltaR(m.eta(),m.phi(),t.eta(),t.phi())<0.8]
+        otherMuonsByDR = sorted(otherMuons, key=lambda m: deltaR(m.eta(),m.phi(),t.eta(),t.phi()))
+        nearM = otherMuonsByDR[0] if otherMuonsByDR else Candidate(None)
+
         z = DiCandidate(m1,m2)
         if z.M()>120: return candidate
         if z.M()<60: return candidate
@@ -177,6 +193,8 @@ class MuMuTauFakeRateAnalysis(AnalysisBase):
         candidate['z2'] = m2
         candidate['t'] = taus[0]
         candidate['z'] = DiCandidate(m1,m2)
+        candidate['m'] = nearM
+        candidate['mt'] = DiCandidate(nearM,t) if len(otherMuonsByDR) else DiCandidate(Candidate(None),Candidate(None))
 
         return candidate
 
