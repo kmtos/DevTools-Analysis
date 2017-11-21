@@ -212,7 +212,7 @@ class MuMuTauTauAnalysis(AnalysisBase):
 
         amm = DiCandidate(am1,am2)
         if amm.M()>30: return candidate
-        if amm.deltaR()>1.5: return candidate
+        #if amm.deltaR()>1.5: return candidate
 
         candidate['am1'] = am1
         candidate['am2'] = am2

@@ -22,11 +22,11 @@ def deltaR(eta0,phi0,eta1,phi1):
     return ROOT.TMath.Sqrt(deta**2+dphi**2)
 
 latestNtuples = {
-    '76X' : '2016-09-28_DevTools_76X_v1',
-    #'80X' : '2016-07-20_DevTools_80X_v1', # ICHEP 2016
-    '80X' : '2017-09-28_DevTools_80X_v1', # Moriond 2017
-    '80XPhoton' : '2017-09-28_DevTools_80X_v1', # Moriond 2017
-    '80XMuMuTauTau' : '2017-10-31_DevTools_MuMuTauTauSkim_80X_v2', # Moriond 2017
+    '76X'                : '2016-09-28_DevTools_76X_v1',
+    #'80X'                : '2016-07-20_DevTools_80X_v1', # ICHEP 2016
+    '80X'                : '2017-09-28_DevTools_80X_v1', # Moriond 2017
+    '80XPhoton'          : '2017-09-28_DevTools_80X_v1', # Moriond 2017
+    '80XMuMuTauTau'      : '2017-11-14_DevTools_MuMuTauTauSkim_80X_v1', # Moriond 2017
     '80XMuMuTauTauZSkim' : '2017-11-08_DevTools_MuMuTauTauZSkim_80X_v1', # Moriond 2017
 }
 
