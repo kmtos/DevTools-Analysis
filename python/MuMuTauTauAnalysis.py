@@ -66,6 +66,7 @@ class MuMuTauTauAnalysis(AnalysisBase):
         # h
         self.addComposite('h')
         self.addCompositeMet('hmet')
+        self.tree.add(lambda cands: cands['hmet'].Mcat(2,3), 'hmet_mcat', 'F')
 
         # hpp leptons
         self.addDiLepton('amm')
@@ -78,6 +79,7 @@ class MuMuTauTauAnalysis(AnalysisBase):
         # hmm leptons
         self.addDiLepton('att')
         self.addCompositeMet('attmet')
+        self.tree.add(lambda cands: cands['attmet'].Mcat(0,1), 'attmet_mcat', 'F')
         self.addLepton('atm')
         self.addDetailedMuon('atm')
         self.addLepton('ath')

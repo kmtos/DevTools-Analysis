@@ -534,9 +534,12 @@ class AnalysisBase(object):
         self.tree.add(lambda cands: self.event.Photon175Pass(), 'pass_Photon175', 'I')
         
 
-    def addCandVar(self,label,varLabel,var,rootType):
+    def addCandVar(self,label,varLabel,var,rootType,permissive=False):
         '''Add a variable for a cand'''
-        self.tree.add(lambda cands: getattr(cands[label],var)(), '{0}_{1}'.format(label,varLabel), rootType)
+        if permissive:
+            self.tree.add(lambda cands: getattr(cands[label],var)() if cands[label].has(var) else 0., '{0}_{1}'.format(label,varLabel), rootType)
+        else:
+            self.tree.add(lambda cands: getattr(cands[label],var)(), '{0}_{1}'.format(label,varLabel), rootType)
 
     def addFlavorDependentCandVar(self,label,varLabel,varMap,rootType):
         '''Add a variable for a cand based on flavor'''
@@ -546,6 +549,10 @@ class AnalysisBase(object):
         '''Add Met variables'''
         self.addCandVar(label,'pt','et','F')
         self.addCandVar(label,'phi','phi','F')
+        self.addCandVar(label,'cov00','cov00','F',permissive=True)
+        self.addCandVar(label,'cov01','cov01','F',permissive=True)
+        self.addCandVar(label,'cov10','cov10','F',permissive=True)
+        self.addCandVar(label,'cov11','cov11','F',permissive=True)
 
     def addCandidate(self,label):
         '''Add variables relevant for all objects'''

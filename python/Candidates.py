@@ -20,6 +20,9 @@ class Event(object):
     def get(self,var):
         return getattr(self.tree,var)
 
+    def has(self,var):
+        return hasattr(self.tree,var)
+
 ##############################
 ### Basic candidate access ###
 ##############################
@@ -52,6 +55,11 @@ class Candidate(object):
             return getattr(self.tree,varName)
         else: # for vector branches
             return getattr(self.tree,varName)[self.entry]
+
+    def has(self,var):
+        if not self.tree: return False
+        varName = '{0}_{1}'.format(self.collName,var)
+        return hasattr(self.tree,varName)
 
     def p4(self):
         p4 = ROOT.TLorentzVector()
@@ -336,3 +344,41 @@ class MetCompositeCandidate(CompositeCandidate):
     def deltaPhi(self):
         candP4 = self.candP4()
         return deltaPhi(self.met.phi(),candP4.Phi())
+
+    def _x(self,c,o):
+        dphi = c.phi() - self.met.phi()
+        codphi = c.phi() - o.phi()
+        if abs(codphi)==math.pi or codphi==0:
+            x = 0
+        else:
+            x = c.pt()/(c.pt() + self.met.et()*(math.cos(dphi) - math.sin(dphi)/math.tan(codphi)))
+        # note: large met and small deltaphi between c/o results in large negative values for denom
+        # this doesnt work for our boosted topology in a->tt since met resolution is poor
+        #if x<0:
+        #    print x, c.pt(), self.met.et(), dphi, codphi
+        return x
+
+    def mcat(self,i1=0,i2=1):
+        c1 = self.cands[i1]
+        c2 = self.cands[i2]
+        x1 = self._x(c1,c2)
+        x2 = self._x(c2,c1)
+        if x1*x2<=0: return 0.
+        cp4 = ROOT.TLorentzVector()
+        cp4 += self.cands[i1].p4()
+        cp4 += self.cands[i2].p4()
+        if len(self.cands)==2: # both candidates had neutrinos
+            mcoll = cp4.M() / math.sqrt(x1*x2)
+        else: # add in the other cands (assuming no contribution from met)
+            op4 = ROOT.TLorentzVector()
+            for i,c in enumerate(self.cands):
+                if i in [i1,i2]: continue
+                op4 += c.p4()
+            ncp4 = ROOT.TLorentzVector()
+            ncp4.SetPtEtaPhiM(cp4.Pt()/(x1*x2), cp4.Eta(), cp4.Phi(), cp4.M() / math.sqrt(x1*x2))
+            tcp4 = ncp4+op4
+            mcoll = tcp4.M()
+        return mcoll
+
+    def Mcat(self,*args):
+        return self.mcat(*args)
