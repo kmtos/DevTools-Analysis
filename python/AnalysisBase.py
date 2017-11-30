@@ -121,7 +121,10 @@ class AnalysisBase(object):
         self.flush()
         if not len(self.fileNames): raise Exception
         # other input files
-        self.pileupWeights = PileupWeights(self.version)
+        if 'UpsilonMuMu_UpsilonPt6_TuneCUEP8M1_13TeV-pythia8-evtgen' in fName:
+            self.pileupWeights = PileupWeights(self.version,profile='PUSpring16')
+        else:
+            self.pileupWeights = PileupWeights(self.version)
         self.fakeRates = FakeRates(self.version)
         self.leptonScales = LeptonScales(self.version)
         self.triggerScales = TriggerScales(self.version)
@@ -560,10 +563,15 @@ class AnalysisBase(object):
         self.addCandVar(label,'eta','eta','F')
         self.addCandVar(label,'phi','phi','F')
         self.addCandVar(label,'energy','energy','F')
+        self.addCandVar(label,'mass','mass','F')
 
     def addJet(self,label):
         '''Add variables relevant for jets'''
         self.addCandidate(label)
+        self.addCandVar(label,'CSVv2','pfCombinedInclusiveSecondaryVertexV2BJetTags','F')
+        self.addCandVar(label,'passCSVv2T','passCSVv2T','I')
+        self.addCandVar(label,'passCSVv2M','passCSVv2M','I')
+        self.addCandVar(label,'passCSVv2L','passCSVv2L','I')
 
     def addLepton(self,label,doId=False,doScales=False,doFakes=False,doErrors=False):
         '''Add variables relevant for leptons'''
@@ -573,15 +581,24 @@ class AnalysisBase(object):
         self.addCandVar(label,'pdgId','pdgId','I')
         self.addFlavorDependentCandVar(label,'dxy',            {'electrons':'dB2D',           'muons':'dB2D',      'taus':'dxy',         '':''},'F')
         self.addFlavorDependentCandVar(label,'isolation',      {'electrons':'relPFIsoRhoR03', 'muons':'relPFIsoDeltaBetaR04',            '':''},'F')
-        self.addFlavorDependentCandVar(label,'genMatch',       {'electrons':'genMatch',       'muons':'genMatch',  'taus':'genJetMatch', '':''},'I')
-        self.tree.add(lambda cands: self.genDeltaR(cands[label]) if isinstance(cands[label],Electron) or isinstance(cands[label],Muon) else self.genJetDeltaR(cands[label]), '{0}_genDeltaR'.format(label), 'F')
-        self.addFlavorDependentCandVar(label,'genStatus',      {'electrons':'genStatus',      'muons':'genStatus', 'taus':'genJetStatus','':''},'I')
-        self.addFlavorDependentCandVar(label,'genPdgId',       {'electrons':'genPdgId',       'muons':'genPdgId',  'taus':'genJetPdgId', '':''},'I')
-        self.addFlavorDependentCandVar(label,'genPt',          {'electrons':'genPt',          'muons':'genPt',     'taus':'genJetPt',    '':''},'F')
-        self.addFlavorDependentCandVar(label,'genEta',         {'electrons':'genEta',         'muons':'genEta',    'taus':'genJetEta',   '':''},'F')
-        self.addFlavorDependentCandVar(label,'genPhi',         {'electrons':'genPhi',         'muons':'genPhi',    'taus':'genJetPhi',   '':''},'F')
-        self.addFlavorDependentCandVar(label,'genEnergy',      {'electrons':'genEnergy',      'muons':'genEnergy', 'taus':'genJetEnergy','':''},'F')
-        self.addFlavorDependentCandVar(label,'genCharge',      {'electrons':'genCharge',      'muons':'genCharge', 'taus':'genJetCharge','':''},'I')
+        self.addCandVar(label,'genMatch','genMatch','I')
+        self.tree.add(lambda cands: self.genDeltaR(cands[label]), '{0}_genDeltaR'.format(label), 'F')
+        self.addCandVar(label,'genStatus','genStatus','F')
+        self.addCandVar(label,'genPdgId','genPdgId','F')
+        self.addCandVar(label,'genPt','genPt','F')
+        self.addCandVar(label,'genEta','genEta','F')
+        self.addCandVar(label,'genPhi','genPhi','F')
+        self.addCandVar(label,'genEnergy','genEnergy','F')
+        self.addCandVar(label,'genCharge','genCharge','F')
+        self.addFlavorDependentCandVar(label,'genJetMatch',       {'taus':'genJetMatch', '':''},'I')
+        self.tree.add(lambda cands: 0 if isinstance(cands[label],Electron) or isinstance(cands[label],Muon) else self.genJetDeltaR(cands[label]), '{0}_genJetDeltaR'.format(label), 'F')
+        self.addFlavorDependentCandVar(label,'genJetStatus',      {'taus':'genJetStatus','':''},'I')
+        self.addFlavorDependentCandVar(label,'genJetPdgId',       {'taus':'genJetPdgId', '':''},'I')
+        self.addFlavorDependentCandVar(label,'genJetPt',          {'taus':'genJetPt',    '':''},'F')
+        self.addFlavorDependentCandVar(label,'genJetEta',         {'taus':'genJetEta',   '':''},'F')
+        self.addFlavorDependentCandVar(label,'genJetPhi',         {'taus':'genJetPhi',   '':''},'F')
+        self.addFlavorDependentCandVar(label,'genJetEnergy',      {'taus':'genJetEnergy','':''},'F')
+        self.addFlavorDependentCandVar(label,'genJetCharge',      {'taus':'genJetCharge','':''},'I')
         self.addFlavorDependentCandVar(label,'genIsPrompt',    {'electrons':'genIsPrompt',    'muons':'genIsPrompt',                     '':''},'I')
         self.addFlavorDependentCandVar(label,'genIsFromTau',   {'electrons':'genIsFromTau',   'muons':'genIsFromTau',                    '':''},'I')
         self.addFlavorDependentCandVar(label,'genIsFromHadron',{'electrons':'genIsFromHadron','muons':'genIsFromHadron',                 '':''},'I')

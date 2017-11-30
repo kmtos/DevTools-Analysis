@@ -346,8 +346,8 @@ class MetCompositeCandidate(CompositeCandidate):
         return deltaPhi(self.met.phi(),candP4.Phi())
 
     def _x(self,c,o):
-        dphi = c.phi() - self.met.phi()
-        codphi = c.phi() - o.phi()
+        dphi = deltaPhi(c.phi(),self.met.phi())
+        codphi = deltaPhi(c.phi(),o.phi())
         if abs(codphi)==math.pi or codphi==0:
             x = 0
         else:

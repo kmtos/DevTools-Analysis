@@ -26,7 +26,7 @@ latestNtuples = {
     #'80X'                : '2016-07-20_DevTools_80X_v1', # ICHEP 2016
     '80X'                : '2017-09-28_DevTools_80X_v1', # Moriond 2017
     '80XPhoton'          : '2017-09-28_DevTools_80X_v1', # Moriond 2017
-    '80XMuMuTauTau'      : '2017-11-14_DevTools_MuMuTauTauSkim_80X_v1', # Moriond 2017
+    '80XMuMuTauTau'      : '2017-11-28_DevTools_MuMuTauTauSkim_80X_v1', # Moriond 2017
     '80XMuMuTauTauZSkim' : '2017-11-08_DevTools_MuMuTauTauZSkim_80X_v1', # Moriond 2017
 }
 

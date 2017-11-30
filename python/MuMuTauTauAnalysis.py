@@ -35,9 +35,16 @@ class MuMuTauTauAnalysis(AnalysisBase):
         # setup analysis tree
 
         # event counts
-        self.tree.add(lambda cands: self.numJets(cands['cleanJets'],'isLoose',30), 'numJetsLoose30', 'I')
-        self.tree.add(lambda cands: self.numJets(cands['cleanJets'],'isTight',30), 'numJetsTight30', 'I')
-        self.tree.add(lambda cands: self.numJets(cands['cleanJets'],'passCSVv2T',30), 'numBjetsTight30', 'I')
+        self.tree.add(lambda cands: self.numJets(cands['cleanJets'],'isLoose',20), 'numJetsLoose20', 'I')
+        self.tree.add(lambda cands: self.numJets(cands['cleanJets'],'isTight',20), 'numJetsTight20', 'I')
+        self.tree.add(lambda cands: self.numJets(cands['cleanJets'],'passCSVv2L',20), 'numBjetsLoose20', 'I')
+        self.tree.add(lambda cands: self.numJets(cands['cleanJets'],'passCSVv2M',20), 'numBjetsMedium20', 'I')
+        self.tree.add(lambda cands: self.numJets(cands['cleanJets'],'passCSVv2T',20), 'numBjetsTight20', 'I')
+        self.tree.add(lambda cands: self.numJets(cands['cleanJetsDR08'],'isLoose',20), 'numJetsLoose20DR08', 'I')
+        self.tree.add(lambda cands: self.numJets(cands['cleanJetsDR08'],'isTight',20), 'numJetsTight20DR08', 'I')
+        self.tree.add(lambda cands: self.numJets(cands['cleanJetsDR08'],'passCSVv2L',20), 'numBjetsLoose20DR08', 'I')
+        self.tree.add(lambda cands: self.numJets(cands['cleanJetsDR08'],'passCSVv2M',20), 'numBjetsMedium20DR08', 'I')
+        self.tree.add(lambda cands: self.numJets(cands['cleanJetsDR08'],'passCSVv2T',20), 'numBjetsTight20DR08', 'I')
         self.tree.add(lambda cands: len(self.getCands(self.electrons,self.passLoose)), 'numLooseElectrons', 'I')
         self.tree.add(lambda cands: len(self.getCands(self.electrons,self.passTight)), 'numTightElectrons', 'I')
         self.tree.add(lambda cands: len(self.getCands(self.muons,self.passLoose)), 'numLooseMuons', 'I')
@@ -68,22 +75,27 @@ class MuMuTauTauAnalysis(AnalysisBase):
         self.addCompositeMet('hmet')
         self.tree.add(lambda cands: cands['hmet'].Mcat(2,3), 'hmet_mcat', 'F')
 
-        # hpp leptons
+        # amm leptons
         self.addDiLepton('amm')
         self.addCompositeMet('ammmet')
         self.addLepton('am1')
         self.addDetailedMuon('am1')
+        self.addLeptonMet('am1met')
         self.addLepton('am2')
         self.addDetailedMuon('am2')
+        self.addLeptonMet('am2met')
 
-        # hmm leptons
+        # att leptons
         self.addDiLepton('att')
         self.addCompositeMet('attmet')
         self.tree.add(lambda cands: cands['attmet'].Mcat(0,1), 'attmet_mcat', 'F')
         self.addLepton('atm')
         self.addDetailedMuon('atm')
+        self.addLeptonMet('atmmet')
         self.addLepton('ath')
         self.addDetailedTau('ath')
+        self.addLeptonMet('athmet')
+        self.addJet('athjet')
 
         # met
         self.addMet('met')
@@ -104,6 +116,7 @@ class MuMuTauTauAnalysis(AnalysisBase):
         self.addCandVar(label,'againstElectronTightMVA6','againstElectronTightMVA6','I')
         self.addCandVar(label,'againstElectronVTightMVA6','againstElectronVTightMVA6','I')
         self.addCandVar(label,'decayModeFinding','decayModeFinding','I')
+        self.addCandVar(label,'decayMode','decayMode','I')
         self.addCandVar(label,'byIsolationMVArun2v1DBoldDMwLTraw','byIsolationMVArun2v1DBoldDMwLTraw','F')
         self.addCandVar(label,'byVLooseIsolationMVArun2v1DBoldDMwLT','byVLooseIsolationMVArun2v1DBoldDMwLT','I')
         self.addCandVar(label,'byLooseIsolationMVArun2v1DBoldDMwLT','byLooseIsolationMVArun2v1DBoldDMwLT','I')
@@ -154,9 +167,13 @@ class MuMuTauTauAnalysis(AnalysisBase):
     def selectCandidates(self):
         candidate = {
             'am1' : None,
+            'am1met' : None,
             'am2' : None,
+            'am2met' : None,
             'atm' : None,
+            'atmmet' : None,
             'ath' : None,
+            'athmet' : None,
             'amm' : None,
             'ammmet' : None,
             'att' : None,
@@ -164,7 +181,9 @@ class MuMuTauTauAnalysis(AnalysisBase):
             'h' : None,
             'hmet' : None,
             'met': self.pfmet,
+            'athjet': Candidate(None),
             'cleanJets' : [],
+            'cleanJetsNoTau' : [],
         }
 
         # get leptons
@@ -201,9 +220,12 @@ class MuMuTauTauAnalysis(AnalysisBase):
             better = True
             if amm.deltaR()>mmDeltaR:
                 better = False
-            elif att.deltaR()>ttDeltaR:
+            elif amm.deltaR()==mmDeltaR and att.deltaR()>ttDeltaR:
                 better = False
-            if better: hCand = quad
+            if better:
+                hCand = quad
+                mmDeltaR = amm.deltaR()
+                ttDeltaR = att.deltaR()
                 
         if not hCand: return candidate
 
@@ -217,9 +239,13 @@ class MuMuTauTauAnalysis(AnalysisBase):
         #if amm.deltaR()>1.5: return candidate
 
         candidate['am1'] = am1
+        candidate['am1met'] = MetCompositeCandidate(self.pfmet,am1)
         candidate['am2'] = am2
+        candidate['am2met'] = MetCompositeCandidate(self.pfmet,am2)
         candidate['atm'] = atm
+        candidate['atmmet'] = MetCompositeCandidate(self.pfmet,atm)
         candidate['ath'] = ath
+        candidate['athmet'] = MetCompositeCandidate(self.pfmet,ath)
         candidate['amm'] = DiCandidate(am1,am2)
         candidate['ammmet'] = MetCompositeCandidate(self.pfmet,am1,am2)
         candidate['att'] = DiCandidate(atm,ath)
@@ -229,6 +255,18 @@ class MuMuTauTauAnalysis(AnalysisBase):
 
         # clean the jets
         candidate['cleanJets'] = self.cleanCands(self.jets,[am1,am2,atm,ath],0.4)
+        candidate['cleanJetsDR08'] = self.cleanCands(candidate['cleanJets'],[ath],0.8)
+
+        # match jet to tau
+        dr = 999
+        j = None
+        for jet in self.jets:
+            jt = DiCandidate(jet,ath)
+            if jt.deltaR()<dr:
+                j = jet
+                dr = jt.deltaR()
+        if j:
+            candidate['athjet'] = j
 
         return candidate
 
