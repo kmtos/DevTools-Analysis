@@ -56,11 +56,14 @@ class WTauFakeRateAnalysis(AnalysisBase):
         # mu tag
         self.addLeptonMet('wm')
         self.addLepton('m')
+        self.addDetailedMuon('m')
         self.tree.add(lambda cands: self.tightScale(cands['m'])[0], 'm_tightScale', 'F')
 
         # tau probe
         self.addLeptonMet('wt')
         self.addLepton('t')
+        self.addDetailedTau('t')
+        self.tree.add(lambda cands: self.passLoose(cands['t']), 't_passLoose', 'I')
         self.tree.add(lambda cands: self.passMedium(cands['t']), 't_passMedium', 'I')
         self.tree.add(lambda cands: self.passTight(cands['t']), 't_passTight', 'I')
         self.tree.add(lambda cands: self.looseScale(cands['t'])[0], 't_looseScale', 'F')
@@ -89,7 +92,7 @@ class WTauFakeRateAnalysis(AnalysisBase):
         # get leptons
         muons = self.getCands(self.muons,self.passTight)
         #loosemuons = self.getCands(self.muons,self.passLoose)
-        taus = self.getCands(self.taus,self.passLoose)
+        taus = self.getCands(self.taus,self.passLooseNew)
         if len(muons)!=1: return candidate # need 1 tight muon
         #if len(loosemuons)>1: return candidate # dont allow another loose muon
         if len(taus)<1: return candidate # need at least 1 tau 

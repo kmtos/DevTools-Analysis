@@ -8,6 +8,7 @@ from AnalysisBase import AnalysisBase
 from utilities import ZMASS, deltaPhi, deltaR
 
 from Candidates import *
+import KinematicFitter
 
 import sys
 import itertools
@@ -27,6 +28,8 @@ class MuMuTauTauAnalysis(AnalysisBase):
         outputFileName = kwargs.pop('outputFileName','muMuTauTauTree.root')
         outputTreeName = kwargs.pop('outputTreeName','MuMuTauTauTree')
         super(MuMuTauTauAnalysis, self).__init__(outputFileName=outputFileName,outputTreeName=outputTreeName,**kwargs)
+
+        self._kinfit = None
 
         # setup cut tree
         self.cutTree.add(self.metFilter,'metFilter')
@@ -72,6 +75,7 @@ class MuMuTauTauAnalysis(AnalysisBase):
 
         # h
         self.addComposite('h')
+        self.tree.add(lambda cands: self.kinfit(cands).getComposite('h').M(), 'h_massKinFit', 'F')
         self.addCompositeMet('hmet')
         self.tree.add(lambda cands: cands['hmet'].Mcat(2,3), 'hmet_mcat', 'F')
 
@@ -87,6 +91,7 @@ class MuMuTauTauAnalysis(AnalysisBase):
 
         # att leptons
         self.addDiLepton('att')
+        self.tree.add(lambda cands: self.kinfit(cands).getComposite('att').M(), 'att_massKinFit', 'F')
         self.addCompositeMet('attmet')
         self.tree.add(lambda cands: cands['attmet'].Mcat(0,1), 'attmet_mcat', 'F')
         self.addLepton('atm')
@@ -115,8 +120,6 @@ class MuMuTauTauAnalysis(AnalysisBase):
         self.addCandVar(label,'againstElectronMediumMVA6','againstElectronMediumMVA6','I')
         self.addCandVar(label,'againstElectronTightMVA6','againstElectronTightMVA6','I')
         self.addCandVar(label,'againstElectronVTightMVA6','againstElectronVTightMVA6','I')
-        self.addCandVar(label,'decayModeFinding','decayModeFinding','I')
-        self.addCandVar(label,'decayMode','decayMode','I')
         self.addCandVar(label,'byIsolationMVArun2v1DBoldDMwLTraw','byIsolationMVArun2v1DBoldDMwLTraw','F')
         self.addCandVar(label,'byVLooseIsolationMVArun2v1DBoldDMwLT','byVLooseIsolationMVArun2v1DBoldDMwLT','I')
         self.addCandVar(label,'byLooseIsolationMVArun2v1DBoldDMwLT','byLooseIsolationMVArun2v1DBoldDMwLT','I')
@@ -154,6 +157,8 @@ class MuMuTauTauAnalysis(AnalysisBase):
         if cand.pt()<3: return False
         if not cand.isPFMuon(): return False
         if not (cand.isGlobalMuon() or cand.isTrackerMuon()): return False
+        if abs(cand.dxy())>=0.2: return False
+        if abs(cand.dz())>=0.5: return False
         return True
 
     def passTau(self,cand):
@@ -161,10 +166,54 @@ class MuMuTauTauAnalysis(AnalysisBase):
         if not cand.decayModeFinding(): return False
         return True
 
+    def kinfit(self,cands):
+        # return fitted constraints
+        if self._kinfit: return self._kinfit
+
+        # create constraints
+        m1 = cands['am1']
+        m2 = cands['am2']
+        tm = cands['atm']
+        th = cands['ath']
+        m1p4 = KinematicFitter.Muon(       'm1', m1.pt(), m1.eta(), m1.phi(), m1.energy())
+        m2p4 = KinematicFitter.Muon(       'm2', m2.pt(), m2.eta(), m2.phi(), m2.energy())
+        tmp4 = KinematicFitter.MuonTau(    'tm', tm.pt(), tm.eta(), tm.phi(), tm.energy())
+        thp4 = KinematicFitter.HadronicTau('th', th.pt(), th.eta(), th.phi(), th.energy(), th.decayMode())
+        # TODO: add cov of muons/taus with appropriate error on energy
+        m1p4.setErrors(0.01*m1p4.E(),0,0)
+        m2p4.setErrors(0.01*m2p4.E(),0,0)
+
+        met = cands['met']
+        metp4 = KinematicFitter.MET('met', met.et(), met.phi(), met.cov00(), met.cov01(), met.cov01(), met.cov11())
+
+        kinfit = KinematicFitter.KinematicFitter()
+        kinfit.addParticle('m1',m1p4)
+        kinfit.addParticle('m2',m2p4)
+        kinfit.addParticle('tm',tmp4)
+        kinfit.addParticle('th',thp4)
+        kinfit.addParticle('met',metp4)
+
+        kinfit.addComposite('amm','m1','m2')
+        kinfit.addComposite('att','tm','th')
+        kinfit.addComposite('h','m1','m2','tm','th')
+
+        kinfit.addMassConstraint('amm','att',0)
+
+        # perform fit with constraints
+        kinfit.setMinimizationParticles('th')
+        kinfit.fit()
+
+        self._kinfit = kinfit
+
+        return self._kinfit
+
     ############################
     ### select 4l candidates ###
     ############################
     def selectCandidates(self):
+        # reset kinfit
+        self._kinfit = None
+
         candidate = {
             'am1' : None,
             'am1met' : None,

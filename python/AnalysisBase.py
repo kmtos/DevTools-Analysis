@@ -415,6 +415,9 @@ class AnalysisBase(object):
     ##################
     # override in derived class if desired
     # base selections for H++ analysis
+    def passLooseNew(self,cand):
+        return passHppLoose(cand,new=True)
+
     def passLoose(self,cand):
         return passHppLoose(cand)
 
@@ -441,17 +444,20 @@ class AnalysisBase(object):
         if cand.collName=='muons': return self.leptonScales.getScale('MediumIDLooseIso',cand,doError=True)
         #elif cand.collName=='electrons': return self.leptonScales.getScale(key,cand,doError=True)
         elif cand.collName=='electrons': return self.leptonScales.getScale('CutbasedLoose',cand,doError=True)
+        elif cand.collName=='taus': return self.leptonScales.getScale('',cand,doError=True)
         else: return [1.,1.,1.]
 
     def mediumScale(self,cand):
         if cand.collName=='muons': return self.leptonScales.getScale('MediumIDTightIso',cand,doError=True)
         elif cand.collName=='electrons': return self.leptonScales.getScale('CutbasedMedium',cand,doError=True)
+        elif cand.collName=='taus': return self.leptonScales.getScale('',cand,doError=True)
         else: return [1.,1.,1.]
 
     def tightScale(self,cand):
         #if cand.collName=='muons': return self.leptonScales.getScale('MediumIDTightIso',cand,doError=True)
         if cand.collName=='muons': return self.leptonScales.getScale('TightIDTightIso',cand,doError=True)
         elif cand.collName=='electrons': return self.leptonScales.getScale('CutbasedTight',cand,doError=True)
+        elif cand.collName=='taus': return self.leptonScales.getScale('',cand,doError=True)
         else: return [1.,1.,1.]
 
     def photonPreselectionScale(self,cand):
@@ -462,6 +468,12 @@ class AnalysisBase(object):
 
     def photonMVAPreselectionScale(self,cand):
         return self.leptonScales.getScale('MVA0p0Pre',cand,doError=True)
+
+    def mediumNewFakeRate(self,cand):
+        return self.fakeRates.getFakeRate(cand,'HppMedium','HppLooseNew',doError=True)
+
+    def tightNewFakeRate(self,cand):
+        return self.fakeRates.getFakeRate(cand,'HppTight','HppLooseNew',doError=True)
 
     def mediumFakeRate(self,cand):
         return self.fakeRates.getFakeRate(cand,'HppMedium','HppLoose',doError=True)
@@ -474,6 +486,7 @@ class AnalysisBase(object):
 
     def getPassingCands(self,mode,*colls):
         if mode=='Loose': passMode = self.passLoose
+        elif mode=='LooseNew': passMode = self.passLooseNew
         elif mode=='Medium': passMode = self.passMedium
         elif mode=='Tight': passMode = self.passTight
         elif mode=='Photon': passMode = self.passPhotonId
@@ -590,6 +603,8 @@ class AnalysisBase(object):
         self.addCandVar(label,'genPhi','genPhi','F')
         self.addCandVar(label,'genEnergy','genEnergy','F')
         self.addCandVar(label,'genCharge','genCharge','F')
+        self.addFlavorDependentCandVar(label,'decayMode',         {'taus':'decayMode', '':''},'I')
+        self.addFlavorDependentCandVar(label,'decayModeFinding',  {'taus':'decayModeFinding', '':''},'I')
         self.addFlavorDependentCandVar(label,'genJetMatch',       {'taus':'genJetMatch', '':''},'I')
         self.tree.add(lambda cands: 0 if isinstance(cands[label],Electron) or isinstance(cands[label],Muon) else self.genJetDeltaR(cands[label]), '{0}_genJetDeltaR'.format(label), 'F')
         self.addFlavorDependentCandVar(label,'genJetStatus',      {'taus':'genJetStatus','':''},'I')
@@ -603,6 +618,8 @@ class AnalysisBase(object):
         self.addFlavorDependentCandVar(label,'genIsFromTau',   {'electrons':'genIsFromTau',   'muons':'genIsFromTau',                    '':''},'I')
         self.addFlavorDependentCandVar(label,'genIsFromHadron',{'electrons':'genIsFromHadron','muons':'genIsFromHadron',                 '':''},'I')
         if doId:
+            self.tree.add(lambda cands: self.passLoose(cands[label]),                      '{0}_passLoose'.format(label), 'I')
+            self.tree.add(lambda cands: self.passLooseNew(cands[label]),                      '{0}_passLooseNew'.format(label), 'I')
             self.tree.add(lambda cands: self.passMedium(cands[label]),                     '{0}_passMedium'.format(label), 'I')
             self.tree.add(lambda cands: self.passTight(cands[label]),                      '{0}_passTight'.format(label), 'I')
         if doScales:
@@ -616,6 +633,12 @@ class AnalysisBase(object):
             if doErrors: self.tree.add(lambda cands: self.tightScale(cands[label])[1],     '{0}_tightScaleUp'.format(label), 'F')
             if doErrors: self.tree.add(lambda cands: self.tightScale(cands[label])[2],     '{0}_tightScaleDown'.format(label), 'F')
         if doFakes:
+            self.tree.add(lambda cands: self.mediumNewFakeRate(cands[label])[0],              '{0}_mediumNewFakeRate'.format(label), 'F')
+            if doErrors: self.tree.add(lambda cands: self.mediumNewFakeRate(cands[label])[1], '{0}_mediumNewFakeRateUp'.format(label), 'F')
+            if doErrors: self.tree.add(lambda cands: self.mediumNewFakeRate(cands[label])[2], '{0}_mediumNewFakeRateDown'.format(label), 'F')
+            self.tree.add(lambda cands: self.tightNewFakeRate(cands[label])[0],               '{0}_tightNewFakeRate'.format(label), 'F')
+            if doErrors: self.tree.add(lambda cands: self.tightNewFakeRate(cands[label])[1],  '{0}_tightNewFakeRateUp'.format(label), 'F')
+            if doErrors: self.tree.add(lambda cands: self.tightNewFakeRate(cands[label])[2],  '{0}_tightNewFakeRateDown'.format(label), 'F')
             self.tree.add(lambda cands: self.mediumFakeRate(cands[label])[0],              '{0}_mediumFakeRate'.format(label), 'F')
             if doErrors: self.tree.add(lambda cands: self.mediumFakeRate(cands[label])[1], '{0}_mediumFakeRateUp'.format(label), 'F')
             if doErrors: self.tree.add(lambda cands: self.mediumFakeRate(cands[label])[2], '{0}_mediumFakeRateDown'.format(label), 'F')
@@ -625,6 +648,50 @@ class AnalysisBase(object):
             self.tree.add(lambda cands: self.tightFromMediumFakeRate(cands[label])[0],               '{0}_tightFromMediumFakeRate'.format(label), 'F')
             if doErrors: self.tree.add(lambda cands: self.tightFromMediumFakeRate(cands[label])[1],  '{0}_tightFromMediumFakeRateUp'.format(label), 'F')
             if doErrors: self.tree.add(lambda cands: self.tightFromMediumFakeRate(cands[label])[2],  '{0}_tightFromMediumFakeRateDown'.format(label), 'F')
+
+    def addDetailedMuon(self,label):
+        '''Add detailed  variables'''
+        self.addCandVar(label,'isLooseMuon','isLooseMuon','I')
+        self.addCandVar(label,'isMediumMuon','isMediumMuon','I')
+        self.addCandVar(label,'isMediumMuonICHEP','isMediumMuonICHEP','I')
+        self.addCandVar(label,'isTightMuon','isTightMuon','I')
+        self.addCandVar(label,'isPFMuon','isPFMuon','I')
+        self.addCandVar(label,'isGlobalMuon','isGlobalMuon','I')
+        self.addCandVar(label,'isTrackerMuon','isTrackerMuon','I')
+        self.addCandVar(label,'muonBestTrackType','muonBestTrackType','I')
+        self.addCandVar(label,'segmentCompatibility','segmentCompatibility','F')
+        self.addCandVar(label,'isGoodMuon','isGoodMuon','I')
+        self.addCandVar(label,'highPurityTrack','highPurityTrack','I')
+        self.addCandVar(label,'matchedStations','matchedStations','I')
+        self.addCandVar(label,'validMuonHits','validMuonHits','I')
+        self.addCandVar(label,'normalizedChi2','normalizedChi2','F')
+        self.addCandVar(label,'validPixelHits','validPixelHits','I')
+        self.addCandVar(label,'trackerLayers','trackerLayers','I')
+        self.addCandVar(label,'pixelLayers','pixelLayers','I')
+        self.addCandVar(label,'validTrackerFraction','validTrackerFraction','F')
+        self.addCandVar(label,'bestTrackPtError','bestTrackPtError','F')
+        self.addCandVar(label,'bestTrackPt','bestTrackPt','F')
+        self.addCandVar(label,'trackerStandaloneMatch','trackerStandaloneMatch','F')
+        self.addCandVar(label,'relPFIsoDeltaBetaR04','relPFIsoDeltaBetaR04','F')
+        self.tree.add(lambda cands: cands[label].trackIso()/cands[label].pt(), '{0}_trackRelIso'.format(label), 'F')
+
+    def addDetailedTau(self,label):
+        '''Add detailed variables'''
+        self.addCandVar(label,'againstMuonLoose3','againstMuonLoose3','I')
+        self.addCandVar(label,'againstMuonTight3','againstMuonTight3','I')
+        self.addCandVar(label,'againstElectronVLooseMVA6','againstElectronVLooseMVA6','I')
+        self.addCandVar(label,'againstElectronLooseMVA6','againstElectronLooseMVA6','I')
+        self.addCandVar(label,'againstElectronMediumMVA6','againstElectronMediumMVA6','I')
+        self.addCandVar(label,'againstElectronTightMVA6','againstElectronTightMVA6','I')
+        self.addCandVar(label,'againstElectronVTightMVA6','againstElectronVTightMVA6','I')
+        #self.addCandVar(label,'decayModeFinding','decayModeFinding','I')
+        #self.addCandVar(label,'decayMode','decayMode','I')
+        self.addCandVar(label,'byIsolationMVArun2v1DBoldDMwLTraw','byIsolationMVArun2v1DBoldDMwLTraw','F')
+        self.addCandVar(label,'byVLooseIsolationMVArun2v1DBoldDMwLT','byVLooseIsolationMVArun2v1DBoldDMwLT','I')
+        self.addCandVar(label,'byLooseIsolationMVArun2v1DBoldDMwLT','byLooseIsolationMVArun2v1DBoldDMwLT','I')
+        self.addCandVar(label,'byMediumIsolationMVArun2v1DBoldDMwLT','byMediumIsolationMVArun2v1DBoldDMwLT','I')
+        self.addCandVar(label,'byTightIsolationMVArun2v1DBoldDMwLT','byTightIsolationMVArun2v1DBoldDMwLT','I')
+        self.addCandVar(label,'byVTightIsolationMVArun2v1DBoldDMwLT','byVTightIsolationMVArun2v1DBoldDMwLT','I')
 
     def addPhoton(self,label,doId=False,doScales=False,doFakes=False,doErrors=False):
         '''Add variables relevant for photons'''

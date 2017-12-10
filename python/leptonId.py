@@ -165,22 +165,28 @@ def passHppLooseMuon(muon,version='80X'):
     if muon.relPFIsoDeltaBetaR04()>=0.4: return False
     return True
 
-def passHppLooseTau(tau):
+def passHppLooseTau(tau,new=False):
     pt = tau.pt()
     if pt<=20: return False
-    if tau.decayModeFinding()<0.5: return False
+    if new:
+        if tau.decayModeFindingNewDMs()<0.5: return False
+    else:
+        if tau.decayModeFinding()<0.5: return False
     if tau.againstMuonLoose3()<0.5: return False
     if tau.againstElectronVLooseMVA6()<0.5: return False
     # remove iso
     #if tau.byVLooseIsolationMVArun2v1DBoldDMwLT()<0.5: return False
     #if tau.byIsolationMVArun2v1DBoldDMwLTraw()<-0.8: return False # custom vvloose isolation
-    if tau.byIsolationMVArun2v1DBoldDMwLTraw()<-0.2: return False # custom vvloose isolation
+    if new:
+        if tau.byIsolationMVArun2v1DBnewDMwLTraw()<-0.2: return False # custom vvloose isolation
+    else:
+        if tau.byIsolationMVArun2v1DBoldDMwLTraw()<-0.2: return False # custom vvloose isolation
     return True
 
-def passHppLoose(cand,version='80X'):
+def passHppLoose(cand,version='80X',new=False):
     if cand.__class__.__name__=='Electron': return passHppLooseElectron(cand)
     if cand.__class__.__name__=='Muon':     return passHppLooseMuon(cand,version=version) #if version=='76X' else passHppLooseMuonICHEP(cand)
-    if cand.__class__.__name__=='Tau':      return passHppLooseTau(cand)
+    if cand.__class__.__name__=='Tau':      return passHppLooseTau(cand,new=new)
     return False
 
 def passHppMediumElectron(electron):

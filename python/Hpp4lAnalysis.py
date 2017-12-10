@@ -29,6 +29,8 @@ class Hpp4lAnalysis(AnalysisBase):
         self.preselection = 'muons_count+electrons_count+taus_count>3'
         super(Hpp4lAnalysis, self).__init__(outputFileName=outputFileName,outputTreeName=outputTreeName,**kwargs)
 
+        self.new = True # use NewDMs for tau loose ID
+
         # setup cut tree
         self.cutTree.add(self.metFilter,'metFilter')
         self.cutTree.add(self.fourLoose,'fourLooseLeptons')
@@ -50,6 +52,7 @@ class Hpp4lAnalysis(AnalysisBase):
         self.tree.add(lambda cands: len(self.getCands(self.muons,self.passLoose)), 'numLooseMuons', 'I')
         self.tree.add(lambda cands: len(self.getCands(self.muons,self.passTight)), 'numTightMuons', 'I')
         self.tree.add(lambda cands: len(self.getCands(self.taus,self.passLoose)), 'numLooseTaus', 'I')
+        self.tree.add(lambda cands: len(self.getCands(self.taus,self.passLooseNew)), 'numNewLooseTaus', 'I')
         self.tree.add(lambda cands: len(self.getCands(self.taus,self.passTight)), 'numTightTaus', 'I')
 
         # trigger
@@ -157,7 +160,7 @@ class Hpp4lAnalysis(AnalysisBase):
         }
 
         # get leptons
-        leps = self.getPassingCands('Loose',self.electrons,self.muons,self.taus)
+        leps = self.getPassingCands('LooseNew' if self.new else 'Loose',self.electrons,self.muons,self.taus)
         medLeps = self.getPassingCands('Medium',self.electrons,self.muons,self.taus)
         if len(leps)<4: return candidate # need at least 4 leptons
 
@@ -323,7 +326,7 @@ class Hpp4lAnalysis(AnalysisBase):
     ### analysis selections ###
     ###########################
     def fourLoose(self,cands):
-        return len(self.getPassingCands('Loose',self.electrons,self.muons,self.taus))>=4
+        return len(self.getPassingCands('LooseNew' if self.new else 'Loose',self.electrons,self.muons,self.taus))>=4
 
     def trigger(self,cands):
         isData = self.event.isData()>0.5

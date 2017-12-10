@@ -31,6 +31,8 @@ class Hpp3lAnalysis(AnalysisBase):
         self.preselection = 'electrons_count+muons_count+taus_count>2'
         super(Hpp3lAnalysis, self).__init__(outputFileName=outputFileName,outputTreeName=outputTreeName,**kwargs)
 
+        self.new = True # use NewDMs for Tau loose id
+
         # setup cut tree
         self.cutTree.add(self.metFilter,'metFilter')
         self.cutTree.add(self.threeLoose,'threeLooseLeptons')
@@ -52,6 +54,9 @@ class Hpp3lAnalysis(AnalysisBase):
         self.tree.add(lambda cands: len(self.getCands(self.electrons,self.passTight)), 'numTightElectrons', 'I')
         self.tree.add(lambda cands: len(self.getCands(self.muons,self.passLoose)), 'numLooseMuons', 'I')
         self.tree.add(lambda cands: len(self.getCands(self.muons,self.passTight)), 'numTightMuons', 'I')
+        self.tree.add(lambda cands: len(self.getCands(self.taus,self.passLoose)), 'numLooseTaus', 'I')
+        self.tree.add(lambda cands: len(self.getCands(self.taus,self.passLooseNew)), 'numNewLooseTaus', 'I')
+        self.tree.add(lambda cands: len(self.getCands(self.taus,self.passTight)), 'numTightTaus', 'I')
 
         # trigger
         if self.version=='76X':
@@ -149,7 +154,7 @@ class Hpp3lAnalysis(AnalysisBase):
         }
 
         # get leptons
-        leps = self.getPassingCands('Loose',self.electrons,self.muons,self.taus)
+        leps = self.getPassingCands('LooseNew' if self.new else 'Loose',self.electrons,self.muons,self.taus)
         medLeps = self.getPassingCands('Medium',self.electrons,self.muons,self.taus)
         if len(leps)<3: return candidate # need at least 3 leptons
         if len(medLeps)>3: return candidate # cant have more than 3 medium leptons
@@ -320,7 +325,7 @@ class Hpp3lAnalysis(AnalysisBase):
     ### analysis selections ###
     ###########################
     def threeLoose(self,cands):
-        return len(self.getPassingCands('Loose',self.electrons,self.muons,self.taus))>=3
+        return len(self.getPassingCands('LooseNew' if self.new else 'Loose',self.electrons,self.muons,self.taus))>=3
 
     def vetoFourth(self,cands):
         return len(self.getPassingCands('Medium',self.electrons,self.muons,self.taus))<=3

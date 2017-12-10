@@ -213,9 +213,30 @@ class LeptonScales(object):
         return val, err
 
     def __getTauScale(self,leptonId,cand):
-        #pt  = cand.pt()
-        #eta = cand.eta()
-        return 0.95, 0. # simple recommendation, 5% error
+        # id scale
+        return 0.95, 0.05 # simple recommendation, 5% error
+
+    def __getTauEnergyScale(self,cand):
+        # energy scale
+        # https://twiki.cern.ch/twiki/bin/viewauth/CMS/TauIDRecommendation13TeV#Tau_energy_scale
+        if cand.pt()>400:
+            return 1, 0.03
+        if cand.decayMode()==0: # 1 prong 0 pi0
+            return 0.995, 0.012
+        if cand.decayMode()==1: # 1 prong 1 pi0
+            return 1.011, 0.012
+        if cand.decayMode()==2: # 1 prong 2 pi0
+            return 1.011, 0.012
+        if cand.decayMode()==5: # 2 prong 0 pi0
+            return 1, 0
+        if cand.decayMode()==6: # 2 prong 1 pi0
+            return 1, 0
+        if cand.decayMode()==7: # 2 prong 2 pi0
+            return 1, 0
+        if cand.decayMode()==10:# 3 prong 0 pi0
+            return 1.006, 0.012
+        if cand.decayMode()==11:# 3 prong 1 pi0
+            return 1.006, 0.012
 
     def __getMuonTrackingScale(self,cand):
         pt  = cand.pt()
@@ -278,7 +299,9 @@ class LeptonScales(object):
             #val, err = prodWithError((val,err),(valTrack,errTrack))
             val, err = prodWithError((val,err),(valTrack,0. if errTrack!=errTrack else errTrack)) # bug with error from tgraphasymm, check for NaN
         elif cand.__class__.__name__=='Tau':
-            val, err = self.__getTauScale(leptonId,cand)
+            lepScale = self.__getTauScale(leptonId,cand)
+            energyScale = self.__getTauEnergyScale(cand)
+            val, err = prodWithError(lepScale,energyScale)
         elif cand.__class__.__name__=='Photon':
             val, err = self.__getPhotonScale(leptonId,cand)
         else:
