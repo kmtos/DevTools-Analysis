@@ -174,6 +174,8 @@ def passHppLooseTau(tau,new=False):
         if tau.decayModeFinding()<0.5: return False
     if tau.againstMuonLoose3()<0.5: return False
     if tau.againstElectronVLooseMVA6()<0.5: return False
+    if abs(tau.dxy())>=0.2: return False
+    if abs(tau.dz())>=0.5: return False
     # remove iso
     #if tau.byVLooseIsolationMVArun2v1DBoldDMwLT()<0.5: return False
     #if tau.byIsolationMVArun2v1DBoldDMwLTraw()<-0.8: return False # custom vvloose isolation

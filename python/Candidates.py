@@ -39,12 +39,14 @@ class Candidate(object):
         return lambda: self.get(name) # returns the attribute as a function
 
     def __repr__(self):
-        return '<{0} {1} {2:.2f}:{3:.2f}:{4:.2f}>'.format(
+        return '<{}[{}] {} {:.2f}:{:.2f}:{:.2f}:{:.2f}>'.format(
             self.collName,
             self.entry,
+            self.pdgId(),
             self.pt(),
             self.eta(),
             self.phi(),
+            self.energy(),
         )
 
     def get(self,var):

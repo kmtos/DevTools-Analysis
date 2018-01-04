@@ -12,19 +12,19 @@ import sys
 
 import ROOT
 
-logger = logging.getLogger("ZFakeRateAnalysis")
+logger = logging.getLogger("ZTauFakeRateAnalysis")
 logging.basicConfig(level=logging.INFO, stream=sys.stderr, format='%(asctime)s.%(msecs)03d %(levelname)s %(name)s: %(message)s', datefmt='%Y-%m-%d %H:%M:%S')
 
 
-class ZFakeRateAnalysis(AnalysisBase):
+class ZTauFakeRateAnalysis(AnalysisBase):
     '''
-    ZFakeRate analysis
+    ZTauFakeRate analysis
     '''
 
     def __init__(self,**kwargs):
         outputFileName = kwargs.pop('outputFileName','dyTree.root')
-        outputTreeName = kwargs.pop('outputTreeName','ZFakeRateTree')
-        super(ZFakeRateAnalysis, self).__init__(outputFileName=outputFileName,outputTreeName=outputTreeName,**kwargs)
+        outputTreeName = kwargs.pop('outputTreeName','ZTauFakeRateTree')
+        super(ZTauFakeRateAnalysis, self).__init__(outputFileName=outputFileName,outputTreeName=outputTreeName,**kwargs)
 
 
         # setup cut tree
@@ -46,6 +46,10 @@ class ZFakeRateAnalysis(AnalysisBase):
         self.tree.add(lambda cands: len(self.getCands(self.muons,self.passLoose)), 'numLooseMuons', 'I')
         self.tree.add(lambda cands: len(self.getCands(self.muons,self.passMedium)), 'numMediumMuons', 'I')
         self.tree.add(lambda cands: len(self.getCands(self.muons,self.passTight)), 'numTightMuons', 'I')
+        self.tree.add(lambda cands: len(self.getCands(self.taus,self.passLooseNew)), 'numLooseNewTaus', 'I')
+        self.tree.add(lambda cands: len(self.getCands(self.taus,self.passLoose)), 'numLooseTaus', 'I')
+        self.tree.add(lambda cands: len(self.getCands(self.taus,self.passMedium)), 'numMediumTaus', 'I')
+        self.tree.add(lambda cands: len(self.getCands(self.taus,self.passTight)), 'numTightTaus', 'I')
 
         # trigger
         if self.version=='76X':
@@ -88,13 +92,13 @@ class ZFakeRateAnalysis(AnalysisBase):
 
         # fake lepton
         self.addLeptonMet('w')
-        self.addLepton('l1')
-        self.tree.add(lambda cands: self.passMedium(cands['l1']), 'l1_passLoose', 'I')
-        self.tree.add(lambda cands: self.passMedium(cands['l1']), 'l1_passMedium', 'I')
-        self.tree.add(lambda cands: self.passTight(cands['l1']), 'l1_passTight', 'I')
-        self.tree.add(lambda cands: self.looseScale(cands['l1'])[0], 'l1_looseScale', 'F')
-        self.tree.add(lambda cands: self.mediumScale(cands['l1'])[0], 'l1_mediumScale', 'F')
-        self.tree.add(lambda cands: self.tightScale(cands['l1'])[0], 'l1_tightScale', 'F')
+        self.addLepton('t')
+        self.tree.add(lambda cands: self.passLoose(cands['t']), 't_passLoose', 'I')
+        self.tree.add(lambda cands: self.passMedium(cands['t']), 't_passMedium', 'I')
+        self.tree.add(lambda cands: self.passTight(cands['t']), 't_passTight', 'I')
+        self.tree.add(lambda cands: self.looseScale(cands['t'])[0], 't_looseScale', 'F')
+        self.tree.add(lambda cands: self.mediumScale(cands['t'])[0], 't_mediumScale', 'F')
+        self.tree.add(lambda cands: self.tightScale(cands['t'])[0], 't_tightScale', 'F')
 
         # met
         self.addMet('met')
@@ -110,42 +114,52 @@ class ZFakeRateAnalysis(AnalysisBase):
             'z1': None,
             'z2': None,
             'z' : None,
-            'l1': None,
+            't': None,
             'w' : None,
             'met': self.pfmet,
             'cleanJets': [],
         }
 
         # get leptons
-        leps = self.getPassingCands('Loose',self.electrons,self.muons)
-        if len(leps)!=3: return candidate # need 3 leptons
+        leps = self.getPassingCands('Medium',self.electrons,self.muons)
+        tleps = self.getPassingCands('LooseNew',self.taus)
+        if len(leps)!=2: return candidate # need 3 leptons
+        if len(tleps)<1: return candidate # need 3 leptons
 
         # get invariant masses
         bestZ = ()
         bestMassdiff = 99999
-        for zpair in itertools.permutations(leps+tleps,3):
+        for zpair in itertools.permutations(leps,2):
             # z pass medium
             if not self.passMedium(zpair[0]): continue
             if not self.passMedium(zpair[1]): continue
             if zpair[0].collName!=zpair[1].collName: continue # SF
             if zpair[0].charge()==zpair[1].charge(): continue # OS
-            z = DiCandidate(*zpair[:2])
-            massdiff = abs(z.M()-ZMASS)
-            if massdiff<bestMassdiff:
-                bestZ = zpair
-                bestMassdiff = massdiff
+            z = [zpair[0],zpair[1]] if zpair[0].pt()>zpair[1].pt() else [zpair[1],zpair[0]]
+            if not bestZ: bestZ = z
+            if z[0].pt()>bestZ[0].pt():
+                bestZ = z
+            if z[0].pt()==bestZ[0].pt() and z[1].pt()>bestZ[1].pt():
+                bestZ = z
+            #z = DiCandidate(*zpair[:2])
+            #massdiff = abs(z.M()-ZMASS)
+            #if massdiff<bestMassdiff:
+            #    bestZ = zpair
+            #    bestMassdiff = massdiff
 
         if not bestZ: return candidate # need a z candidate
+        zcand = DiCandidate(*bestZ)
+        if zcand.M()<60 or zcand.M()>120: return candidate
 
         # and sort pt of Z
         z = [bestZ[0],bestZ[1]] if bestZ[0].pt()>bestZ[1].pt() else [bestZ[1],bestZ[0]]
         candidate['z1'] = z[0]
         candidate['z2'] = z[1]
-        candidate['l1'] = bestZ[2]
+        candidate['t'] = tleps[0]
         candidate['z'] = DiCandidate(z[0],z[1])
-        candidate['w'] = MetCompositeCandidate(self.pfmet,zpair[2])
+        candidate['w'] = MetCompositeCandidate(self.pfmet,tleps[0])
 
-        medLeps = self.getPassingCands('Medium',self.electrons,self.muons)
+        medLeps = self.getPassingCands('Medium',self.electrons,self.muons,self.taus)
         candidate['cleanJets'] = self.cleanCands(self.jets,medLeps,0.4)
 
         return candidate
@@ -156,7 +170,7 @@ class ZFakeRateAnalysis(AnalysisBase):
     def getChannelString(self,cands):
         '''Get the channel string'''
         chanString = ''
-        for c in ['z1','z2','l1']:
+        for c in ['z1','z2','t']:
             chanString += self.getCollectionString(cands[c])
         return chanString
 
@@ -164,7 +178,9 @@ class ZFakeRateAnalysis(AnalysisBase):
     ### analysis selections ###
     ###########################
     def threeLoose(self,cands):
-        return len(self.getPassingCands('Loose',self.electrons,self.muons))>=3
+        nz = len(self.getPassingCands('Medium',self.electrons,self.muons))
+        nt = len(self.getPassingCands('LooseNew',self.taus))
+        return nz==2 and nt>0
 
     def trigger(self,cands):
         # accept MC, check trigger for data
@@ -251,7 +267,7 @@ def parse_command_line(argv):
 
     parser.add_argument('--inputFiles', type=str, nargs='*', default=getTestFiles('data'), help='Input files')
     parser.add_argument('--inputFileList', type=str, default='', help='Input file list')
-    parser.add_argument('--outputFile', type=str, default='zFakeRateTree.root', help='Output file')
+    parser.add_argument('--outputFile', type=str, default='zTauFakeRateTree.root', help='Output file')
     parser.add_argument('--shift', type=str, default='', choices=['','ElectronEnUp','ElectronEnDown','MuonEnUp','MuonEnDown','TauEnUp','TauEnDown','JetEnUp','JetEnDown','JetResUp','JetResDown','UnclusteredEnUp','UnclusteredEnDown'], help='Energy shift')
 
     return parser.parse_args(argv)
@@ -262,9 +278,9 @@ def main(argv=None):
 
     args = parse_command_line(argv)
 
-    zFakeRateAnalysis = ZFakeRateAnalysis(
+    zTauFakeRateAnalysis = ZTauFakeRateAnalysis(
         outputFileName=args.outputFile,
-        outputTreeName='ZFakeRateTree',
+        outputTreeName='ZTauFakeRateTree',
         inputFileNames=args.inputFileList if args.inputFileList else args.inputFiles,
         inputTreeName='MiniTree',
         inputLumiName='LumiTree',
@@ -273,10 +289,10 @@ def main(argv=None):
     )
 
     try:
-       zFakeRateAnalysis.analyze()
-       zFakeRateAnalysis.finish()
+       zTauFakeRateAnalysis.analyze()
+       zTauFakeRateAnalysis.finish()
     except KeyboardInterrupt:
-       zFakeRateAnalysis.finish()
+       zTauFakeRateAnalysis.finish()
 
     return 0
 

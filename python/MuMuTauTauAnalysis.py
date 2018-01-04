@@ -38,6 +38,7 @@ class MuMuTauTauAnalysis(AnalysisBase):
         # setup analysis tree
 
         # event counts
+        self.tree.add(self.getGenChannel, 'genChannel', ['C',5])
         self.tree.add(lambda cands: self.numJets(cands['cleanJets'],'isLoose',20), 'numJetsLoose20', 'I')
         self.tree.add(lambda cands: self.numJets(cands['cleanJets'],'isTight',20), 'numJetsTight20', 'I')
         self.tree.add(lambda cands: self.numJets(cands['cleanJets'],'passCSVv2L',20), 'numBjetsLoose20', 'I')
@@ -74,31 +75,75 @@ class MuMuTauTauAnalysis(AnalysisBase):
         self.tree.add(lambda cands: self.triggerEfficiencyData(cands)[2], 'triggerEfficiencyDataDown', 'F')
 
         # h
+        self.addGenParticle('gh')
         self.addComposite('h')
         self.tree.add(lambda cands: self.kinfit(cands).getComposite('h').M(), 'h_massKinFit', 'F')
+        self.tree.add(lambda cands: self.kinfit(cands).getFitStatus(), 'kinFitStatus', 'I')
+        self.tree.add(lambda cands: self.kinfit(cands).atLowerBound, 'kinFitAtLowerBound', 'I')
+        self.tree.add(lambda cands: self.kinfit(cands).atUpperBound, 'kinFitAtUpperBound', 'I')
+        self.tree.add(lambda cands: self.kinfit(cands).getX(), 'kinFitX', 'F')
+        self.tree.add(lambda cands: self.kinfit(cands).getRecoil().Px(), 'kinFitRecoilPx', 'F')
+        self.tree.add(lambda cands: self.kinfit(cands).getRecoil().Py(), 'kinFitRecoilPy', 'F')
         self.addCompositeMet('hmet')
         self.tree.add(lambda cands: cands['hmet'].Mcat(2,3), 'hmet_mcat', 'F')
 
         # amm leptons
+        self.addCompositeGenParticle('gamm','gam1','gam2')
         self.addDiLepton('amm')
+        self.tree.add(lambda cands: self.kinfit(cands).getComposite('amm').M(), 'amm_massKinFit', 'F')
+        self.tree.add(lambda cands: self.kinfit(cands).getCompositeStatus('amm'), 'amm_kinFitStatus', 'I')
         self.addCompositeMet('ammmet')
         self.addLepton('am1')
+        self.addGenDeltaR('am1','gam1')
+        self.addGenParticle('gam1')
         self.addDetailedMuon('am1')
+        self.tree.add(lambda cands: self.kinfit(cands).getParticleStatus('m1'),    'am1_kinFitStatus', 'I')
+        self.tree.add(lambda cands: self.kinfit(cands).getParticle('m1').Pt(),     'am1_ptKinFit', 'F')
+        self.tree.add(lambda cands: self.kinfit(cands).getParticle('m1').Eta(),    'am1_etaKinFit', 'F')
+        self.tree.add(lambda cands: self.kinfit(cands).getParticle('m1').Phi(),    'am1_phiKinFit', 'F')
+        self.tree.add(lambda cands: self.kinfit(cands).getParticle('m1').Energy(), 'am1_energyKinFit', 'F')
+        self.tree.add(lambda cands: self.kinfit(cands).getParticle('m1').M(),      'am1_massKinFit', 'F')
         self.addLeptonMet('am1met')
         self.addLepton('am2')
+        self.addGenDeltaR('am2','gam2')
+        self.addGenParticle('gam2')
         self.addDetailedMuon('am2')
+        self.tree.add(lambda cands: self.kinfit(cands).getParticleStatus('m2'),    'am2_kinFitStatus', 'I')
+        self.tree.add(lambda cands: self.kinfit(cands).getParticle('m2').Pt(),     'am2_ptKinFit', 'F')
+        self.tree.add(lambda cands: self.kinfit(cands).getParticle('m2').Eta(),    'am2_etaKinFit', 'F')
+        self.tree.add(lambda cands: self.kinfit(cands).getParticle('m2').Phi(),    'am2_phiKinFit', 'F')
+        self.tree.add(lambda cands: self.kinfit(cands).getParticle('m2').Energy(), 'am2_energyKinFit', 'F')
+        self.tree.add(lambda cands: self.kinfit(cands).getParticle('m2').M(),      'am2_massKinFit', 'F')
         self.addLeptonMet('am2met')
 
         # att leptons
+        self.addCompositeGenParticle('gatt','gat1','gat2')
         self.addDiLepton('att')
         self.tree.add(lambda cands: self.kinfit(cands).getComposite('att').M(), 'att_massKinFit', 'F')
+        self.tree.add(lambda cands: self.kinfit(cands).getCompositeStatus('att'), 'att_kinFitStatus', 'I')
         self.addCompositeMet('attmet')
         self.tree.add(lambda cands: cands['attmet'].Mcat(0,1), 'attmet_mcat', 'F')
+        self.addGenParticle('gat1',isTau=True)
         self.addLepton('atm')
+        self.addGenDeltaR('atm','gatm')
         self.addDetailedMuon('atm')
+        self.tree.add(lambda cands: self.kinfit(cands).getParticleStatus('tm'),    'atm_kinFitStatus', 'I')
+        self.tree.add(lambda cands: self.kinfit(cands).getParticle('tm').Pt(),     'atm_ptKinFit', 'F')
+        self.tree.add(lambda cands: self.kinfit(cands).getParticle('tm').Eta(),    'atm_etaKinFit', 'F')
+        self.tree.add(lambda cands: self.kinfit(cands).getParticle('tm').Phi(),    'atm_phiKinFit', 'F')
+        self.tree.add(lambda cands: self.kinfit(cands).getParticle('tm').Energy(), 'atm_energyKinFit', 'F')
+        self.tree.add(lambda cands: self.kinfit(cands).getParticle('tm').M(),      'atm_massKinFit', 'F')
         self.addLeptonMet('atmmet')
+        self.addGenParticle('gat2',isTau=True)
         self.addLepton('ath')
+        self.addGenDeltaR('ath','gath')
         self.addDetailedTau('ath')
+        self.tree.add(lambda cands: self.kinfit(cands).getParticleStatus('th'), 'ath_kinFitStatus', 'I')
+        self.tree.add(lambda cands: self.kinfit(cands).getParticle('th').Pt(),     'ath_ptKinFit', 'F')
+        self.tree.add(lambda cands: self.kinfit(cands).getParticle('th').Eta(),    'ath_etaKinFit', 'F')
+        self.tree.add(lambda cands: self.kinfit(cands).getParticle('th').Phi(),    'ath_phiKinFit', 'F')
+        self.tree.add(lambda cands: self.kinfit(cands).getParticle('th').Energy(), 'ath_energyKinFit', 'F')
+        self.tree.add(lambda cands: self.kinfit(cands).getParticle('th').M(),      'ath_massKinFit', 'F')
         self.addLeptonMet('athmet')
         self.addJet('athjet')
 
@@ -129,6 +174,8 @@ class MuMuTauTauAnalysis(AnalysisBase):
 
     def addDetailedMuon(self,label):
         '''Add detailed  variables'''
+        self.addCandVar(label,'matches_IsoMu24','matches_IsoMu24','I')
+        self.addCandVar(label,'matches_IsoTkMu24','matches_IsoTkMu24','I')
         self.addCandVar(label,'isLooseMuon','isLooseMuon','I')
         self.addCandVar(label,'isMediumMuon','isMediumMuon','I')
         self.addCandVar(label,'isMediumMuonICHEP','isMediumMuonICHEP','I')
@@ -153,6 +200,24 @@ class MuMuTauTauAnalysis(AnalysisBase):
         self.addCandVar(label,'relPFIsoDeltaBetaR04','relPFIsoDeltaBetaR04','F')
         self.tree.add(lambda cands: cands[label].trackIso()/cands[label].pt(), '{0}_trackRelIso'.format(label), 'F')
 
+    def addGenParticle(self,label,isTau=False):
+        self.tree.add(lambda cands: cands[label].pt()     if label in cands else 0, '{0}_pt'.format(label),     'F')
+        self.tree.add(lambda cands: cands[label].eta()    if label in cands else 0, '{0}_eta'.format(label),    'F')
+        self.tree.add(lambda cands: cands[label].phi()    if label in cands else 0, '{0}_phi'.format(label),    'F')
+        self.tree.add(lambda cands: cands[label].energy() if label in cands else 0, '{0}_energy'.format(label), 'F')
+        self.tree.add(lambda cands: cands[label].mass()   if label in cands else 0, '{0}_mass'.format(label),   'F')
+        self.tree.add(lambda cands: cands[label].charge() if label in cands else 0, '{0}_charge'.format(label), 'F')
+        self.tree.add(lambda cands: cands[label].pdgId()  if label in cands else 0, '{0}_pdgId'.format(label),  'I')
+        if isTau:
+            self.tree.add(lambda cands: self.getGenDecayMode(cands[label])  if label in cands else 0, '{0}_decayMode'.format(label),  'I')
+
+    def addCompositeGenParticle(self,label,d1,d2):
+        self.addGenParticle(label)
+        self.tree.add(lambda cands: deltaR(cands[d1].eta(),cands[d1].phi(),cands[d2].eta(),cands[d2].phi()) if label in cands else 0, '{0}_deltaR'.format(label), 'F')
+
+    def addGenDeltaR(self,label,gen):
+        self.tree.add(lambda cands: deltaR(cands[label].eta(),cands[label].phi(),cands[gen].eta(),cands[gen].phi()) if gen in cands else 9, '{0}_genTruthDeltaR'.format(label), 'F')
+
     def passMuon(self,cand):
         if cand.pt()<3: return False
         if not cand.isPFMuon(): return False
@@ -163,6 +228,8 @@ class MuMuTauTauAnalysis(AnalysisBase):
 
     def passTau(self,cand):
         if cand.pt()<10: return False
+        if abs(cand.dxy())>=0.2: return False
+        if abs(cand.dz())>=0.5: return False
         if not cand.decayModeFinding(): return False
         return True
 
@@ -317,7 +384,99 @@ class MuMuTauTauAnalysis(AnalysisBase):
         if j:
             candidate['athjet'] = j
 
+        candidate.update(self.getGenCandidates())
+
         return candidate
+
+    def getGenCandidates(self):
+        if 'SUSYGluGluToHToAA_AToMuMu_AToTauTau' not in self.fileNames[0]:
+            return {}
+        gmuons = [g for g in self.gen if abs(g.pdgId())==13]
+        gtaus = [g for g in self.gen if abs(g.pdgId())==15]
+        gas = [g for g in self.gen if abs(g.pdgId())==36]
+        ghs = [g for g in self.gen if abs(g.pdgId()) in [25,35]]
+
+        gmfromas = [g for g in gmuons if g.mother_1()==36 or g.mother_2()==36]
+        gtfromas = [g for g in gtaus if g.mother_1()==36 or g.mother_2()==36]
+        lastgh = [g for g in ghs if g.daughter_1()==36 and g.daughter_2()==36]
+
+        if len(lastgh)<1:
+            logging.warning('No h cand found')
+
+        h = lastgh[0]
+        amm = gas[0] if abs(gas[0].daughter_1())==13 else gas[1]
+        att = gas[1] if abs(gas[0].daughter_1())==13 else gas[0]
+        am1 = gmfromas[0] if gmfromas[0].pt()>gmfromas[1].pt() else gmfromas[1]
+        am2 = gmfromas[1] if gmfromas[0].pt()>gmfromas[1].pt() else gmfromas[0]
+        at1 = gtfromas[0] if gtfromas[0].pt()>gtfromas[1].pt() else gtfromas[1]
+        at2 = gtfromas[1] if gtfromas[0].pt()>gtfromas[1].pt() else gtfromas[0]
+
+        cands = {
+            'gh': h,
+            'gamm': amm,
+            'gam1': am1,
+            'gam2': am2,
+            'gatt': att,
+            'gat1': at1,
+            'gat2': at2,
+        }
+
+        if self.getGenDecayMode(at1)==-13 and self.getGenDecayMode(at2)==99:
+            cands['gatm'] = at1
+            cands['gath'] = at2
+        elif self.getGenDecayMode(at2)==-13 and self.getGenDecayMode(at1)==99:
+            cands['gatm'] = at2
+            cands['gath'] = at1
+        else:
+            if self.getGenDecayMode(at2)==-13:
+                cands['gatm'] = at2
+            if self.getGenDecayMode(at2)==99:
+                cands['gath'] = at2
+            if self.getGenDecayMode(at1)==-13:
+                cands['gatm'] = at1
+            if self.getGenDecayMode(at1)==99:
+                cands['gath'] = at1
+
+
+        return cands
+
+    def getGenChannel(self,cands):
+        if 'gh' not in cands: return 'xxxx'
+        dm1 = self.getGenDecayMode(cands['gat1'])
+        dm2 = self.getGenDecayMode(cands['gat2'])
+        channel = 'mm'
+        dmMap = {
+            -11: 'e',
+            -13: 'm',
+            -99: 'x',
+            99 : 'h',
+            0  : 'x',
+        }
+        channel += dmMap[dm1]
+        channel += dmMap[dm2]
+
+        return channel
+
+    # find tau decay modes
+    def getGenDecayMode(self,t):
+        gtaus = [g for g in self.gen if abs(g.pdgId())==15]
+        # check for decays to taus
+        if abs(t.daughter_1())==15 or abs(t.daughter_2())==15:
+            # find the last daughter that doesnt decay to a tau
+            oktaus = [g for g in gtaus if g.pdgId()==t.pdgId()]
+            oktaus = [g for g in oktaus if abs(g.daughter_1())!=15 and abs(g.daughter_2())!=15]
+            if len(oktaus)==0: return -99
+            return self.getGenDecayMode(oktaus[-1])
+        # leptons
+        elif abs(t.daughter_1())==13 or abs(t.daughter_2())==13:
+            return -13
+        elif abs(t.daughter_1())==11 or abs(t.daughter_2())==11:
+            return -11
+        # hadronic
+        # not enough info to determine which dm, only have num particles here
+        else:
+            return 99
+
 
 
     ###########################

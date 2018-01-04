@@ -50,6 +50,7 @@ class Particle(ROOT.TLorentzVector):
     def __init__(self,label,pt=None,eta=None,phi=None,energy=None,mass=None,px=None,py=None,pz=None):
         super(Particle, self).__init__()
         self.label = label
+        self.status = -1
         if None not in [pt,eta,phi,energy]:
             self.SetPtEtaPhiE(pt,eta,phi,energy)
         elif None not in [pt,eta,phi,mass]:
@@ -69,6 +70,9 @@ class Particle(ROOT.TLorentzVector):
         self.dEta = dEta
         self.dPhi = dPhi
 
+    def getStatus(self):
+        return self.status
+
     def getPDGMass(self):
         return 0
 
@@ -86,13 +90,19 @@ class Particle(ROOT.TLorentzVector):
         return ROOT.TLorentzVector(self.recoP4)
 
     def scaleEnergy(self,X):
+        valid = True
+        if X<=0:
+            #print 'Warning, Invalid X {0}, will not scale'.format(X)
+            valid = False
         # scale energy assuming that X is the visible fraction of total energy
         beta = self.recoP4.Pt()/self.recoP4.E()
-        newE = self.recoP4.E()/X if X else 13000
+        newE = self.recoP4.E()/X if X else self.recoP4.E()
         newPt = beta*newE
         newEta = self.recoP4.Eta()
         newPhi = self.recoP4.Phi()
         self.SetPtEtaPhiE(newPt,newEta,newPhi,newE)
+        self.status = int(valid)
+        return valid
 
     def printP4(self):
         COMMON.printP4(self.label,self)
@@ -171,6 +181,7 @@ class Composite(tuple):
 
     def __init__(self, label, *particles):
         self.label = label
+        self.status = -1
         self._updateP4()
         self.recoP4 = ROOT.TLorentzVector()
         for p in self:
@@ -191,6 +202,9 @@ class Composite(tuple):
         for p in self:
             self.p4 += p
 
+    def getStatus(self):
+        return self.status
+
     def getRecoP4(self):
         return ROOT.TLorentzVector(self.recoP4)
 
@@ -207,9 +221,12 @@ class Composite(tuple):
         return deltaR(ap4.Eta(),ap4.Phi(),bp4.Eta(),bp4.Phi())
 
     def constrainEnergyFromMass(self,fixed,mass):
+        valid = True
         if len(self)!=2:
             print 'Don\'t know how to handle constraints with more than 2 particles'
-            return
+            valid = False
+            self.status = int(valid)
+            return valid
 
         a = self[0] if self[0].label==fixed else self[1]
         b = self[1] if self[0].label==fixed else self[0]
@@ -225,19 +242,26 @@ class Composite(tuple):
         F = (mass**2 - 2*am**2)/(2*a.P()*cosa)
         G = am**2 * (1-D**2) + F**2
         if G<0:
-            #print 'Warning, negative value in sqrt'
-            #print cosa, D, F, G
-            return b.E()
-        if cosa>0:
+            #print 'Warning, negative value in sqrt, will not constrain energy'
+            #print a.E(), a.P(), am, cosa, mass
+            #print D, F, G
+            valid = False
+            E = b.E()
+        elif cosa>0:
             E = 1/(D**2-1) * (D*F + (G)**0.5)
         elif cosa<0:
             E = 1/(D**2-1) * (D*F - (G)**0.5)
         else:
+            valid = False
             E = 0.
 
         # update energy
         beta = b.getRecoP4().Pt()/b.getRecoP4().E()
-        b.SetPtEtaPhiM(beta*E, b.getRecoP4().Eta(), b.getRecoP4().Phi(), b.getPDGMass())
+        #b.SetPtEtaPhiM(beta*E, b.getRecoP4().Eta(), b.getRecoP4().Phi(), b.getPDGMass())
+        b.SetPtEtaPhiE(beta*E, b.getRecoP4().Eta(), b.getRecoP4().Phi(), E)
+
+        self.status = int(valid)
+        return valid
 
 
     def printP4(self):
@@ -259,6 +283,12 @@ class KinematicConstraints(object):
 
     def addComposite(self,label,*plabels):
         self.composites[label] = Composite(label,*[self.particles[p] for p in plabels])
+
+    def getParticleStatus(self,label):
+        return self.particles[label].getStatus()
+
+    def getCompositeStatus(self,label):
+        return self.composites[label].getStatus()
 
     def getParticle(self,label):
         return self.particles[label]
@@ -285,7 +315,9 @@ class KinematicConstraints(object):
             if isinstance(part,MET):
                 covrecoil += part.getCov()
             else:
-                covrecoil -= part.getCov()
+                # simplification ignores this
+                #covrecoil -= part.getCov()
+                pass
         return covrecoil
 
     def getDeltaRecoil(self):
@@ -303,6 +335,10 @@ class KinematicConstraints(object):
         recoildiffvec[1] = rpy
         #recoilchi2 = recoildiffvec * (covinv * recoildiffvec) # not working
         recoilchi2 = rpx * (covinv[0][0] * rpx + covinv[0][1] * rpy) + rpy * (covinv[1][0] * rpx + covinv[1][1] * rpy)
+
+        # TODO add gaussian particle chi2 = (x_fit-x_reco)**2/sigma**2
+        # will be used if we add in the muon pt resolution and shift within its uncertainty
+
         return recoilchi2
 
     def getP4(self,*labels):
@@ -329,16 +365,21 @@ class KinematicConstraints(object):
         part = self.particles[label]
         if isinstance(part,ElectronTau) or isinstance(part,MuonTau):
             # leptonic decay of tau
+            print 'ElectronTau, MuonTau, unconstrained'
             return [0,1]
         elif isinstance(part,HadronicTau):
             mvis = part.getRecoP4().M()
+            if mvis==0:
+                print 'Tau visibile mass is 0'
+            if mvis>PDG.M_TAU:
+                print 'Visible mass greater than tau mass: {0}'.format(mvis)
             return [mvis**2/PDG.M_TAU**2,1]
         else:
             return [1,1]
 
     def scaleParticleEnergy(self,label,X):
         part = self.particles[label]
-        part.scaleEnergy(X)
+        valid = part.scaleEnergy(X)
         # update other particles using constraints
         for c in self.constraints:
             if c[0]=='mass':
@@ -346,9 +387,10 @@ class KinematicConstraints(object):
                 c2 = self.composites[c[2]]
                 mass = c[3]
                 if label in c1:
-                    c1.constrainEnergyFromMass(label,c2.M()-mass)
+                    valid = c1.constrainEnergyFromMass(label,c2.M()-mass) and valid
                 elif label in c2:
-                    c2.constrainEnergyFromMass(label,c1.M()-mass)
+                    valid = c2.constrainEnergyFromMass(label,c1.M()-mass) and valid
+        return valid
 
 
     def printRecoil(self):
@@ -384,6 +426,10 @@ class KinematicFitter(KinematicConstraints):
     def __init__(self):
         super(KinematicFitter, self).__init__()
         self.minimizationParticles = []
+        self.fitStatus = -1
+        self.X = -1
+        self.atLowerBound = -1
+        self.atUpperBound = -1
 
     def setMinimizationParticles(self,*labels):
         self.minimizationParticles = labels
@@ -409,6 +455,13 @@ class KinematicFitter(KinematicConstraints):
 
     #    func = Functor()
     #    return func
+    #
+
+    def getFitStatus(self):
+        return self.fitStatus
+
+    def getX(self):
+        return self.X
 
     def fit(self):
         if len(self.minimizationParticles)!=1:
@@ -417,7 +470,7 @@ class KinematicFitter(KinematicConstraints):
 
         # get allowed range of first fit variable
         X_range = self.getAllowedEnergyFractionRange(self.minimizationParticles[0])
-        X = X_range[1] - (X_range[1]-X_range[0])/2 # split the difference as a test
+        X = X_range[0] + (X_range[1]-X_range[0])/2 # split the difference as a test
 
         # quick test
         #self.fit_func(X)
@@ -435,11 +488,35 @@ class KinematicFitter(KinematicConstraints):
         #minimizer.Minimize()
 
         def func(X):
-            self.scaleParticleEnergy(self.minimizationParticles[0],X)
+            valid = self.scaleParticleEnergy(self.minimizationParticles[0],X)
             chi2 = self.getChi2()
+            self.fitStatus = int(valid)
+            if not valid: chi2 = 999999
             return chi2
 
         res = minimize_scalar(func, bounds=X_range, method='brent')
         #print res.x
+        self.X = res.x
+        self.atLowerBound = int(abs(self.X-X_range[0])<1e-3)
+        self.atUpperBound = int(abs(self.X-X_range[1])<1e-3)
         func(res.x)
             
+
+    def getGrid(self,**kwargs):
+        '''Plot grid values'''
+        npoints = kwargs.pop('npoints',100)
+
+        X_range = self.getAllowedEnergyFractionRange(self.minimizationParticles[0])
+
+        xvals = []
+        chi2vals = []
+        for i in range(npoints):
+            X = X_range[0] + (X_range[1]-X_range[0])*i/(npoints-1)
+            valid = self.scaleParticleEnergy(self.minimizationParticles[0],X)
+            chi2 = self.getChi2()
+            if not valid: chi2 = 999999
+            xvals += [X]
+            chi2vals += [chi2]
+
+        return xvals, chi2vals
+

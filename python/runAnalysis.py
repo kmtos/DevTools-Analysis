@@ -5,6 +5,7 @@ from DevTools.Analyzer.WZAnalysis import main as runWZ
 from DevTools.Analyzer.ZZAnalysis import main as runZZ
 from DevTools.Analyzer.DYAnalysis import main as runDY
 from DevTools.Analyzer.ZFakeRateAnalysis import main as runZFakeRate
+from DevTools.Analyzer.ZTauFakeRateAnalysis import main as runZTauFakeRate
 from DevTools.Analyzer.ChargeAnalysis import main as runCharge
 from DevTools.Analyzer.TauChargeAnalysis import main as runTauCharge
 from DevTools.Analyzer.Hpp3lAnalysis import main as runHpp3l
@@ -39,6 +40,8 @@ def runAnalysis(analysis,argv):
         func = runDY
     elif analysis=='ZFakeRate':
         func = runZFakeRate
+    elif analysis=='ZTauFakeRate':
+        func = runZTauFakeRate
     elif analysis=='Charge':
         func = runCharge
     elif analysis=='TauCharge':

@@ -469,6 +469,18 @@ class AnalysisBase(object):
     def photonMVAPreselectionScale(self,cand):
         return self.leptonScales.getScale('MVA0p0Pre',cand,doError=True)
 
+    def mediumNewDMFakeRate(self,cand):
+        return self.fakeRates.getFakeRate(cand,'HppMedium','HppLooseNew',doError=True,doDM=True)
+
+    def tightNewDMFakeRate(self,cand):
+        return self.fakeRates.getFakeRate(cand,'HppTight','HppLooseNew',doError=True,doDM=True)
+
+    def mediumDMFakeRate(self,cand):
+        return self.fakeRates.getFakeRate(cand,'HppMedium','HppLoose',doError=True,doDM=True)
+
+    def tightDMFakeRate(self,cand):
+        return self.fakeRates.getFakeRate(cand,'HppTight','HppLoose',doError=True,doDM=True)
+
     def mediumNewFakeRate(self,cand):
         return self.fakeRates.getFakeRate(cand,'HppMedium','HppLooseNew',doError=True)
 
@@ -639,6 +651,18 @@ class AnalysisBase(object):
             self.tree.add(lambda cands: self.tightNewFakeRate(cands[label])[0],               '{0}_tightNewFakeRate'.format(label), 'F')
             if doErrors: self.tree.add(lambda cands: self.tightNewFakeRate(cands[label])[1],  '{0}_tightNewFakeRateUp'.format(label), 'F')
             if doErrors: self.tree.add(lambda cands: self.tightNewFakeRate(cands[label])[2],  '{0}_tightNewFakeRateDown'.format(label), 'F')
+            self.tree.add(lambda cands: self.mediumNewDMFakeRate(cands[label])[0],              '{0}_mediumNewDMFakeRate'.format(label), 'F')
+            if doErrors: self.tree.add(lambda cands: self.mediumNewDMFakeRate(cands[label])[1], '{0}_mediumNewDMFakeRateUp'.format(label), 'F')
+            if doErrors: self.tree.add(lambda cands: self.mediumNewDMFakeRate(cands[label])[2], '{0}_mediumNewDMFakeRateDown'.format(label), 'F')
+            self.tree.add(lambda cands: self.tightNewDMFakeRate(cands[label])[0],               '{0}_tightNewDMFakeRate'.format(label), 'F')
+            if doErrors: self.tree.add(lambda cands: self.tightNewDMFakeRate(cands[label])[1],  '{0}_tightNewDMFakeRateUp'.format(label), 'F')
+            if doErrors: self.tree.add(lambda cands: self.tightNewDMFakeRate(cands[label])[2],  '{0}_tightNewDMFakeRateDown'.format(label), 'F')
+            self.tree.add(lambda cands: self.mediumDMFakeRate(cands[label])[0],              '{0}_mediumDMFakeRate'.format(label), 'F')
+            if doErrors: self.tree.add(lambda cands: self.mediumDMFakeRate(cands[label])[1], '{0}_mediumDMFakeRateUp'.format(label), 'F')
+            if doErrors: self.tree.add(lambda cands: self.mediumDMFakeRate(cands[label])[2], '{0}_mediumDMFakeRateDown'.format(label), 'F')
+            self.tree.add(lambda cands: self.tightDMFakeRate(cands[label])[0],               '{0}_tightDMFakeRate'.format(label), 'F')
+            if doErrors: self.tree.add(lambda cands: self.tightDMFakeRate(cands[label])[1],  '{0}_tightDMFakeRateUp'.format(label), 'F')
+            if doErrors: self.tree.add(lambda cands: self.tightDMFakeRate(cands[label])[2],  '{0}_tightDMFakeRateDown'.format(label), 'F')
             self.tree.add(lambda cands: self.mediumFakeRate(cands[label])[0],              '{0}_mediumFakeRate'.format(label), 'F')
             if doErrors: self.tree.add(lambda cands: self.mediumFakeRate(cands[label])[1], '{0}_mediumFakeRateUp'.format(label), 'F')
             if doErrors: self.tree.add(lambda cands: self.mediumFakeRate(cands[label])[2], '{0}_mediumFakeRateDown'.format(label), 'F')
