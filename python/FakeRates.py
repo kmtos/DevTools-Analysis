@@ -42,7 +42,9 @@ class FakeRates(object):
         # tau fakerates
         fake_path = '{0}/src/DevTools/Analyzer/data/fakerates_w_tau_13TeV_Run2015D.root'.format(os.environ['CMSSW_BASE'])
         if self.version=='80X':
-            fake_path = '{0}/src/DevTools/Analyzer/data/fakerates_w_tau_13TeV_Run2016BCDEFGH.root'.format(os.environ['CMSSW_BASE'])
+            # NOTE: W tau performs poorly, z tau much better
+            #fake_path = '{0}/src/DevTools/Analyzer/data/fakerates_w_tau_13TeV_Run2016BCDEFGH.root'.format(os.environ['CMSSW_BASE'])
+            fake_path = '{0}/src/DevTools/Analyzer/data/fakerates_z_tau_13TeV_Run2016BCDEFGH.root'.format(os.environ['CMSSW_BASE'])
         self.fake_tau_rootfile = ROOT.TFile(fake_path)
         self.fakehists['taus'][self.fakekey.format(   num='HppMedium',denom='HppLooseNew')]    = self.fake_tau_rootfile.Get('medium_newloose/fakeratePtEta')
         self.fakehists['taus'][self.fakekey.format(   num='HppTight', denom='HppLooseNew')]    = self.fake_tau_rootfile.Get('tight_newloose/fakeratePtEta')

@@ -120,14 +120,14 @@ class LeptonScales(object):
         vals = []
         x,y = ROOT.Double(0), ROOT.Double(0)
         for i in range(graph.GetN()):
-            graph.GetPoint(i+1,x,y)
+            graph.GetPoint(i,x,y)
             val = {
                 'x'        : float(x),
                 'y'        : float(y),
-                'errx_up'  : float(graph.GetErrorXhigh(i+1)),
-                'errx_down': float(graph.GetErrorXlow(i+1)),
-                'erry_up'  : float(graph.GetErrorYhigh(i+1)),
-                'erry_down': float(graph.GetErrorYlow(i+1)),
+                'errx_up'  : float(graph.GetErrorXhigh(i)),
+                'errx_down': float(graph.GetErrorXlow(i)),
+                'erry_up'  : float(graph.GetErrorYhigh(i)),
+                'erry_down': float(graph.GetErrorYlow(i)),
             }
             vals += [val]
         return vals

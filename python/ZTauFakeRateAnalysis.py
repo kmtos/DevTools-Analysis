@@ -28,6 +28,7 @@ class ZTauFakeRateAnalysis(AnalysisBase):
 
 
         # setup cut tree
+        self.cutTree.add(self.metFilter,'metFilter')
         self.cutTree.add(self.threeLoose,'threeLooseLeptons')
         self.cutTree.add(self.trigger,'trigger')
 
@@ -93,6 +94,7 @@ class ZTauFakeRateAnalysis(AnalysisBase):
         # fake lepton
         self.addLeptonMet('w')
         self.addLepton('t')
+        self.addDetailedTau('t')
         self.tree.add(lambda cands: self.passLoose(cands['t']), 't_passLoose', 'I')
         self.tree.add(lambda cands: self.passMedium(cands['t']), 't_passMedium', 'I')
         self.tree.add(lambda cands: self.passTight(cands['t']), 't_passTight', 'I')
@@ -150,6 +152,9 @@ class ZTauFakeRateAnalysis(AnalysisBase):
         if not bestZ: return candidate # need a z candidate
         zcand = DiCandidate(*bestZ)
         if zcand.M()<60 or zcand.M()>120: return candidate
+
+        tleps = [t for t in tleps if deltaR(t.eta(),t.phi(),zcand[0].eta(),zcand[0].phi())>0.8 and deltaR(t.eta(),t.phi(),zcand[1].eta(),zcand[1].phi())>0.8]
+        if len(tleps)<1: return candidate
 
         # and sort pt of Z
         z = [bestZ[0],bestZ[1]] if bestZ[0].pt()>bestZ[1].pt() else [bestZ[1],bestZ[0]]

@@ -201,6 +201,7 @@ def passHppMediumMuon(muon,version='80X'):
     return True
 
 def passHppMediumTau(tau):
+    if not passHppLooseTau(tau): return False
     if tau.decayModeFinding()<0.5: return False
     if tau.againstMuonLoose3()<0.5: return False
     if tau.againstElectronVLooseMVA6()<0.5: return False
@@ -223,8 +224,7 @@ def passHppTightMuon(muon,version='80X'):
     return True
 
 def passHppTightTau(tau):
-    pt = tau.pt()
-    if pt<=20: return False
+    if not passHppLooseTau(tau): return False
     if tau.decayModeFinding()<0.5: return False
     if tau.againstMuonLoose3()<0.5: return False
     if tau.againstElectronVLooseMVA6()<0.5: return False

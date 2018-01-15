@@ -31,6 +31,7 @@ class WTauFakeRateAnalysis(AnalysisBase):
         super(WTauFakeRateAnalysis, self).__init__(outputFileName=outputFileName,outputTreeName=outputTreeName,**kwargs)
 
         # setup cut tree
+        self.cutTree.add(self.metFilter,'metFilter')
         self.cutTree.add(self.trigger,'trigger')
 
         # setup analysis tree
@@ -95,6 +96,8 @@ class WTauFakeRateAnalysis(AnalysisBase):
         taus = self.getCands(self.taus,self.passLooseNew)
         if len(muons)!=1: return candidate # need 1 tight muon
         #if len(loosemuons)>1: return candidate # dont allow another loose muon
+        # require tau to be 0.8 away from muon
+        taus = [t for t in taus if deltaR(t.eta(),t.phi(),muons[0].eta(),muons[0].phi())>0.8]
         if len(taus)<1: return candidate # need at least 1 tau 
 
 

@@ -30,6 +30,7 @@ class DYAnalysis(AnalysisBase):
 
 
         # setup cut tree
+        self.cutTree.add(self.metFilter,'metFilter')
         self.cutTree.add(self.twoLoose,'twoLooseLeptons')
         self.cutTree.add(self.trigger,'trigger')
 

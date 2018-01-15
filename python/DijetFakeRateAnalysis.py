@@ -31,6 +31,7 @@ class DijetFakeRateAnalysis(AnalysisBase):
         super(DijetFakeRateAnalysis, self).__init__(outputFileName=outputFileName,outputTreeName=outputTreeName,**kwargs)
 
         # setup cut tree
+        self.cutTree.add(self.metFilter,'metFilter')
         self.cutTree.add(self.vetoSecond,'vetoSecond')
         self.cutTree.add(self.metVeto,'metVeto')
         self.cutTree.add(self.mtVeto,'mtVeto')

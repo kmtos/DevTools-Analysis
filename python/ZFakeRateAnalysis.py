@@ -28,6 +28,7 @@ class ZFakeRateAnalysis(AnalysisBase):
 
 
         # setup cut tree
+        self.cutTree.add(self.metFilter,'metFilter')
         self.cutTree.add(self.threeLoose,'threeLooseLeptons')
         self.cutTree.add(self.trigger,'trigger')
 
@@ -123,27 +124,33 @@ class ZFakeRateAnalysis(AnalysisBase):
         # get invariant masses
         bestZ = ()
         bestMassdiff = 99999
-        for zpair in itertools.permutations(leps+tleps,3):
+        for zpair in itertools.permutations(leps,3):
             # z pass medium
             if not self.passMedium(zpair[0]): continue
             if not self.passMedium(zpair[1]): continue
             if zpair[0].collName!=zpair[1].collName: continue # SF
             if zpair[0].charge()==zpair[1].charge(): continue # OS
-            z = DiCandidate(*zpair[:2])
-            massdiff = abs(z.M()-ZMASS)
-            if massdiff<bestMassdiff:
-                bestZ = zpair
-                bestMassdiff = massdiff
+            z = [zpair[0],zpair[1],zpair[2]] if zpair[0].pt()>zpair[1].pt() else [zpair[1],zpair[0],zpair[2]]
+            if not bestZ: bestZ = z
+            if z[0].pt()>bestZ[0].pt():
+                bestZ = z
+            if z[0].pt()==bestZ[0].pt() and z[1].pt()>bestZ[1].pt():
+                bestZ = z
 
         if not bestZ: return candidate # need a z candidate
 
-        # and sort pt of Z
         z = [bestZ[0],bestZ[1]] if bestZ[0].pt()>bestZ[1].pt() else [bestZ[1],bestZ[0]]
+        zCand = DiCandidate(z[0],z[1])
+        if zCand.M()<60 or zCand.M()>120: return candidate
+
+        l = bestZ[2]
+        if deltaR(z[0].eta(),z[0].phi(),l.eta(),l.phi())<0.4 or deltaR(z[1].eta(),z[1].phi(),l.eta(),l.phi())<0.4: return candidate
+
         candidate['z1'] = z[0]
         candidate['z2'] = z[1]
-        candidate['l1'] = bestZ[2]
-        candidate['z'] = DiCandidate(z[0],z[1])
-        candidate['w'] = MetCompositeCandidate(self.pfmet,zpair[2])
+        candidate['l1'] = l
+        candidate['z'] = zCand
+        candidate['w'] = MetCompositeCandidate(self.pfmet,l)
 
         medLeps = self.getPassingCands('Medium',self.electrons,self.muons)
         candidate['cleanJets'] = self.cleanCands(self.jets,medLeps,0.4)

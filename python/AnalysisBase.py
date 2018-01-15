@@ -390,12 +390,11 @@ class AnalysisBase(object):
             'EcalDeadCellTriggerPrimitiveFilter',
             'goodVertices',
             'eeBadScFilter',
-            # Broken in current ntuples
-            #'noBadMuons',
+            'noBadMuons',
             'BadChargedCandidateFilter',
         ]
         notFilterList = [
-            # Broken in current ntuples
+            # Dont use, "noBadMuons" contains this
             #'duplicateMuons',
             #'badMuons',
         ]
@@ -569,9 +568,9 @@ class AnalysisBase(object):
         else:
             self.tree.add(lambda cands: getattr(cands[label],var)(), '{0}_{1}'.format(label,varLabel), rootType)
 
-    def addFlavorDependentCandVar(self,label,varLabel,varMap,rootType):
+    def addFlavorDependentCandVar(self,label,varLabel,varMap,rootType,default=0):
         '''Add a variable for a cand based on flavor'''
-        self.tree.add(lambda cands: getattr(cands[label],varMap[cands[label].collName])() if cands[label].collName in varMap else 0., '{0}_{1}'.format(label,varLabel), rootType)
+        self.tree.add(lambda cands: getattr(cands[label],varMap[cands[label].collName])() if cands[label].collName in varMap else default, '{0}_{1}'.format(label,varLabel), rootType)
 
     def addMet(self,label):
         '''Add Met variables'''
@@ -615,9 +614,11 @@ class AnalysisBase(object):
         self.addCandVar(label,'genPhi','genPhi','F')
         self.addCandVar(label,'genEnergy','genEnergy','F')
         self.addCandVar(label,'genCharge','genCharge','F')
-        self.addFlavorDependentCandVar(label,'decayMode',         {'taus':'decayMode', '':''},'I')
-        self.addFlavorDependentCandVar(label,'decayModeFinding',  {'taus':'decayModeFinding', '':''},'I')
-        self.addFlavorDependentCandVar(label,'genJetMatch',       {'taus':'genJetMatch', '':''},'I')
+        self.addFlavorDependentCandVar(label,'decayMode',         {'taus':'decayMode', '':''},                         'I', default=-1)
+        self.addFlavorDependentCandVar(label,'decayModeFinding',  {'taus':'decayModeFinding', '':''},                  'I', default=-1)
+        self.addFlavorDependentCandVar(label,'tauMVAold',         {'taus':'byIsolationMVArun2v1DBoldDMwLTraw', '':''}, 'F', default=-2)
+        self.addFlavorDependentCandVar(label,'tauMVAnew',         {'taus':'byIsolationMVArun2v1DBnewDMwLTraw', '':''}, 'F', default=-2)
+        self.addFlavorDependentCandVar(label,'genJetMatch',       {'taus':'genJetMatch', '':''},                       'I', default=-1)
         self.tree.add(lambda cands: 0 if isinstance(cands[label],Electron) or isinstance(cands[label],Muon) else self.genJetDeltaR(cands[label]), '{0}_genJetDeltaR'.format(label), 'F')
         self.addFlavorDependentCandVar(label,'genJetStatus',      {'taus':'genJetStatus','':''},'I')
         self.addFlavorDependentCandVar(label,'genJetPdgId',       {'taus':'genJetPdgId', '':''},'I')
@@ -626,12 +627,12 @@ class AnalysisBase(object):
         self.addFlavorDependentCandVar(label,'genJetPhi',         {'taus':'genJetPhi',   '':''},'F')
         self.addFlavorDependentCandVar(label,'genJetEnergy',      {'taus':'genJetEnergy','':''},'F')
         self.addFlavorDependentCandVar(label,'genJetCharge',      {'taus':'genJetCharge','':''},'I')
-        self.addFlavorDependentCandVar(label,'genIsPrompt',    {'electrons':'genIsPrompt',    'muons':'genIsPrompt',                     '':''},'I')
-        self.addFlavorDependentCandVar(label,'genIsFromTau',   {'electrons':'genIsFromTau',   'muons':'genIsFromTau',                    '':''},'I')
-        self.addFlavorDependentCandVar(label,'genIsFromHadron',{'electrons':'genIsFromHadron','muons':'genIsFromHadron',                 '':''},'I')
+        self.addFlavorDependentCandVar(label,'genIsPrompt',       {'electrons':'genIsPrompt',    'muons':'genIsPrompt',      '':''}, 'I', default=-1)
+        self.addFlavorDependentCandVar(label,'genIsFromTau',      {'electrons':'genIsFromTau',   'muons':'genIsFromTau',     '':''}, 'I', default=-1)
+        self.addFlavorDependentCandVar(label,'genIsFromHadron',   {'electrons':'genIsFromHadron','muons':'genIsFromHadron',  '':''}, 'I', default=-1)
         if doId:
             self.tree.add(lambda cands: self.passLoose(cands[label]),                      '{0}_passLoose'.format(label), 'I')
-            self.tree.add(lambda cands: self.passLooseNew(cands[label]),                      '{0}_passLooseNew'.format(label), 'I')
+            self.tree.add(lambda cands: self.passLooseNew(cands[label]),                   '{0}_passLooseNew'.format(label), 'I')
             self.tree.add(lambda cands: self.passMedium(cands[label]),                     '{0}_passMedium'.format(label), 'I')
             self.tree.add(lambda cands: self.passTight(cands[label]),                      '{0}_passTight'.format(label), 'I')
         if doScales:
@@ -645,30 +646,30 @@ class AnalysisBase(object):
             if doErrors: self.tree.add(lambda cands: self.tightScale(cands[label])[1],     '{0}_tightScaleUp'.format(label), 'F')
             if doErrors: self.tree.add(lambda cands: self.tightScale(cands[label])[2],     '{0}_tightScaleDown'.format(label), 'F')
         if doFakes:
-            self.tree.add(lambda cands: self.mediumNewFakeRate(cands[label])[0],              '{0}_mediumNewFakeRate'.format(label), 'F')
-            if doErrors: self.tree.add(lambda cands: self.mediumNewFakeRate(cands[label])[1], '{0}_mediumNewFakeRateUp'.format(label), 'F')
-            if doErrors: self.tree.add(lambda cands: self.mediumNewFakeRate(cands[label])[2], '{0}_mediumNewFakeRateDown'.format(label), 'F')
-            self.tree.add(lambda cands: self.tightNewFakeRate(cands[label])[0],               '{0}_tightNewFakeRate'.format(label), 'F')
-            if doErrors: self.tree.add(lambda cands: self.tightNewFakeRate(cands[label])[1],  '{0}_tightNewFakeRateUp'.format(label), 'F')
-            if doErrors: self.tree.add(lambda cands: self.tightNewFakeRate(cands[label])[2],  '{0}_tightNewFakeRateDown'.format(label), 'F')
-            self.tree.add(lambda cands: self.mediumNewDMFakeRate(cands[label])[0],              '{0}_mediumNewDMFakeRate'.format(label), 'F')
-            if doErrors: self.tree.add(lambda cands: self.mediumNewDMFakeRate(cands[label])[1], '{0}_mediumNewDMFakeRateUp'.format(label), 'F')
-            if doErrors: self.tree.add(lambda cands: self.mediumNewDMFakeRate(cands[label])[2], '{0}_mediumNewDMFakeRateDown'.format(label), 'F')
-            self.tree.add(lambda cands: self.tightNewDMFakeRate(cands[label])[0],               '{0}_tightNewDMFakeRate'.format(label), 'F')
-            if doErrors: self.tree.add(lambda cands: self.tightNewDMFakeRate(cands[label])[1],  '{0}_tightNewDMFakeRateUp'.format(label), 'F')
-            if doErrors: self.tree.add(lambda cands: self.tightNewDMFakeRate(cands[label])[2],  '{0}_tightNewDMFakeRateDown'.format(label), 'F')
-            self.tree.add(lambda cands: self.mediumDMFakeRate(cands[label])[0],              '{0}_mediumDMFakeRate'.format(label), 'F')
-            if doErrors: self.tree.add(lambda cands: self.mediumDMFakeRate(cands[label])[1], '{0}_mediumDMFakeRateUp'.format(label), 'F')
-            if doErrors: self.tree.add(lambda cands: self.mediumDMFakeRate(cands[label])[2], '{0}_mediumDMFakeRateDown'.format(label), 'F')
-            self.tree.add(lambda cands: self.tightDMFakeRate(cands[label])[0],               '{0}_tightDMFakeRate'.format(label), 'F')
-            if doErrors: self.tree.add(lambda cands: self.tightDMFakeRate(cands[label])[1],  '{0}_tightDMFakeRateUp'.format(label), 'F')
-            if doErrors: self.tree.add(lambda cands: self.tightDMFakeRate(cands[label])[2],  '{0}_tightDMFakeRateDown'.format(label), 'F')
-            self.tree.add(lambda cands: self.mediumFakeRate(cands[label])[0],              '{0}_mediumFakeRate'.format(label), 'F')
-            if doErrors: self.tree.add(lambda cands: self.mediumFakeRate(cands[label])[1], '{0}_mediumFakeRateUp'.format(label), 'F')
-            if doErrors: self.tree.add(lambda cands: self.mediumFakeRate(cands[label])[2], '{0}_mediumFakeRateDown'.format(label), 'F')
-            self.tree.add(lambda cands: self.tightFakeRate(cands[label])[0],               '{0}_tightFakeRate'.format(label), 'F')
-            if doErrors: self.tree.add(lambda cands: self.tightFakeRate(cands[label])[1],  '{0}_tightFakeRateUp'.format(label), 'F')
-            if doErrors: self.tree.add(lambda cands: self.tightFakeRate(cands[label])[2],  '{0}_tightFakeRateDown'.format(label), 'F')
+            self.tree.add(lambda cands: self.mediumNewFakeRate(cands[label])[0],                     '{0}_mediumNewFakeRate'.format(label), 'F')
+            if doErrors: self.tree.add(lambda cands: self.mediumNewFakeRate(cands[label])[1],        '{0}_mediumNewFakeRateUp'.format(label), 'F')
+            if doErrors: self.tree.add(lambda cands: self.mediumNewFakeRate(cands[label])[2],        '{0}_mediumNewFakeRateDown'.format(label), 'F')
+            self.tree.add(lambda cands: self.tightNewFakeRate(cands[label])[0],                      '{0}_tightNewFakeRate'.format(label), 'F')
+            if doErrors: self.tree.add(lambda cands: self.tightNewFakeRate(cands[label])[1],         '{0}_tightNewFakeRateUp'.format(label), 'F')
+            if doErrors: self.tree.add(lambda cands: self.tightNewFakeRate(cands[label])[2],         '{0}_tightNewFakeRateDown'.format(label), 'F')
+            self.tree.add(lambda cands: self.mediumNewDMFakeRate(cands[label])[0],                   '{0}_mediumNewDMFakeRate'.format(label), 'F')
+            if doErrors: self.tree.add(lambda cands: self.mediumNewDMFakeRate(cands[label])[1],      '{0}_mediumNewDMFakeRateUp'.format(label), 'F')
+            if doErrors: self.tree.add(lambda cands: self.mediumNewDMFakeRate(cands[label])[2],      '{0}_mediumNewDMFakeRateDown'.format(label), 'F')
+            self.tree.add(lambda cands: self.tightNewDMFakeRate(cands[label])[0],                    '{0}_tightNewDMFakeRate'.format(label), 'F')
+            if doErrors: self.tree.add(lambda cands: self.tightNewDMFakeRate(cands[label])[1],       '{0}_tightNewDMFakeRateUp'.format(label), 'F')
+            if doErrors: self.tree.add(lambda cands: self.tightNewDMFakeRate(cands[label])[2],       '{0}_tightNewDMFakeRateDown'.format(label), 'F')
+            self.tree.add(lambda cands: self.mediumDMFakeRate(cands[label])[0],                      '{0}_mediumDMFakeRate'.format(label), 'F')
+            if doErrors: self.tree.add(lambda cands: self.mediumDMFakeRate(cands[label])[1],         '{0}_mediumDMFakeRateUp'.format(label), 'F')
+            if doErrors: self.tree.add(lambda cands: self.mediumDMFakeRate(cands[label])[2],         '{0}_mediumDMFakeRateDown'.format(label), 'F')
+            self.tree.add(lambda cands: self.tightDMFakeRate(cands[label])[0],                       '{0}_tightDMFakeRate'.format(label), 'F')
+            if doErrors: self.tree.add(lambda cands: self.tightDMFakeRate(cands[label])[1],          '{0}_tightDMFakeRateUp'.format(label), 'F')
+            if doErrors: self.tree.add(lambda cands: self.tightDMFakeRate(cands[label])[2],          '{0}_tightDMFakeRateDown'.format(label), 'F')
+            self.tree.add(lambda cands: self.mediumFakeRate(cands[label])[0],                        '{0}_mediumFakeRate'.format(label), 'F')
+            if doErrors: self.tree.add(lambda cands: self.mediumFakeRate(cands[label])[1],           '{0}_mediumFakeRateUp'.format(label), 'F')
+            if doErrors: self.tree.add(lambda cands: self.mediumFakeRate(cands[label])[2],           '{0}_mediumFakeRateDown'.format(label), 'F')
+            self.tree.add(lambda cands: self.tightFakeRate(cands[label])[0],                         '{0}_tightFakeRate'.format(label), 'F')
+            if doErrors: self.tree.add(lambda cands: self.tightFakeRate(cands[label])[1],            '{0}_tightFakeRateUp'.format(label), 'F')
+            if doErrors: self.tree.add(lambda cands: self.tightFakeRate(cands[label])[2],            '{0}_tightFakeRateDown'.format(label), 'F')
             self.tree.add(lambda cands: self.tightFromMediumFakeRate(cands[label])[0],               '{0}_tightFromMediumFakeRate'.format(label), 'F')
             if doErrors: self.tree.add(lambda cands: self.tightFromMediumFakeRate(cands[label])[1],  '{0}_tightFromMediumFakeRateUp'.format(label), 'F')
             if doErrors: self.tree.add(lambda cands: self.tightFromMediumFakeRate(cands[label])[2],  '{0}_tightFromMediumFakeRateDown'.format(label), 'F')
@@ -716,6 +717,12 @@ class AnalysisBase(object):
         self.addCandVar(label,'byMediumIsolationMVArun2v1DBoldDMwLT','byMediumIsolationMVArun2v1DBoldDMwLT','I')
         self.addCandVar(label,'byTightIsolationMVArun2v1DBoldDMwLT','byTightIsolationMVArun2v1DBoldDMwLT','I')
         self.addCandVar(label,'byVTightIsolationMVArun2v1DBoldDMwLT','byVTightIsolationMVArun2v1DBoldDMwLT','I')
+        self.addCandVar(label,'byIsolationMVArun2v1DBnewDMwLTraw','byIsolationMVArun2v1DBnewDMwLTraw','F')
+        self.addCandVar(label,'byVLooseIsolationMVArun2v1DBnewDMwLT','byVLooseIsolationMVArun2v1DBnewDMwLT','I')
+        self.addCandVar(label,'byLooseIsolationMVArun2v1DBnewDMwLT','byLooseIsolationMVArun2v1DBnewDMwLT','I')
+        self.addCandVar(label,'byMediumIsolationMVArun2v1DBnewDMwLT','byMediumIsolationMVArun2v1DBnewDMwLT','I')
+        self.addCandVar(label,'byTightIsolationMVArun2v1DBnewDMwLT','byTightIsolationMVArun2v1DBnewDMwLT','I')
+        self.addCandVar(label,'byVTightIsolationMVArun2v1DBnewDMwLT','byVTightIsolationMVArun2v1DBnewDMwLT','I')
 
     def addPhoton(self,label,doId=False,doScales=False,doFakes=False,doErrors=False):
         '''Add variables relevant for photons'''
