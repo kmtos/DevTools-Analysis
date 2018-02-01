@@ -82,7 +82,6 @@ class MuMuTauFakeRateAnalysis(AnalysisBase):
         self.addCandVar(label,'againstElectronMediumMVA6','againstElectronMediumMVA6','I')
         self.addCandVar(label,'againstElectronTightMVA6','againstElectronTightMVA6','I')
         self.addCandVar(label,'againstElectronVTightMVA6','againstElectronVTightMVA6','I')
-        self.addCandVar(label,'decayModeFinding','decayModeFinding','I')
         self.addCandVar(label,'byIsolationMVArun2v1DBoldDMwLTraw','byIsolationMVArun2v1DBoldDMwLTraw','F')
         self.addCandVar(label,'byVLooseIsolationMVArun2v1DBoldDMwLT','byVLooseIsolationMVArun2v1DBoldDMwLT','I')
         self.addCandVar(label,'byLooseIsolationMVArun2v1DBoldDMwLT','byLooseIsolationMVArun2v1DBoldDMwLT','I')
@@ -118,12 +117,16 @@ class MuMuTauFakeRateAnalysis(AnalysisBase):
 
     def passMuon(self,cand):
         if cand.pt()<3: return False
+        if abs(cand.dxy())>=0.2: return False
+        if abs(cand.dz())>=0.5: return False
         if not cand.isPFMuon(): return False
         if not (cand.isGlobalMuon() or cand.isTrackerMuon()): return False
         return True
 
     def passTau(self,cand):
         if cand.pt()<10: return False
+        if abs(cand.dxy())>=0.2: return False
+        if abs(cand.dz())>=0.5: return False
         if not cand.decayModeFinding(): return False
         return True
 
@@ -159,6 +162,9 @@ class MuMuTauFakeRateAnalysis(AnalysisBase):
             # require lead m pt>25
             if m1.pt()<20: continue
             if m2.pt()<10: continue
+            # iso
+            if m1.relPFIsoDeltaBetaR04()>=0.25: continue
+            if m2.relPFIsoDeltaBetaR04()>=0.25: continue
             # make composites
             z = DiCandidate(m1,m2)
             if not zCand: zCand = mm
