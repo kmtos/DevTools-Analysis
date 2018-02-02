@@ -63,6 +63,7 @@ class MuMuTauFakeRateAnalysis(AnalysisBase):
         self.addDiLepton('mt')
         self.addLepton('t')
         self.addDetailedTau('t')
+        self.addJet('tjet')
         self.addLepton('m')
         self.addDetailedMuon('m')
 
@@ -138,6 +139,7 @@ class MuMuTauFakeRateAnalysis(AnalysisBase):
             'z1' : None,
             'z2' : None,
             't' : None,
+            'tjet' : Candidate(None),
             'z' : None,
             'm': None,
             'mt': None,
@@ -197,10 +199,21 @@ class MuMuTauFakeRateAnalysis(AnalysisBase):
 
         candidate['z1'] = m1
         candidate['z2'] = m2
-        candidate['t'] = taus[0]
+        candidate['t'] = t
         candidate['z'] = DiCandidate(m1,m2)
         candidate['m'] = nearM
         candidate['mt'] = DiCandidate(nearM,t) if len(otherMuonsByDR) else DiCandidate(Candidate(None),Candidate(None))
+
+        # match jet to tau
+        dr = 999
+        j = None
+        for jet in self.jets:
+            jt = DiCandidate(jet,t)
+            if jt.deltaR()<dr:
+                j = jet
+                dr = jt.deltaR()
+        if j:
+            candidate['tjet'] = j
 
         return candidate
 

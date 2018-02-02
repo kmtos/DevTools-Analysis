@@ -81,6 +81,12 @@ class FakeRates(object):
         self.fakehists_mc['taus'][self.fakekey.format(num='HppMedium',denom='HppLooseDM10')]   = self.fake_tau_rootfile.Get('medium_loose/fakeratePtEtaDM10_fromMC')
         self.fakehists_mc['taus'][self.fakekey.format(num='HppTight', denom='HppLooseDM10')]   = self.fake_tau_rootfile.Get('tight_loose/fakeratePtEtaDM10_fromMC')
 
+        # mmtt
+        fake_path = '{0}/src/DevTools/Analyzer/data/fakerates_mmtt_tau_13TeV_Run2016BCDEFGH.root'.format(os.environ['CMSSW_BASE'])
+        self.fake_mmtt_tau_rootfile = ROOT.TFile(fake_path)
+        self.fakehists['taus'][self.fakekey.format(   num='HaaTight',denom='HaaLoose')] = self.fake_mmt_tau_rootfile.Get('nearMuonMedium_nearMuon/fakeratePtEta')
+        self.fakehists_mc['taus'][self.fakekey.format(num='HaaTight',denom='HaaLoose')] = self.fake_mmt_tau_rootfile.Get('nearMuonMedium_nearMuon/fakeratePtEta_fromMC')
+
     def __exit__(self, type, value, traceback):
         self.__finish()
 
@@ -91,6 +97,7 @@ class FakeRates(object):
         self.fake_rootfile.Close()
         self.fake_hpp_rootfile.Close()
         self.fake_tau_rootfile.Close()
+        self.fake_mmtt_tau_rootfile.Close()
 
     def __get_fakerate(self,cand,num,denom,doDM=False,hists=None):
         if not hists: hists = self.fakehists
