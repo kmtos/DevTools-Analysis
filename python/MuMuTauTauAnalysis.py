@@ -328,6 +328,15 @@ class MuMuTauTauAnalysis(AnalysisBase):
             # make composites
             amm = DiCandidate(quad[0],quad[1])
             att = DiCandidate(quad[2],quad[3])
+            # reject events with mu1/mu2 near tm/th
+            m1tm = DiCandidate(quad[0],quad[2])
+            m1th = DiCandidate(quad[0],quad[3])
+            m2tm = DiCandidate(quad[1],quad[2])
+            m2th = DiCandidate(quad[1],quad[3])
+            if m1tm.deltaR()<0.4: continue
+            if m1th.deltaR()<0.8: continue
+            if m2tm.deltaR()<0.4: continue
+            if m2th.deltaR()<0.8: continue
             # skim level selections
             #if amm.M()>30: continue
             #if amm.deltaR()>1.5: continue
