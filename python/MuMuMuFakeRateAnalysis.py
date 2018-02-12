@@ -88,6 +88,8 @@ class MuMuMuFakeRateAnalysis(AnalysisBase):
 
     def addDetailedMuon(self,label):
         '''Add detailed  variables'''
+        self.addCandVar(label,'matches_IsoMu24','matches_IsoMu24','I')
+        self.addCandVar(label,'matches_IsoTkMu24','matches_IsoTkMu24','I')
         self.addCandVar(label,'isLooseMuon','isLooseMuon','I')
         self.addCandVar(label,'isMediumMuon','isMediumMuon','I')
         self.addCandVar(label,'isMediumMuonICHEP','isMediumMuonICHEP','I')

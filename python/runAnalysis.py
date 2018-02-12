@@ -29,6 +29,7 @@ from DevTools.Analyzer.SingleJetAnalysis import main as runSingleJet
 from DevTools.Analyzer.MuMuTauTauAnalysis import main as runMuMuTauTau
 from DevTools.Analyzer.MuMuTauFakeRateAnalysis import main as runMuMuTauFakeRate
 from DevTools.Analyzer.MuMuMuFakeRateAnalysis import main as runMuMuMuFakeRate
+from DevTools.Analyzer.MuMuEfficiencyAnalysis import main as runMuMuEfficiency
 
 
 def runAnalysis(analysis,argv):
@@ -89,6 +90,8 @@ def runAnalysis(analysis,argv):
         func = runMuMuTauFakeRate
     elif analysis=='MuMuMuFakeRate':
         func = runMuMuMuFakeRate
+    elif analysis=='MuMuEfficiency':
+        func = runMuMuEfficiency
     else:
         return 0
 
