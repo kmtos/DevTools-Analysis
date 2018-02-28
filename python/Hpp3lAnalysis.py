@@ -49,7 +49,12 @@ class Hpp3lAnalysis(AnalysisBase):
         # event counts
         self.tree.add(lambda cands: self.numJets(cands['cleanJets'],'isLoose',30), 'numJetsLoose30', 'I')
         self.tree.add(lambda cands: self.numJets(cands['cleanJets'],'isTight',30), 'numJetsTight30', 'I')
+        self.tree.add(lambda cands: self.numJets(cands['cleanJets'],'passCSVv2L',30), 'numBjetsLoose30', 'I')
+        self.tree.add(lambda cands: self.numJets(cands['cleanJets'],'passCSVv2M',30), 'numBjetsMedium30', 'I')
         self.tree.add(lambda cands: self.numJets(cands['cleanJets'],'passCSVv2T',30), 'numBjetsTight30', 'I')
+        self.tree.add(lambda cands: self.numJets(cands['jets'],'passCSVv2L',30), 'numBjetsLoose30All', 'I')
+        self.tree.add(lambda cands: self.numJets(cands['jets'],'passCSVv2M',30), 'numBjetsMedium30All', 'I')
+        self.tree.add(lambda cands: self.numJets(cands['jets'],'passCSVv2T',30), 'numBjetsTight30All', 'I')
         self.tree.add(lambda cands: len(self.getCands(self.electrons,self.passLoose)), 'numLooseElectrons', 'I')
         self.tree.add(lambda cands: len(self.getCands(self.electrons,self.passTight)), 'numTightElectrons', 'I')
         self.tree.add(lambda cands: len(self.getCands(self.muons,self.passLoose)), 'numLooseMuons', 'I')
@@ -103,10 +108,13 @@ class Hpp3lAnalysis(AnalysisBase):
         self.addCompositeMet('hppmet')
         self.addLepton('hpp1',doId=True,doScales=True,doFakes=True,doErrors=True)
         self.addLepton('hpp2',doId=True,doScales=True,doFakes=True,doErrors=True)
+        self.addJet('hpp1jet')
+        self.addJet('hpp2jet')
 
         # hm lepton
         self.addLeptonMet('hm')
         self.addLepton('hm1',doId=True,doScales=True,doFakes=True,doErrors=True)
+        self.addJet('hm1jet')
 
         # wrong combination
         self.addDiLepton('hm1_hpp1')
@@ -135,6 +143,9 @@ class Hpp3lAnalysis(AnalysisBase):
             'hpp1' : None,
             'hpp2' : None,
             'hm1' : None,
+            'hpp1jet' : Candidate(None),
+            'hpp2jet' : Candidate(None),
+            'hm1jet' : Candidate(None),
             'hpp' : None,
             'hppmet' : None,
             'hm': None,
@@ -151,6 +162,7 @@ class Hpp3lAnalysis(AnalysisBase):
             #'subleadJet' : (),
             'met': self.pfmet,
             'cleanJets' : [],
+            'jets' : [],
         }
 
         # get leptons
@@ -240,6 +252,19 @@ class Hpp3lAnalysis(AnalysisBase):
 
         # clean the jets
         candidate['cleanJets'] = self.cleanCands(self.jets,medLeps+[hpp1,hpp2,hm1],0.4)
+        candidate['jets'] = self.jets
+
+        # match jet to obj
+        for c in ['hpp1','hpp2','hm1']:
+            dr = 999
+            j = None
+            for jet in self.jets:
+                jt = DiCandidate(jet,candidate[c])
+                if jt.deltaR()<dr:
+                    j = jet
+                    dr = jt.deltaR()
+            if j:
+                candidate['{}jet'.format(c)] = j
 
         if not bestZ: return candidate # no z
 
