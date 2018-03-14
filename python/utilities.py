@@ -22,12 +22,13 @@ def deltaR(eta0,phi0,eta1,phi1):
     return ROOT.TMath.Sqrt(deta**2+dphi**2)
 
 latestNtuples = {
-    '76X'                : '2016-09-28_DevTools_76X_v1',
-    #'80X'                : '2016-07-20_DevTools_80X_v1', # ICHEP 2016
-    '80X'                : '2017-11-24_DevTools_80X_v1', # Moriond 2017
-    '80XPhoton'          : '2017-11-24_DevTools_80X_v1', # Moriond 2017
-    '80XMuMuTauTau'      : '2018-01-31_DevTools_MuMuTauTauSkim_80X_v1', # Moriond 2017
-    '80XMuMuTauTauZSkim' : '2018-01-31_DevTools_MuMuTauTauZSkim_80X_v1', # Moriond 2017
+    '76X'                  : '2016-09-28_DevTools_76X_v1',
+    #'80X'                  : '2016-07-20_DevTools_80X_v1', # ICHEP 2016
+    '80X'                  : '2017-11-24_DevTools_80X_v1', # Moriond 2017
+    '80XPhoton'            : '2017-11-24_DevTools_80X_v1', # Moriond 2017
+    '80XMuMuTauTau'        : '2018-01-31_DevTools_MuMuTauTauSkim_80X_v1', # Moriond 2017
+    '80XMuMuTauTauUnclean' : '2018-03-09_DevTools_MuMuTauTauSkim_80X_uncleaned_v1', # Moriond 2017
+    '80XMuMuTauTauZSkim'   : '2018-01-31_DevTools_MuMuTauTauZSkim_80X_v1', # Moriond 2017
 }
 
 def getNtupleDirectory(version=None):
