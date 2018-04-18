@@ -543,6 +543,8 @@ class AnalysisBase(object):
             # double lepton
             self.tree.add(lambda cands: self.event.Mu17_TrkIsoVVL_Mu8_TrkIsoVVL_DZPass(), 'pass_Mu17_TrkIsoVVL_Mu8_TrkIsoVVL_DZ', 'I')
             self.tree.add(lambda cands: self.event.Mu17_TrkIsoVVL_TkMu8_TrkIsoVVL_DZPass(), 'pass_Mu17_TrkIsoVVL_TkMu8_TrkIsoVVL_DZ', 'I')
+            self.tree.add(lambda cands: self.event.Mu17_Mu8_SameSign_DZPass(), 'pass_Mu17_Mu8_SameSign_DZ', 'I')
+            self.tree.add(lambda cands: self.event.Mu20_Mu10_SameSign_DZPass(), 'pass_Mu20_Mu10_SameSign_DZ', 'I')
             self.tree.add(lambda cands: self.event.Ele23_Ele12_CaloIdL_TrackIdL_IsoVL_DZPass(), 'pass_Ele23_Ele12_CaloIdL_TrackIdL_IsoVL_DZ', 'I')
             self.tree.add(lambda cands: self.event.Mu8_TrkIsoVVL_Ele23_CaloIdL_TrackIdL_IsoVLPass(), 'pass_Mu8_TrkIsoVVL_Ele23_CaloIdL_TrackIdL_IsoVL', 'I')
             self.tree.add(lambda cands: self.event.Mu23_TrkIsoVVL_Ele8_CaloIdL_TrackIdL_IsoVLPass(), 'pass_Mu23_TrkIsoVVL_Ele8_CaloIdL_TrackIdL_IsoVL', 'I')
@@ -698,12 +700,14 @@ class AnalysisBase(object):
         self.addCandVar(label,'bestTrackPt','bestTrackPt','F')
         self.addCandVar(label,'trackerStandaloneMatch','trackerStandaloneMatch','F')
         self.addCandVar(label,'relPFIsoDeltaBetaR04','relPFIsoDeltaBetaR04','F')
-        self.tree.add(lambda cands: cands[label].trackIso()/cands[label].pt(), '{0}_trackRelIso'.format(label), 'F')
+        self.tree.add(lambda cands: cands[label].trackIso()/cands[label].pt() if cands[label].pt() else 0., '{0}_trackRelIso'.format(label), 'F')
 
     def addDetailedTau(self,label):
         '''Add detailed variables'''
+        # against muon
         self.addCandVar(label,'againstMuonLoose3','againstMuonLoose3','I')
         self.addCandVar(label,'againstMuonTight3','againstMuonTight3','I')
+        # against electron
         self.addCandVar(label,'againstElectronVLooseMVA6','againstElectronVLooseMVA6','I')
         self.addCandVar(label,'againstElectronLooseMVA6','againstElectronLooseMVA6','I')
         self.addCandVar(label,'againstElectronMediumMVA6','againstElectronMediumMVA6','I')
@@ -711,6 +715,7 @@ class AnalysisBase(object):
         self.addCandVar(label,'againstElectronVTightMVA6','againstElectronVTightMVA6','I')
         #self.addCandVar(label,'decayModeFinding','decayModeFinding','I')
         #self.addCandVar(label,'decayMode','decayMode','I')
+        # MVA
         self.addCandVar(label,'byIsolationMVArun2v1DBoldDMwLTraw','byIsolationMVArun2v1DBoldDMwLTraw','F')
         self.addCandVar(label,'byVLooseIsolationMVArun2v1DBoldDMwLT','byVLooseIsolationMVArun2v1DBoldDMwLT','I')
         self.addCandVar(label,'byLooseIsolationMVArun2v1DBoldDMwLT','byLooseIsolationMVArun2v1DBoldDMwLT','I')
@@ -723,6 +728,13 @@ class AnalysisBase(object):
         self.addCandVar(label,'byMediumIsolationMVArun2v1DBnewDMwLT','byMediumIsolationMVArun2v1DBnewDMwLT','I')
         self.addCandVar(label,'byTightIsolationMVArun2v1DBnewDMwLT','byTightIsolationMVArun2v1DBnewDMwLT','I')
         self.addCandVar(label,'byVTightIsolationMVArun2v1DBnewDMwLT','byVTightIsolationMVArun2v1DBnewDMwLT','I')
+        # cutbased
+        self.addCandVar(label,'byCombinedIsolationDeltaBetaCorrRaw3Hits','byCombinedIsolationDeltaBetaCorrRaw3Hits','F')
+        self.addCandVar(label,'chargedIsoPtSum','chargedIsoPtSum','F')
+        self.addCandVar(label,'neutralIsoPtSum','neutralIsoPtSum','F')
+        self.addCandVar(label,'puCorrPtSum','puCorrPtSum','F')
+        self.addCandVar(label,'footprintCorrection','footprintCorrection','F')
+        self.addCandVar(label,'photonPtSumOutsideSignalCone','photonPtSumOutsideSignalCone','F')
 
     def addPhoton(self,label,doId=False,doScales=False,doFakes=False,doErrors=False):
         '''Add variables relevant for photons'''

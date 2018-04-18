@@ -63,6 +63,8 @@ class MuMuTauTauAnalysis(AnalysisBase):
         else:
             self.tree.add(lambda cands: self.event.IsoMu24Pass(), 'pass_IsoMu24', 'I')
             self.tree.add(lambda cands: self.event.IsoTkMu24Pass(), 'pass_IsoTkMu24', 'I')
+            self.tree.add(lambda cands: self.event.Mu17_Mu8_SameSign_DZPass(), 'pass_Mu17_Mu8_SameSign_DZ', 'I')
+            self.tree.add(lambda cands: self.event.Mu20_Mu10_SameSign_DZPass(), 'pass_Mu20_Mu10_SameSign_DZ', 'I')
 
         self.tree.add(lambda cands: self.triggerEfficiency(cands)[0], 'triggerEfficiency', 'F')
         self.tree.add(lambda cands: self.triggerEfficiency(cands)[1], 'triggerEfficiencyUp', 'F')
@@ -156,49 +158,11 @@ class MuMuTauTauAnalysis(AnalysisBase):
     ############################
     ### Additional functions ###
     ############################
-    def addDetailedTau(self,label):
-        '''Add detailed variables'''
-        self.addCandVar(label,'againstMuonLoose3','againstMuonLoose3','I')
-        self.addCandVar(label,'againstMuonTight3','againstMuonTight3','I')
-        self.addCandVar(label,'againstElectronVLooseMVA6','againstElectronVLooseMVA6','I')
-        self.addCandVar(label,'againstElectronLooseMVA6','againstElectronLooseMVA6','I')
-        self.addCandVar(label,'againstElectronMediumMVA6','againstElectronMediumMVA6','I')
-        self.addCandVar(label,'againstElectronTightMVA6','againstElectronTightMVA6','I')
-        self.addCandVar(label,'againstElectronVTightMVA6','againstElectronVTightMVA6','I')
-        self.addCandVar(label,'byIsolationMVArun2v1DBoldDMwLTraw','byIsolationMVArun2v1DBoldDMwLTraw','F')
-        self.addCandVar(label,'byVLooseIsolationMVArun2v1DBoldDMwLT','byVLooseIsolationMVArun2v1DBoldDMwLT','I')
-        self.addCandVar(label,'byLooseIsolationMVArun2v1DBoldDMwLT','byLooseIsolationMVArun2v1DBoldDMwLT','I')
-        self.addCandVar(label,'byMediumIsolationMVArun2v1DBoldDMwLT','byMediumIsolationMVArun2v1DBoldDMwLT','I')
-        self.addCandVar(label,'byTightIsolationMVArun2v1DBoldDMwLT','byTightIsolationMVArun2v1DBoldDMwLT','I')
-        self.addCandVar(label,'byVTightIsolationMVArun2v1DBoldDMwLT','byVTightIsolationMVArun2v1DBoldDMwLT','I')
-
     def addDetailedMuon(self,label):
         '''Add detailed  variables'''
         self.addCandVar(label,'matches_IsoMu24','matches_IsoMu24','I')
         self.addCandVar(label,'matches_IsoTkMu24','matches_IsoTkMu24','I')
-        self.addCandVar(label,'isLooseMuon','isLooseMuon','I')
-        self.addCandVar(label,'isMediumMuon','isMediumMuon','I')
-        self.addCandVar(label,'isMediumMuonICHEP','isMediumMuonICHEP','I')
-        self.addCandVar(label,'isTightMuon','isTightMuon','I')
-        self.addCandVar(label,'isPFMuon','isPFMuon','I')
-        self.addCandVar(label,'isGlobalMuon','isGlobalMuon','I')
-        self.addCandVar(label,'isTrackerMuon','isTrackerMuon','I')
-        self.addCandVar(label,'muonBestTrackType','muonBestTrackType','I')
-        self.addCandVar(label,'segmentCompatibility','segmentCompatibility','F')
-        self.addCandVar(label,'isGoodMuon','isGoodMuon','I')
-        self.addCandVar(label,'highPurityTrack','highPurityTrack','I')
-        self.addCandVar(label,'matchedStations','matchedStations','I')
-        self.addCandVar(label,'validMuonHits','validMuonHits','I')
-        self.addCandVar(label,'normalizedChi2','normalizedChi2','F')
-        self.addCandVar(label,'validPixelHits','validPixelHits','I')
-        self.addCandVar(label,'trackerLayers','trackerLayers','I')
-        self.addCandVar(label,'pixelLayers','pixelLayers','I')
-        self.addCandVar(label,'validTrackerFraction','validTrackerFraction','F')
-        self.addCandVar(label,'bestTrackPtError','bestTrackPtError','F')
-        self.addCandVar(label,'bestTrackPt','bestTrackPt','F')
-        self.addCandVar(label,'trackerStandaloneMatch','trackerStandaloneMatch','F')
-        self.addCandVar(label,'relPFIsoDeltaBetaR04','relPFIsoDeltaBetaR04','F')
-        self.tree.add(lambda cands: cands[label].trackIso()/cands[label].pt(), '{0}_trackRelIso'.format(label), 'F')
+        super(MuMuTauTauAnalysis,self).addDetailedMuon(label)
 
     def addGenParticle(self,label,isTau=False):
         self.tree.add(lambda cands: cands[label].pt()     if label in cands else 0, '{0}_pt'.format(label),     'F')
@@ -320,6 +284,9 @@ class MuMuTauTauAnalysis(AnalysisBase):
             if not quad[1].__class__.__name__=='Muon': continue
             if not quad[2].__class__.__name__=='Muon': continue
             if not quad[3].__class__.__name__=='Tau': continue
+            # trigger match
+            matchTrigger = quad[0].matches_IsoMu24() or quad[0].matches_IsoTkMu24()
+            if not matchTrigger: continue
             # charge OS
             if quad[0].charge()==quad[1].charge(): continue
             if quad[2].charge()==quad[3].charge(): continue
