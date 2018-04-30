@@ -47,6 +47,7 @@ class AnalysisBase(object):
         outputFileName = kwargs.pop('outputFileName','analysisTree.root')
         outputTreeName = kwargs.pop('outputTreeName','AnalysisTree')
         self.shift = kwargs.pop('shift','')
+        self.events = []
         self.outputTreeName = outputTreeName
         if hasProgress:
             self.pbar = kwargs.pop('progressbar',ProgressBar(widgets=['{0}: '.format(outputTreeName),' ',SimpleProgress(),' events ',Percentage(),' ',Bar(),' ',ETA()]))
@@ -216,6 +217,9 @@ class AnalysisBase(object):
     def flush(self):
         sys.stdout.flush()
         sys.stderr.flush()
+
+    def get_event(self):
+        return '{run}:{lumi}:{event}'.format(run=self.event.run(),lumi=self.event.lumi(),event=self.event.event())
 
     #############################
     ### primary analysis loop ###
@@ -401,13 +405,20 @@ class AnalysisBase(object):
         for f in filterList:
             if getattr(self.event,f)()==0:
                 logging.info('Rejecting event {0}:{1}:{2} for {3}={4}'.format(self.event.run(), self.event.lumi(), self.event.event(), f, getattr(self.event,f)()))
+                self.report_failure('fails {}'.format(f))
                 return False
         for f in notFilterList:
             if getattr(self.event,f)()>0:
                 logging.info('Rejecting event {0}:{1}:{2} for {3}={4}'.format(self.event.run(), self.event.lumi(), self.event.event(), f, getattr(self.event,f)()))
+                self.report_failure('fails {}'.format(f))
                 return False
         return True
 
+    def report_failure(self,message):
+        if self.events:
+            event = self.get_event()
+            if event in self.events:
+                 print event, message
 
     ##################
     ### Common IDs ###

@@ -19,6 +19,13 @@ import ROOT
 logger = logging.getLogger("MuMuTauTauAnalysis")
 logging.basicConfig(level=logging.INFO, stream=sys.stderr,format='%(asctime)s.%(msecs)03d %(levelname)s %(name)s: %(message)s', datefmt='%Y-%m-%d %H:%M:%S')
 
+def load_events(h,a):
+    events = []
+    with open('events_{h}_{a}_ktos.txt'.format(h=h,a=a)) as f:
+        for l in f.readlines():
+            events += [l.strip()]
+    return events
+
 class MuMuTauTauAnalysis(AnalysisBase):
     '''
     MuMuTauTau analysis
@@ -34,6 +41,18 @@ class MuMuTauTauAnalysis(AnalysisBase):
         # setup cut tree
         self.cutTree.add(self.metFilter,'metFilter')
         self.cutTree.add(self.trigger,'trigger')
+
+        # open a file of events
+        self.events = []
+        if 'SUSYGluGluToHToAA_AToMuMu_AToTauTau' in self.fileNames[0]:
+            for h in [125,300,750]:
+                if 'M-{h}_'.format(h=h) not in self.fileNames[0] and h!=125: continue
+                for a in [5,7,9,11,13,15,17,19,21]:
+                    if 'M-{a}_'.format(a=a) not in self.fileNames[0]: continue
+                    try:
+                        self.events = load_events(h,a)
+                    except:
+                        logging.warning('failed to load events {h} {a}'.format(h=h,a=a))
 
         # setup analysis tree
 
@@ -270,14 +289,19 @@ class MuMuTauTauAnalysis(AnalysisBase):
         muons = [m for m in self.muons if self.passMuon(m)]
         taus = [t for t in self.taus if self.passTau(t)]
         leps = muons+taus
-        if len(muons)<3: return candidate
-        if len(taus)<1: return candidate
+        if len(muons)<3:
+            self.report_failure('fails 3 muon requirement')
+            return candidate
+        if len(taus)<1: 
+            self.report_failure('fails 1 tau requirement')
+            return candidate
 
 
         # get the candidates
         hCand = []
         mmDeltaR = 999
         ttDeltaR = 999
+        furthest = 0
         for quad in itertools.permutations(leps,4):
             # require mmmt
             if not quad[0].__class__.__name__=='Muon': continue
@@ -287,11 +311,14 @@ class MuMuTauTauAnalysis(AnalysisBase):
             # trigger match
             matchTrigger = quad[0].matches_IsoMu24() or quad[0].matches_IsoTkMu24()
             if not matchTrigger: continue
+            furthest = max([1,furthest])
             # charge OS
             if quad[0].charge()==quad[1].charge(): continue
             if quad[2].charge()==quad[3].charge(): continue
+            furthest = max([2,furthest])
             # require lead m pt>25
             if quad[0].pt()<25: continue
+            furthest = max([3,furthest])
             # make composites
             amm = DiCandidate(quad[0],quad[1])
             att = DiCandidate(quad[2],quad[3])
@@ -304,9 +331,7 @@ class MuMuTauTauAnalysis(AnalysisBase):
             if m1th.deltaR()<0.8: continue
             if m2tm.deltaR()<0.4: continue
             if m2th.deltaR()<0.8: continue
-            # skim level selections
-            #if amm.M()>30: continue
-            #if amm.deltaR()>1.5: continue
+            furthest = max([4,furthest])
             # choose best
             if not hCand: hCand = quad
             better = True
@@ -318,8 +343,18 @@ class MuMuTauTauAnalysis(AnalysisBase):
                 hCand = quad
                 mmDeltaR = amm.deltaR()
                 ttDeltaR = att.deltaR()
+
+        furthestMap = {
+            0: 'topology',
+            1: 'trigger',
+            2: 'OS',
+            3: 'lead pt',
+            4: 'deltaR',
+        }
                 
-        if not hCand: return candidate
+        if not hCand:
+            self.report_failure('no higgs candidate, furthest {}'.format(furthestMap[furthest]))
+            return candidate
 
         am1 = hCand[0] if hCand[0].pt()>hCand[1].pt() else hCand[1]
         am2 = hCand[1] if hCand[0].pt()>hCand[1].pt() else hCand[0]
@@ -327,7 +362,9 @@ class MuMuTauTauAnalysis(AnalysisBase):
         ath = hCand[3]
 
         amm = DiCandidate(am1,am2)
-        if amm.M()>30: return candidate
+        if amm.M()>30:
+            self.report_failure('selected higgs amm M>30')
+            return candidate
         #if amm.deltaR()>1.5: return candidate
 
         candidate['am1'] = am1
@@ -454,7 +491,6 @@ class MuMuTauTauAnalysis(AnalysisBase):
             return 99
 
 
-
     ###########################
     ### analysis selections ###
     ###########################
@@ -483,7 +519,9 @@ class MuMuTauTauAnalysis(AnalysisBase):
         datasets = [
             'SingleMuon',
         ]
-        return self.checkTrigger(*datasets,**triggerNames)
+        result = self.checkTrigger(*datasets,**triggerNames)
+        if not result: self.report_failure('fails trigger')
+        return result
 
     def triggerEfficiencyMC(self,cands):
         return self.triggerEfficiency(cands,mode='mc')
