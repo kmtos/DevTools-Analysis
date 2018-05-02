@@ -44,15 +44,15 @@ class MuMuTauTauAnalysis(AnalysisBase):
 
         # open a file of events
         self.events = []
-        if 'SUSYGluGluToHToAA_AToMuMu_AToTauTau' in self.fileNames[0]:
-            for h in [125,300,750]:
-                if 'M-{h}_'.format(h=h) not in self.fileNames[0] and h!=125: continue
-                for a in [5,7,9,11,13,15,17,19,21]:
-                    if 'M-{a}_'.format(a=a) not in self.fileNames[0]: continue
-                    try:
-                        self.events = load_events(h,a)
-                    except:
-                        logging.warning('failed to load events {h} {a}'.format(h=h,a=a))
+        #if 'SUSYGluGluToHToAA_AToMuMu_AToTauTau' in self.fileNames[0]:
+        #    for h in [125,300,750]:
+        #        if 'M-{h}_'.format(h=h) not in self.fileNames[0] and h!=125: continue
+        #        for a in [5,7,9,11,13,15,17,19,21]:
+        #            if 'M-{a}_'.format(a=a) not in self.fileNames[0]: continue
+        #            try:
+        #                self.events = load_events(h,a)
+        #            except:
+        #                logging.warning('failed to load events {h} {a}'.format(h=h,a=a))
 
         # setup analysis tree
 
@@ -302,7 +302,10 @@ class MuMuTauTauAnalysis(AnalysisBase):
         mmDeltaR = 999
         ttDeltaR = 999
         furthest = 0
+        nperms = 0
+        nvalid = 0
         for quad in itertools.permutations(leps,4):
+            nperms += 1
             # require mmmt
             if not quad[0].__class__.__name__=='Muon': continue
             if not quad[1].__class__.__name__=='Muon': continue
@@ -316,6 +319,7 @@ class MuMuTauTauAnalysis(AnalysisBase):
             if quad[0].charge()==quad[1].charge(): continue
             if quad[2].charge()==quad[3].charge(): continue
             furthest = max([2,furthest])
+            nvalid += 1
             # require lead m pt>25
             if quad[0].pt()<25: continue
             furthest = max([3,furthest])
@@ -343,6 +347,8 @@ class MuMuTauTauAnalysis(AnalysisBase):
                 hCand = quad
                 mmDeltaR = amm.deltaR()
                 ttDeltaR = att.deltaR()
+
+        #print 'number perms: {}, number valid: {}'.format(nperms,nvalid)
 
         furthestMap = {
             0: 'topology',

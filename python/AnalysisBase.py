@@ -606,6 +606,7 @@ class AnalysisBase(object):
         '''Add variables relevant for jets'''
         self.addCandidate(label)
         self.addCandVar(label,'CSVv2','pfCombinedInclusiveSecondaryVertexV2BJetTags','F')
+        self.addCandVar(label,'hadronFlavour','hadronFlavour','I')
         self.addCandVar(label,'passCSVv2T','passCSVv2T','I')
         self.addCandVar(label,'passCSVv2M','passCSVv2M','I')
         self.addCandVar(label,'passCSVv2L','passCSVv2L','I')
