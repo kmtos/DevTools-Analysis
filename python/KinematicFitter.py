@@ -428,6 +428,7 @@ class KinematicFitter(KinematicConstraints):
         self.minimizationParticles = []
         self.fitStatus = -1
         self.X = -1
+        self.chi2 = -1
         self.atLowerBound = -1
         self.atUpperBound = -1
 
@@ -462,6 +463,9 @@ class KinematicFitter(KinematicConstraints):
 
     def getX(self):
         return self.X
+
+    def getChi2(self):
+        return self.chi2
 
     def fit(self):
         if len(self.minimizationParticles)!=1:
@@ -499,7 +503,7 @@ class KinematicFitter(KinematicConstraints):
         self.X = res.x
         self.atLowerBound = int(abs(self.X-X_range[0])<1e-3)
         self.atUpperBound = int(abs(self.X-X_range[1])<1e-3)
-        func(res.x)
+        self.chi2 = func(res.x)
             
 
     def getGrid(self,**kwargs):

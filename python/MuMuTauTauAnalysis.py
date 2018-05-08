@@ -21,7 +21,8 @@ logging.basicConfig(level=logging.INFO, stream=sys.stderr,format='%(asctime)s.%(
 
 def load_events(h,a):
     events = []
-    with open('events_{h}_{a}_ktos.txt'.format(h=h,a=a)) as f:
+    #with open('events_{h}_{a}_ktos.txt'.format(h=h,a=a)) as f:
+    with open('h{h}a{a}_Events_in_Kyle_Not_Devin.txt'.format(h=h,a=a)) as f:
         for l in f.readlines():
             events += [l.strip()]
     return events
@@ -44,15 +45,15 @@ class MuMuTauTauAnalysis(AnalysisBase):
 
         # open a file of events
         self.events = []
-        #if 'SUSYGluGluToHToAA_AToMuMu_AToTauTau' in self.fileNames[0]:
-        #    for h in [125,300,750]:
-        #        if 'M-{h}_'.format(h=h) not in self.fileNames[0] and h!=125: continue
-        #        for a in [5,7,9,11,13,15,17,19,21]:
-        #            if 'M-{a}_'.format(a=a) not in self.fileNames[0]: continue
-        #            try:
-        #                self.events = load_events(h,a)
-        #            except:
-        #                logging.warning('failed to load events {h} {a}'.format(h=h,a=a))
+        if 'SUSYGluGluToHToAA_AToMuMu_AToTauTau' in self.fileNames[0]:
+            for h in [125,300,750]:
+                if 'M-{h}_'.format(h=h) not in self.fileNames[0] and h!=125: continue
+                for a in [5,7,9,11,13,15,17,19,21]:
+                    if 'M-{a}_'.format(a=a) not in self.fileNames[0]: continue
+                    try:
+                        self.events = load_events(h,a)
+                    except:
+                        logging.warning('failed to load events {h} {a}'.format(h=h,a=a))
 
         # setup analysis tree
 
@@ -103,6 +104,7 @@ class MuMuTauTauAnalysis(AnalysisBase):
         self.tree.add(lambda cands: self.kinfit(cands).atLowerBound, 'kinFitAtLowerBound', 'I')
         self.tree.add(lambda cands: self.kinfit(cands).atUpperBound, 'kinFitAtUpperBound', 'I')
         self.tree.add(lambda cands: self.kinfit(cands).getX(), 'kinFitX', 'F')
+        self.tree.add(lambda cands: self.kinfit(cands).getChi2(), 'kinFitChi2', 'F')
         self.tree.add(lambda cands: self.kinfit(cands).getRecoil().Px(), 'kinFitRecoilPx', 'F')
         self.tree.add(lambda cands: self.kinfit(cands).getRecoil().Py(), 'kinFitRecoilPy', 'F')
         self.addCompositeMet('hmet')
