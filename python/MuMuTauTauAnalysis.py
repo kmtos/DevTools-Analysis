@@ -48,7 +48,7 @@ class MuMuTauTauAnalysis(AnalysisBase):
         if 'SUSYGluGluToHToAA_AToMuMu_AToTauTau' in self.fileNames[0]:
             for h in [125,300,750]:
                 if 'M-{h}_'.format(h=h) not in self.fileNames[0] and h!=125: continue
-                for a in [5,7,9,11,13,15,17,19,21]:
+                for a in ['3p6',4,5,6,7,9,11,13,15,17,19,21]:
                     if 'M-{a}_'.format(a=a) not in self.fileNames[0]: continue
                     try:
                         self.events = load_events(h,a)
@@ -103,8 +103,8 @@ class MuMuTauTauAnalysis(AnalysisBase):
         self.tree.add(lambda cands: self.kinfit(cands).getFitStatus(), 'kinFitStatus', 'I')
         self.tree.add(lambda cands: self.kinfit(cands).atLowerBound, 'kinFitAtLowerBound', 'I')
         self.tree.add(lambda cands: self.kinfit(cands).atUpperBound, 'kinFitAtUpperBound', 'I')
-        self.tree.add(lambda cands: self.kinfit(cands).getX(), 'kinFitX', 'F')
-        self.tree.add(lambda cands: self.kinfit(cands).getChi2(), 'kinFitChi2', 'F')
+        self.tree.add(lambda cands: self.kinfit(cands).getFitX(), 'kinFitX', 'F')
+        self.tree.add(lambda cands: self.kinfit(cands).getFitChi2(), 'kinFitChi2', 'F')
         self.tree.add(lambda cands: self.kinfit(cands).getRecoil().Px(), 'kinFitRecoilPx', 'F')
         self.tree.add(lambda cands: self.kinfit(cands).getRecoil().Py(), 'kinFitRecoilPy', 'F')
         self.addCompositeMet('hmet')

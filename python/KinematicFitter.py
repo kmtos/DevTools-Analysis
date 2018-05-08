@@ -461,10 +461,10 @@ class KinematicFitter(KinematicConstraints):
     def getFitStatus(self):
         return self.fitStatus
 
-    def getX(self):
+    def getFitX(self):
         return self.X
 
-    def getChi2(self):
+    def getFitChi2(self):
         return self.chi2
 
     def fit(self):
@@ -499,11 +499,11 @@ class KinematicFitter(KinematicConstraints):
             return chi2
 
         res = minimize_scalar(func, bounds=X_range, method='brent')
-        #print res.x
         self.X = res.x
         self.atLowerBound = int(abs(self.X-X_range[0])<1e-3)
         self.atUpperBound = int(abs(self.X-X_range[1])<1e-3)
         self.chi2 = func(res.x)
+        #print self.X, self.chi2
             
 
     def getGrid(self,**kwargs):
