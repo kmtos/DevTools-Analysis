@@ -48,7 +48,7 @@ class MuMuTauTauAnalysis(AnalysisBase):
         if 'SUSYGluGluToHToAA_AToMuMu_AToTauTau' in self.fileNames[0]:
             for h in [125,300,750]:
                 if 'M-{h}_'.format(h=h) not in self.fileNames[0] and h!=125: continue
-                for a in ['3p6',4,5,6,7,9,11,13,15,17,19,21]:
+                for a in ['3p6',4,5,6,7,8,9,10,11,12,13,14,15,17,19,21]:
                     if 'M-{a}_'.format(a=a) not in self.fileNames[0]: continue
                     try:
                         self.events = load_events(h,a)
