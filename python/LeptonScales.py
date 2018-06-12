@@ -118,6 +118,7 @@ class LeptonScales(object):
         self.electron_hzz_rootfile.Close()
         self.private_electron_80X_rootfile.Close()
         self.private_muon_80X_rootfile.Close()
+        self.private_muon_80X_rootfile_kyle.Close()
         self.private_photon_80X_rootfile.Close()
 
 
