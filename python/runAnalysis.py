@@ -27,6 +27,7 @@ from DevTools.Analyzer.MMGAnalysis import main as runMMG
 from DevTools.Analyzer.LLGAnalysis import main as runLLG
 from DevTools.Analyzer.SingleJetAnalysis import main as runSingleJet
 from DevTools.Analyzer.MuMuTauTauAnalysis import main as runMuMuTauTau
+from DevTools.Analyzer.MuMuAnalysis import main as runMuMu
 from DevTools.Analyzer.MuMuTauFakeRateAnalysis import main as runMuMuTauFakeRate
 from DevTools.Analyzer.MuMuMuFakeRateAnalysis import main as runMuMuMuFakeRate
 
@@ -83,6 +84,8 @@ def runAnalysis(analysis,argv):
         func = runLLG
     elif analysis=='SingleJet':
         func = runSingleJet
+    elif analysis=='MuMu':
+        func = runMuMu
     elif analysis=='MuMuTauTau':
         func = runMuMuTauTau
     elif analysis=='MuMuTauFakeRate':

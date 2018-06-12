@@ -22,12 +22,15 @@ def deltaR(eta0,phi0,eta1,phi1):
     return ROOT.TMath.Sqrt(deta**2+dphi**2)
 
 latestNtuples = {
-    '76X'                : '2016-09-28_DevTools_76X_v1',
-    #'80X'                : '2016-07-20_DevTools_80X_v1', # ICHEP 2016
-    '80X'                : '2017-11-24_DevTools_80X_v1', # Moriond 2017
-    '80XPhoton'          : '2017-11-24_DevTools_80X_v1', # Moriond 2017
-    '80XMuMuTauTau'      : '2018-01-31_DevTools_MuMuTauTauSkim_80X_v1', # Moriond 2017
-    '80XMuMuTauTauZSkim' : '2018-01-31_DevTools_MuMuTauTauZSkim_80X_v1', # Moriond 2017
+    '76X'                  : '2016-09-28_DevTools_76X_v1',
+    #'80X'                  : '2016-07-20_DevTools_80X_v1', # ICHEP 2016
+    '80X'                  : '2017-11-24_DevTools_80X_v1', # Moriond 2017
+    '80XPhoton'            : '2017-11-24_DevTools_80X_v1', # Moriond 2017
+    #'80XMuMuTauTau'        : '2018-01-31_DevTools_MuMuTauTauSkim_80X_v1', # Moriond 2017
+    '80XMuMuTauTau'        : '2018-05-01_DevTools_MuMuTauTauSkim_80X_v1', # Moriond 2017 (add hadronFlavour)
+    '80XMuMu'              : '2018-05-09_DevTools_80X_v1', # Moriond 2017
+    #'80XMuMuTauTauUnclean' : '2018-03-09_DevTools_MuMuTauTauSkim_80X_uncleaned_v1', # Moriond 2017
+    '80XMuMuTauTauZSkim'   : '2018-01-31_DevTools_MuMuTauTauZSkim_80X_v1', # Moriond 2017
     '94X'                : '2018-03-15_DevTools_94X_v3', # Moriond 2018
 }
 
@@ -68,6 +71,5 @@ def getTestFiles(sample,n=1,version=None):
     
     files = get_hdfs_root_files('{0}/{1}'.format(getNtupleDirectory(version=version),sampleMap[sample]))
 
-    if sample=='wz': return files[1:min(n+1,len(files)-1)] # temporary hack to get a better WZ sample (Summer16 MC)
     return files[:min(n,len(files))]
 

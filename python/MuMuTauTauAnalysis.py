@@ -19,6 +19,14 @@ import ROOT
 logger = logging.getLogger("MuMuTauTauAnalysis")
 logging.basicConfig(level=logging.INFO, stream=sys.stderr,format='%(asctime)s.%(msecs)03d %(levelname)s %(name)s: %(message)s', datefmt='%Y-%m-%d %H:%M:%S')
 
+def load_events(h,a):
+    events = []
+    #with open('events_{h}_{a}_ktos.txt'.format(h=h,a=a)) as f:
+    with open('h{h}a{a}_Events_in_Kyle_Not_Devin.txt'.format(h=h,a=a)) as f:
+        for l in f.readlines():
+            events += [l.strip()]
+    return events
+
 class MuMuTauTauAnalysis(AnalysisBase):
     '''
     MuMuTauTau analysis
@@ -34,6 +42,18 @@ class MuMuTauTauAnalysis(AnalysisBase):
         # setup cut tree
         self.cutTree.add(self.metFilter,'metFilter')
         self.cutTree.add(self.trigger,'trigger')
+
+        # open a file of events
+        self.events = []
+        if 'SUSYGluGluToHToAA_AToMuMu_AToTauTau' in self.fileNames[0]:
+            for h in [125,300,750]:
+                if 'M-{h}_'.format(h=h) not in self.fileNames[0] and h!=125: continue
+                for a in ['3p6',4,5,6,7,8,9,10,11,12,13,14,15,17,19,21]:
+                    if 'M-{a}_'.format(a=a) not in self.fileNames[0]: continue
+                    try:
+                        self.events = load_events(h,a)
+                    except:
+                        logging.warning('failed to load events {h} {a}'.format(h=h,a=a))
 
         # setup analysis tree
 
@@ -63,6 +83,8 @@ class MuMuTauTauAnalysis(AnalysisBase):
         else:
             self.tree.add(lambda cands: self.event.IsoMu24Pass(), 'pass_IsoMu24', 'I')
             self.tree.add(lambda cands: self.event.IsoTkMu24Pass(), 'pass_IsoTkMu24', 'I')
+            self.tree.add(lambda cands: self.event.Mu17_Mu8_SameSign_DZPass(), 'pass_Mu17_Mu8_SameSign_DZ', 'I')
+            self.tree.add(lambda cands: self.event.Mu20_Mu10_SameSign_DZPass(), 'pass_Mu20_Mu10_SameSign_DZ', 'I')
 
         self.tree.add(lambda cands: self.triggerEfficiency(cands)[0], 'triggerEfficiency', 'F')
         self.tree.add(lambda cands: self.triggerEfficiency(cands)[1], 'triggerEfficiencyUp', 'F')
@@ -81,7 +103,8 @@ class MuMuTauTauAnalysis(AnalysisBase):
         self.tree.add(lambda cands: self.kinfit(cands).getFitStatus(), 'kinFitStatus', 'I')
         self.tree.add(lambda cands: self.kinfit(cands).atLowerBound, 'kinFitAtLowerBound', 'I')
         self.tree.add(lambda cands: self.kinfit(cands).atUpperBound, 'kinFitAtUpperBound', 'I')
-        self.tree.add(lambda cands: self.kinfit(cands).getX(), 'kinFitX', 'F')
+        self.tree.add(lambda cands: self.kinfit(cands).getFitX(), 'kinFitX', 'F')
+        self.tree.add(lambda cands: self.kinfit(cands).getFitChi2(), 'kinFitChi2', 'F')
         self.tree.add(lambda cands: self.kinfit(cands).getRecoil().Px(), 'kinFitRecoilPx', 'F')
         self.tree.add(lambda cands: self.kinfit(cands).getRecoil().Py(), 'kinFitRecoilPy', 'F')
         self.addCompositeMet('hmet')
@@ -156,49 +179,11 @@ class MuMuTauTauAnalysis(AnalysisBase):
     ############################
     ### Additional functions ###
     ############################
-    def addDetailedTau(self,label):
-        '''Add detailed variables'''
-        self.addCandVar(label,'againstMuonLoose3','againstMuonLoose3','I')
-        self.addCandVar(label,'againstMuonTight3','againstMuonTight3','I')
-        self.addCandVar(label,'againstElectronVLooseMVA6','againstElectronVLooseMVA6','I')
-        self.addCandVar(label,'againstElectronLooseMVA6','againstElectronLooseMVA6','I')
-        self.addCandVar(label,'againstElectronMediumMVA6','againstElectronMediumMVA6','I')
-        self.addCandVar(label,'againstElectronTightMVA6','againstElectronTightMVA6','I')
-        self.addCandVar(label,'againstElectronVTightMVA6','againstElectronVTightMVA6','I')
-        self.addCandVar(label,'byIsolationMVArun2v1DBoldDMwLTraw','byIsolationMVArun2v1DBoldDMwLTraw','F')
-        self.addCandVar(label,'byVLooseIsolationMVArun2v1DBoldDMwLT','byVLooseIsolationMVArun2v1DBoldDMwLT','I')
-        self.addCandVar(label,'byLooseIsolationMVArun2v1DBoldDMwLT','byLooseIsolationMVArun2v1DBoldDMwLT','I')
-        self.addCandVar(label,'byMediumIsolationMVArun2v1DBoldDMwLT','byMediumIsolationMVArun2v1DBoldDMwLT','I')
-        self.addCandVar(label,'byTightIsolationMVArun2v1DBoldDMwLT','byTightIsolationMVArun2v1DBoldDMwLT','I')
-        self.addCandVar(label,'byVTightIsolationMVArun2v1DBoldDMwLT','byVTightIsolationMVArun2v1DBoldDMwLT','I')
-
     def addDetailedMuon(self,label):
         '''Add detailed  variables'''
         self.addCandVar(label,'matches_IsoMu24','matches_IsoMu24','I')
         self.addCandVar(label,'matches_IsoTkMu24','matches_IsoTkMu24','I')
-        self.addCandVar(label,'isLooseMuon','isLooseMuon','I')
-        self.addCandVar(label,'isMediumMuon','isMediumMuon','I')
-        self.addCandVar(label,'isMediumMuonICHEP','isMediumMuonICHEP','I')
-        self.addCandVar(label,'isTightMuon','isTightMuon','I')
-        self.addCandVar(label,'isPFMuon','isPFMuon','I')
-        self.addCandVar(label,'isGlobalMuon','isGlobalMuon','I')
-        self.addCandVar(label,'isTrackerMuon','isTrackerMuon','I')
-        self.addCandVar(label,'muonBestTrackType','muonBestTrackType','I')
-        self.addCandVar(label,'segmentCompatibility','segmentCompatibility','F')
-        self.addCandVar(label,'isGoodMuon','isGoodMuon','I')
-        self.addCandVar(label,'highPurityTrack','highPurityTrack','I')
-        self.addCandVar(label,'matchedStations','matchedStations','I')
-        self.addCandVar(label,'validMuonHits','validMuonHits','I')
-        self.addCandVar(label,'normalizedChi2','normalizedChi2','F')
-        self.addCandVar(label,'validPixelHits','validPixelHits','I')
-        self.addCandVar(label,'trackerLayers','trackerLayers','I')
-        self.addCandVar(label,'pixelLayers','pixelLayers','I')
-        self.addCandVar(label,'validTrackerFraction','validTrackerFraction','F')
-        self.addCandVar(label,'bestTrackPtError','bestTrackPtError','F')
-        self.addCandVar(label,'bestTrackPt','bestTrackPt','F')
-        self.addCandVar(label,'trackerStandaloneMatch','trackerStandaloneMatch','F')
-        self.addCandVar(label,'relPFIsoDeltaBetaR04','relPFIsoDeltaBetaR04','F')
-        self.tree.add(lambda cands: cands[label].trackIso()/cands[label].pt(), '{0}_trackRelIso'.format(label), 'F')
+        super(MuMuTauTauAnalysis,self).addDetailedMuon(label)
 
     def addGenParticle(self,label,isTau=False):
         self.tree.add(lambda cands: cands[label].pt()     if label in cands else 0, '{0}_pt'.format(label),     'F')
@@ -306,25 +291,40 @@ class MuMuTauTauAnalysis(AnalysisBase):
         muons = [m for m in self.muons if self.passMuon(m)]
         taus = [t for t in self.taus if self.passTau(t)]
         leps = muons+taus
-        if len(muons)<3: return candidate
-        if len(taus)<1: return candidate
+        if len(muons)<3:
+            self.report_failure('fails 3 muon requirement')
+            return candidate
+        if len(taus)<1: 
+            self.report_failure('fails 1 tau requirement')
+            return candidate
 
 
         # get the candidates
         hCand = []
         mmDeltaR = 999
         ttDeltaR = 999
+        furthest = 0
+        nperms = 0
+        nvalid = 0
         for quad in itertools.permutations(leps,4):
+            nperms += 1
             # require mmmt
             if not quad[0].__class__.__name__=='Muon': continue
             if not quad[1].__class__.__name__=='Muon': continue
             if not quad[2].__class__.__name__=='Muon': continue
             if not quad[3].__class__.__name__=='Tau': continue
+            # trigger match
+            matchTrigger = quad[0].matches_IsoMu24() or quad[0].matches_IsoTkMu24()
+            if not matchTrigger: continue
+            furthest = max([1,furthest])
             # charge OS
             if quad[0].charge()==quad[1].charge(): continue
             if quad[2].charge()==quad[3].charge(): continue
+            furthest = max([2,furthest])
+            nvalid += 1
             # require lead m pt>25
             if quad[0].pt()<25: continue
+            furthest = max([3,furthest])
             # make composites
             amm = DiCandidate(quad[0],quad[1])
             att = DiCandidate(quad[2],quad[3])
@@ -337,9 +337,7 @@ class MuMuTauTauAnalysis(AnalysisBase):
             if m1th.deltaR()<0.8: continue
             if m2tm.deltaR()<0.4: continue
             if m2th.deltaR()<0.8: continue
-            # skim level selections
-            #if amm.M()>30: continue
-            #if amm.deltaR()>1.5: continue
+            furthest = max([4,furthest])
             # choose best
             if not hCand: hCand = quad
             better = True
@@ -351,8 +349,20 @@ class MuMuTauTauAnalysis(AnalysisBase):
                 hCand = quad
                 mmDeltaR = amm.deltaR()
                 ttDeltaR = att.deltaR()
+
+        #print 'number perms: {}, number valid: {}'.format(nperms,nvalid)
+
+        furthestMap = {
+            0: 'topology',
+            1: 'trigger',
+            2: 'OS',
+            3: 'lead pt',
+            4: 'deltaR',
+        }
                 
-        if not hCand: return candidate
+        if not hCand:
+            self.report_failure('no higgs candidate, furthest {}'.format(furthestMap[furthest]))
+            return candidate
 
         am1 = hCand[0] if hCand[0].pt()>hCand[1].pt() else hCand[1]
         am2 = hCand[1] if hCand[0].pt()>hCand[1].pt() else hCand[0]
@@ -360,7 +370,9 @@ class MuMuTauTauAnalysis(AnalysisBase):
         ath = hCand[3]
 
         amm = DiCandidate(am1,am2)
-        if amm.M()>30: return candidate
+        if amm.M()>30:
+            self.report_failure('selected higgs amm M>30')
+            return candidate
         #if amm.deltaR()>1.5: return candidate
 
         candidate['am1'] = am1
@@ -487,7 +499,6 @@ class MuMuTauTauAnalysis(AnalysisBase):
             return 99
 
 
-
     ###########################
     ### analysis selections ###
     ###########################
@@ -516,7 +527,9 @@ class MuMuTauTauAnalysis(AnalysisBase):
         datasets = [
             'SingleMuon',
         ]
-        return self.checkTrigger(*datasets,**triggerNames)
+        result = self.checkTrigger(*datasets,**triggerNames)
+        if not result: self.report_failure('fails trigger')
+        return result
 
     def triggerEfficiencyMC(self,cands):
         return self.triggerEfficiency(cands,mode='mc')
