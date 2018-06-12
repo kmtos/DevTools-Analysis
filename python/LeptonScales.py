@@ -90,6 +90,11 @@ class LeptonScales(object):
                        'HppLooseID','HppLooseIsoFromLooseID','HppMediumID','HppMediumIsoFromMediumID']:
             self.private_muon_80X[idName] = self.private_muon_80X_rootfile.Get(idName)
 
+        path = '{0}/src/DevTools/Analyzer/data/NP_LowMuPt_EFFICIENCIE.root'.format(os.environ['CMSSW_BASE'])
+        self.private_muon_80X_rootfile_kyle = ROOT.TFile(path)
+        self.private_muon_80X['LooseIDKyle'] = self.private_muon_80X_rootfile_kyle.Get('hist_EtavsPtLoposeID_DatatoMC')
+        self.private_muon_80X['LooseIsoFromLooseIDKyle'] = self.private_muon_80X_rootfile_kyle.Get('hist_EtavsPtLoposeISO_DatatoMC')
+
         # photon
         self.private_photon_80X = {}
         path = '{0}/src/DevTools/Analyzer/data/scalefactors_photon_2016.root'.format(os.environ['CMSSW_BASE'])
@@ -169,7 +174,13 @@ class LeptonScales(object):
     def __getMuonScale(self,leptonId,cand):
         pt  = cand.pt()
         eta = cand.eta()
-        if leptonId in self.muon_pog_scales: # default to pog
+        if pt<20 and leptonId in ['LooseID','LooseIsoFromLooseID']: # override low pt for kyle
+            if pt<3: pt = 3.1
+            hist = self.private_muon_80X[leptonId+'Kyle']
+            b = hist.FindBin(abs(eta),pt)
+            val = hist.GetBinContent(b)
+            err = hist.GetBinError(b)
+        elif leptonId in self.muon_pog_scales: # default to pog
             if pt>120: pt = 119.
             if pt<20: pt = 21.
             hist = self.muon_pog_scales[leptonId]
@@ -283,6 +294,8 @@ class LeptonScales(object):
                 idname, isoname = ('MediumID', 'TightRelIsoMediumID') if self.version=='76X' else ('MediumIDICHEP', 'TightIsoFromMediumIDICHEP')
             elif leptonId == 'MediumIDLooseIso':
                 idname, isoname = ('MediumID', 'LooseRelIsoMediumID') if self.version=='76X' else ('MediumIDICHEP', 'LooseIsoFromMediumIDICHEP')
+            elif leptonId == 'LooseIDLooseIso':
+                idname, isoname = ('LooseID', 'LooseIsoFromLooseID')
             elif leptonId == 'HppMediumIDMediumIso':
                 idname, isoname = ('HppMediumID', 'HppMediumIsoFromMediumID')
             elif leptonId == 'HppLooseIDLooseIso':

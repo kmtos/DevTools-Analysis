@@ -96,6 +96,12 @@ class MuMuTauTauAnalysis(AnalysisBase):
         self.tree.add(lambda cands: self.triggerEfficiencyData(cands)[1], 'triggerEfficiencyDataUp', 'F')
         self.tree.add(lambda cands: self.triggerEfficiencyData(cands)[2], 'triggerEfficiencyDataDown', 'F')
 
+        # add mmm
+        self.addComposite('mmm')
+        self.addCompositeMet('mmmmet')
+        self.addComposite('mmt')
+        self.addCompositeMet('mmtmet')
+
         # h
         self.addGenParticle('gh')
         self.addComposite('h')
@@ -279,8 +285,14 @@ class MuMuTauTauAnalysis(AnalysisBase):
             'ammmet' : None,
             'att' : None,
             'attmet' : None,
+            'mmm' : None,
+            'mmmmet' : None,
+            'mmt' : None,
+            'mmtmet' : None,
             'h' : None,
             'hmet' : None,
+            'mmm' : None,
+            'mmmmet' : None,
             'met': self.pfmet,
             'athjet': Candidate(None),
             'cleanJets' : [],
@@ -389,6 +401,10 @@ class MuMuTauTauAnalysis(AnalysisBase):
         candidate['attmet'] = MetCompositeCandidate(self.pfmet,atm,ath)
         candidate['h'] = CompositeCandidate(am1,am2,atm,ath)
         candidate['hmet'] = MetCompositeCandidate(self.pfmet,am1,am2,atm,ath)
+        candidate['mmm'] = CompositeCandidate(am1,am2,atm)
+        candidate['mmmmet'] = MetCompositeCandidate(self.pfmet,am1,am2,atm)
+        candidate['mmt'] = CompositeCandidate(am1,am2,ath)
+        candidate['mmtmet'] = MetCompositeCandidate(self.pfmet,am1,am2,ath)
 
         # clean the jets
         candidate['cleanJets'] = self.cleanCands(self.jets,[am1,am2,atm,ath],0.4)
