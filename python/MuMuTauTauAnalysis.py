@@ -257,6 +257,30 @@ class MuMuTauTauAnalysis(AnalysisBase):
 
         kinfit.addMassConstraint('amm','att',0)
 
+
+        if 'gh' in cands:
+            gh  = cands['gh']
+            gmm = cands['gamm']
+            gtt = cands['gatt']
+            gm1 = cands['gam1']
+            gm2 = cands['gam2']
+            gt1 = cands['gat1']
+            gt2 = cands['gat2']
+            gm1p4 = KinematicFitter.Muon(       'gm1', gm1.pt(), gm1.eta(), gm1.phi(), gm1.energy())
+            gm2p4 = KinematicFitter.Muon(       'gm2', gm2.pt(), gm2.eta(), gm2.phi(), gm2.energy())
+            gt1p4 = KinematicFitter.Tau(        'gt1', gt1.pt(), gt1.eta(), gt1.phi(), gt1.energy(), -1)
+            gt2p4 = KinematicFitter.Tau(        'gt2', gt2.pt(), gt2.eta(), gt2.phi(), gt2.energy(), -1)
+            gmmp4 = KinematicFitter.Particle(   'gmm', gmm.pt(), gmm.eta(), gmm.phi(), gmm.energy())
+            gttp4 = KinematicFitter.Particle(   'gtt', gtt.pt(), gtt.eta(), gtt.phi(), gtt.energy())
+            ghp4  = KinematicFitter.Particle(   'gh',  gh.pt(),  gh.eta(),  gh.phi(),  gh.energy())
+            kinfit.addGenParticle('gm1',gm1p4)
+            kinfit.addGenParticle('gm2',gm2p4)
+            kinfit.addGenParticle('gt1',gt1p4)
+            kinfit.addGenParticle('gt2',gt2p4)
+            kinfit.addGenParticle('gmm',gmmp4)
+            kinfit.addGenParticle('gtt',gttp4)
+            kinfit.addGenParticle('gh', ghp4)
+
         # perform fit with constraints
         kinfit.setMinimizationParticles('th')
         kinfit.fit()
@@ -385,7 +409,10 @@ class MuMuTauTauAnalysis(AnalysisBase):
         if amm.M()>30:
             self.report_failure('selected higgs amm M>30')
             return candidate
-        #if amm.deltaR()>1.5: return candidate
+        att = DiCandidate(atm,ath)
+        if att.deltaR()>0.8:
+            self.report_failure('selected higgs att DR>0.8')
+            return candidate
 
         candidate['am1'] = am1
         candidate['am1met'] = MetCompositeCandidate(self.pfmet,am1)

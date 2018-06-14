@@ -90,7 +90,7 @@ class LeptonScales(object):
                        'HppLooseID','HppLooseIsoFromLooseID','HppMediumID','HppMediumIsoFromMediumID']:
             self.private_muon_80X[idName] = self.private_muon_80X_rootfile.Get(idName)
 
-        path = '{0}/src/DevTools/Analyzer/data/NP_LowMuPt_EFFICIENCIE.root'.format(os.environ['CMSSW_BASE'])
+        path = '{0}/src/DevTools/Analyzer/data/TNP_LowMuPt_EFFICIENCIES.root'.format(os.environ['CMSSW_BASE'])
         self.private_muon_80X_rootfile_kyle = ROOT.TFile(path)
         self.private_muon_80X['LooseIDKyle'] = self.private_muon_80X_rootfile_kyle.Get('hist_EtavsPtLooseID_DatatoMC')
         self.private_muon_80X['LooseIsoFromLooseIDKyle'] = self.private_muon_80X_rootfile_kyle.Get('hist_EtavsPtLooseISO_DatatoMC')

@@ -275,11 +275,15 @@ class KinematicConstraints(object):
 
     def __init__(self):
         self.particles = OrderedDict()
+        self.genparticles = OrderedDict()
         self.composites = OrderedDict()
         self.constraints = []
 
     def addParticle(self,label,particle):
         self.particles[label] = particle
+
+    def addGenParticle(self,label,particle):
+        self.genparticles[label] = particle
 
     def addComposite(self,label,*plabels):
         self.composites[label] = Composite(label,*[self.particles[p] for p in plabels])
@@ -369,10 +373,10 @@ class KinematicConstraints(object):
             return [0,1]
         elif isinstance(part,HadronicTau):
             mvis = part.getRecoP4().M()
-            if mvis==0:
-                print 'Tau visibile mass is 0'
-            if mvis>PDG.M_TAU:
-                print 'Visible mass greater than tau mass: {0}'.format(mvis)
+            #if mvis==0:
+            #    print 'Tau visibile mass is 0'
+            #if mvis>PDG.M_TAU:
+            #    print 'Visible mass greater than tau mass: {0}'.format(mvis)
             return [mvis**2/PDG.M_TAU**2,1]
         else:
             return [1,1]
@@ -415,11 +419,17 @@ class KinematicConstraints(object):
         print 'RECO kinematics'
         for p,p4 in self.particles.iteritems():
             p4.printRecoP4()
-            p4.printCov()
+            #p4.printCov()
         for p,p4 in self.composites.iteritems():
             p4.printRecoP4()
         self.printRecoRecoil()
-        self.printRecoilCov()
+        #self.printRecoilCov()
+
+    def printGenKinematics(self):
+        if not self.genparticles: return
+        print 'GEN kinematics'
+        for p,p4 in self.genparticles.iteritems():
+            p4.printRecoP4()
 
 class KinematicFitter(KinematicConstraints):
 
@@ -503,6 +513,19 @@ class KinematicFitter(KinematicConstraints):
         self.atLowerBound = int(abs(self.X-X_range[0])<1e-3)
         self.atUpperBound = int(abs(self.X-X_range[1])<1e-3)
         self.chi2 = func(res.x)
+        #if not self.fitStatus:
+        #    print 'Non valid fit'
+        #    self.printRecoKinematics()
+        #    self.printKinematics()
+        #    self.printGenKinematics()
+        #    print ''
+        #part = self.particles['th']
+        #mvis = part.getRecoP4().M()
+        #if mvis>PDG.M_TAU:
+        #    self.printRecoKinematics()
+        #    self.printKinematics()
+        #    self.printGenKinematics()
+        #    print ''
         #print self.X, self.chi2
             
 
