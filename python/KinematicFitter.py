@@ -342,6 +342,12 @@ class KinematicConstraints(object):
 
         # TODO add gaussian particle chi2 = (x_fit-x_reco)**2/sigma**2
         # will be used if we add in the muon pt resolution and shift within its uncertainty
+        hasUncE = [p for p in self.particles if self.particles[p].dE]
+        for p in hasUncE:
+            E_fit = self.particles[p].E()
+            E_reco = self.particles[p].getRecoP4().E()
+            dE = self.particles[p].dE
+            recoilchi2 += (E_fit-E_reco)**2 / dE**2
 
         return recoilchi2
 
@@ -396,6 +402,11 @@ class KinematicConstraints(object):
                     valid = c2.constrainEnergyFromMass(label,c1.M()-mass) and valid
         return valid
 
+    def scaleParticleUncertainty(self,label,unc):
+        X = 1+unc
+        part = self.particles[label]
+        valid = part.scaleEnergy(X)
+        return valid
 
     def printRecoil(self):
         COMMON.printVec('recoil', self.getRecoil())
@@ -477,14 +488,24 @@ class KinematicFitter(KinematicConstraints):
     def getFitChi2(self):
         return self.chi2
 
-    def fit(self):
+    def fit(self,useUncertainty=False):
         if len(self.minimizationParticles)!=1:
             print 'Can only fit 1 particle currently'
             return
 
         # get allowed range of first fit variable
         X_range = self.getAllowedEnergyFractionRange(self.minimizationParticles[0])
+        if X_range[0]>X_range[1]: X_range = [X_range[1], X_range[0]]
         X = X_range[0] + (X_range[1]-X_range[0])/2 # split the difference as a test
+
+        hasUncE   = [p for p in self.particles if self.particles[p].dE]
+        #hasUncEta = [p for p in self.particles if self.particles[p].dEta]
+        #hasUncPhi = [p for p in self.particles if self.particles[p].dPhi]
+        boundsE   = {p: [self.particles[p].dE*x   for x in [-5,5]] for p in hasUncE}
+        #boundsEta = {p: [self.particles[p].dEta*x for x in [-5,5]] for p in hasUncEta}
+        #boundsPhi = {p: [self.particles[p].dPhi*x for x in [-5,5]] for p in hasUncPhi}
+
+        X_unc_range = [X_range] + [boundsE[p] for p in hasUncE]
 
         # quick test
         #self.fit_func(X)
@@ -501,6 +522,23 @@ class KinematicFitter(KinematicConstraints):
         #    minimizer.SetVariable(p, label, X, 1e-3)
         #minimizer.Minimize()
 
+        def func_unc(xi):
+            X = xi[0]
+            shift = xi[1:]
+            hasUncE   = [p for p in self.particles if self.particles[p].dE]
+            #hasUncEta = [p for p in self.particles if self.particles[p].dEta]
+            #hasUncPhi = [p for p in self.particles if self.particles[p].dPhi]
+            #hasUnc = hasUncE + hasUncEta + hasUncPhi
+            hasUnc = hasUncE
+            valid = True
+            for s,p in zip(shift,hasUnc):
+                valid = self.scaleParticleUncertainty(p,s) and valid
+            valid = self.scaleParticleEnergy(self.minimizationParticles[0],X) and valid
+            chi2 = self.getChi2()
+            self.fitStatus = int(valid)
+            if not valid: chi2 = 999999
+            return chi2
+
         def func(X):
             valid = self.scaleParticleEnergy(self.minimizationParticles[0],X)
             chi2 = self.getChi2()
@@ -508,11 +546,19 @@ class KinematicFitter(KinematicConstraints):
             if not valid: chi2 = 999999
             return chi2
 
-        res = minimize_scalar(func, bounds=X_range, method='brent')
-        self.X = res.x
-        self.atLowerBound = int(abs(self.X-X_range[0])<1e-3)
-        self.atUpperBound = int(abs(self.X-X_range[1])<1e-3)
-        self.chi2 = func(res.x)
+        if useUncertainty:
+            x0 = [X] + [0]*len(hasUncE)
+            res = minimize(func_unc, x0, bounds=X_unc_range)
+            self.X = res.x[0]
+            self.atLowerBound = int(abs(self.X-X_range[0])<1e-3)
+            self.atUpperBound = int(abs(self.X-X_range[1])<1e-3)
+            self.chi2 = func_unc(res.x)
+        else:
+            res = minimize_scalar(func, bounds=X_range, method='brent')
+            self.X = res.x
+            self.atLowerBound = int(abs(self.X-X_range[0])<1e-3)
+            self.atUpperBound = int(abs(self.X-X_range[1])<1e-3)
+            self.chi2 = func(res.x)
         #if not self.fitStatus:
         #    print 'Non valid fit'
         #    self.printRecoKinematics()

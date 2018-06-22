@@ -293,6 +293,7 @@ class AnalysisBase(object):
         if hasattr(tree, 'photons_count'): self.photons   = [Photon(tree,entry=i,shift=self.shift) for i in range(tree.photons_count)]
         self.jets      = [Jet(tree,entry=i,shift=self.shift) for i in range(tree.jets_count)]
         self.pfmet     = Met(tree,shift=self.shift)
+        if hasattr(tree, 'packed_count'): self.packed   = [Candidate(tree,entry=i,collName='packed') for i in range(tree.packed_count)]
 
     def perRowAction(self):
         '''Per row action, can be overridden'''

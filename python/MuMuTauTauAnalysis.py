@@ -27,6 +27,8 @@ def load_events(h,a):
             events += [l.strip()]
     return events
 
+doPacked = False
+
 class MuMuTauTauAnalysis(AnalysisBase):
     '''
     MuMuTauTau analysis
@@ -97,10 +99,10 @@ class MuMuTauTauAnalysis(AnalysisBase):
         self.tree.add(lambda cands: self.triggerEfficiencyData(cands)[2], 'triggerEfficiencyDataDown', 'F')
 
         # add mmm
-        self.addComposite('mmm')
-        self.addCompositeMet('mmmmet')
-        self.addComposite('mmt')
-        self.addCompositeMet('mmtmet')
+        #self.addComposite('mmm')
+        #self.addCompositeMet('mmmmet')
+        #self.addComposite('mmt')
+        #self.addCompositeMet('mmtmet')
 
         # h
         self.addGenParticle('gh')
@@ -119,6 +121,9 @@ class MuMuTauTauAnalysis(AnalysisBase):
         # amm leptons
         self.addCompositeGenParticle('gamm','gam1','gam2')
         self.addDiLepton('amm')
+        if doPacked:
+            self.addCandidate('ch1')
+            self.addComposite('mmch')
         self.tree.add(lambda cands: self.kinfit(cands).getComposite('amm').M(), 'amm_massKinFit', 'F')
         self.tree.add(lambda cands: self.kinfit(cands).getCompositeStatus('amm'), 'amm_kinFitStatus', 'I')
         self.addCompositeMet('ammmet')
@@ -148,6 +153,9 @@ class MuMuTauTauAnalysis(AnalysisBase):
         # att leptons
         self.addCompositeGenParticle('gatt','gat1','gat2')
         self.addDiLepton('att')
+        if doPacked:
+            self.addCandidate('ch2')
+            self.addComposite('ttch')
         self.tree.add(lambda cands: self.kinfit(cands).getComposite('att').M(), 'att_massKinFit', 'F')
         self.tree.add(lambda cands: self.kinfit(cands).getCompositeStatus('att'), 'att_kinFitStatus', 'I')
         self.addCompositeMet('attmet')
@@ -238,8 +246,12 @@ class MuMuTauTauAnalysis(AnalysisBase):
         tmp4 = KinematicFitter.MuonTau(    'tm', tm.pt(), tm.eta(), tm.phi(), tm.energy())
         thp4 = KinematicFitter.HadronicTau('th', th.pt(), th.eta(), th.phi(), th.energy(), th.decayMode())
         # TODO: add cov of muons/taus with appropriate error on energy
-        m1p4.setErrors(0.01*m1p4.E(),0,0)
-        m2p4.setErrors(0.01*m2p4.E(),0,0)
+        unc1 = 0.01 if abs(m1.eta())<0.9 else 0.03
+        unc2 = 0.01 if abs(m2.eta())<0.9 else 0.03
+        if m1.pt()>100: unc1 = 0.05
+        if m2.pt()>100: unc2 = 0.05
+        m1p4.setErrors(unc1*m1p4.E(),0,0)
+        m2p4.setErrors(unc2*m2p4.E(),0,0)
 
         met = cands['met']
         metp4 = KinematicFitter.MET('met', met.et(), met.phi(), met.cov00(), met.cov01(), met.cov01(), met.cov11())
@@ -283,7 +295,7 @@ class MuMuTauTauAnalysis(AnalysisBase):
 
         # perform fit with constraints
         kinfit.setMinimizationParticles('th')
-        kinfit.fit()
+        kinfit.fit(useUncertainty=True)
 
         self._kinfit = kinfit
 
@@ -432,6 +444,71 @@ class MuMuTauTauAnalysis(AnalysisBase):
         candidate['mmmmet'] = MetCompositeCandidate(self.pfmet,am1,am2,atm)
         candidate['mmt'] = CompositeCandidate(am1,am2,ath)
         candidate['mmtmet'] = MetCompositeCandidate(self.pfmet,am1,am2,ath)
+
+        if doPacked:
+            candidate['ch1'] = Candidate(None)
+            candidate['ch2'] = Candidate(None)
+            candidate['mmch'] = CompositeCandidate()
+            candidate['ttch'] = CompositeCandidate()
+
+            def passPacked(ch):
+                if ch.dz()>0.5: return False
+                return True
+
+
+            packed = [p for p in self.packed if passPacked(p)]
+
+            ch1 = None
+            ch2 = None
+            for ch in packed:
+                if not ch1: ch1 = ch
+                if not ch2: ch2 = ch
+                drmm = deltaR(ch.eta(), ch.phi(), candidate['amm'].eta(), candidate['amm'].phi())
+                drm1 = deltaR(ch.eta(), ch.phi(), candidate['am1'].eta(), candidate['am1'].phi())
+                drm2 = deltaR(ch.eta(), ch.phi(), candidate['am2'].eta(), candidate['am2'].phi())
+                drtt = deltaR(ch.eta(), ch.phi(), candidate['att'].eta(), candidate['att'].phi())
+                drtm = deltaR(ch.eta(), ch.phi(), candidate['atm'].eta(), candidate['atm'].phi())
+                drth = deltaR(ch.eta(), ch.phi(), candidate['ath'].eta(), candidate['ath'].phi())
+                if drmm < deltaR(ch1.eta(), ch1.phi(), candidate['amm'].eta(), candidate['amm'].phi()) and drm1>0.02 and drm2>0.02:
+                    ch1 = ch
+                if drtt < deltaR(ch2.eta(), ch2.phi(), candidate['att'].eta(), candidate['att'].phi()) and drtm>0.02 and drth>0.02:
+                    ch2 = ch
+            if ch1:
+                candidate['ch1'] = ch1
+                candidate['mmch'] = CompositeCandidate(am1,am2,ch1)
+            if ch2:
+                candidate['ch2'] = ch2
+                candidate['ttch'] = CompositeCandidate(atm,ath,ch2)
+
+        # clean the jets
+        candidate['cleanJets'] = self.cleanCands(self.jets,[am1,am2,atm,ath],0.4)
+        candidate['cleanJetsDR08'] = self.cleanCands(candidate['cleanJets'],[ath],0.8)
+
+        # match jet to tau
+        dr = 999
+        j = None
+        for jet in self.jets:
+            jt = DiCandidate(jet,ath)
+            if jt.deltaR()<dr:
+                j = jet
+                dr = jt.deltaR()
+        if j:
+            candidate['athjet'] = j
+
+        candidate.update(self.getGenCandidates())
+
+        return candidate
+
+    def getGenCandidates(self):
+        if 'SUSYGluGluToHToAA_AToMuMu_AToTauTau' not in self.fileNames[0]:
+            return {}
+        gmuons = [g for g in self.gen if abs(g.pdgId())==13]
+        gtaus = [g for g in self.gen if abs(g.pdgId())==15]
+        gas = [g for g in self.gen if abs(g.pdgId())==36]
+        ghs = [g for g in self.gen if abs(g.pdgId()) in [25,35]]
+
+        gmfromas = [g for g in gmuons if g.mother_1()==36 or g.mother_2()==36]
+        gtfromas = [g for g in gtaus if g.mother_1()==36 or g.mother_2()==36]
 
         # clean the jets
         candidate['cleanJets'] = self.cleanCands(self.jets,[am1,am2,atm,ath],0.4)
@@ -599,7 +676,7 @@ class MuMuTauTauAnalysis(AnalysisBase):
 def parse_command_line(argv):
     parser = argparse.ArgumentParser(description='Run analyzer')
 
-    parser.add_argument('--inputFiles', type=str, nargs='*', default=getTestFiles('haa',version='80XMuMuTauTau'), help='Input files')
+    parser.add_argument('--inputFiles', type=str, nargs='*', default=getTestFiles('SingleMuon' if doPacked else 'haa',version='80XMuMuTauTau{}'.format('Packed' if doPacked else '')), help='Input files')
     parser.add_argument('--inputFileList', type=str, default='', help='Input file list')
     parser.add_argument('--outputFile', type=str, default='muMuTauTauTree.root', help='Output file')
     parser.add_argument('--shift', type=str, default='', choices=['','ElectronEnUp','ElectronEnDown','MuonEnUp','MuonEnDown','TauEnUp','TauEnDown','JetEnUp','JetEnDown','JetResUp','JetResDown','UnclusteredEnUp','UnclusteredEnDown'], help='Energy shift')
