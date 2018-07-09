@@ -137,6 +137,7 @@ class MuMuTauTauAnalysis(AnalysisBase):
         self.tree.add(lambda cands: self.kinfit(cands).getParticle('m1').Phi(),    'am1_phiKinFit', 'F')
         self.tree.add(lambda cands: self.kinfit(cands).getParticle('m1').Energy(), 'am1_energyKinFit', 'F')
         self.tree.add(lambda cands: self.kinfit(cands).getParticle('m1').M(),      'am1_massKinFit', 'F')
+        self.tree.add(lambda cands: self.kinfit(cands).getParticle('m1').getChi2(),'am1_kinFitChi2', 'F')
         self.addLeptonMet('am1met')
         self.addLepton('am2')
         self.addGenDeltaR('am2','gam2')
@@ -148,6 +149,7 @@ class MuMuTauTauAnalysis(AnalysisBase):
         self.tree.add(lambda cands: self.kinfit(cands).getParticle('m2').Phi(),    'am2_phiKinFit', 'F')
         self.tree.add(lambda cands: self.kinfit(cands).getParticle('m2').Energy(), 'am2_energyKinFit', 'F')
         self.tree.add(lambda cands: self.kinfit(cands).getParticle('m2').M(),      'am2_massKinFit', 'F')
+        self.tree.add(lambda cands: self.kinfit(cands).getParticle('m2').getChi2(),'am2_kinFitChi2', 'F')
         self.addLeptonMet('am2met')
 
         # att leptons
@@ -245,13 +247,13 @@ class MuMuTauTauAnalysis(AnalysisBase):
         m2p4 = KinematicFitter.Muon(       'm2', m2.pt(), m2.eta(), m2.phi(), m2.energy())
         tmp4 = KinematicFitter.MuonTau(    'tm', tm.pt(), tm.eta(), tm.phi(), tm.energy())
         thp4 = KinematicFitter.HadronicTau('th', th.pt(), th.eta(), th.phi(), th.energy(), th.decayMode())
-        # TODO: add cov of muons/taus with appropriate error on energy
-        unc1 = 0.01 if abs(m1.eta())<0.9 else 0.03
-        unc2 = 0.01 if abs(m2.eta())<0.9 else 0.03
-        if m1.pt()>100: unc1 = 0.05
-        if m2.pt()>100: unc2 = 0.05
-        m1p4.setErrors(unc1*m1p4.E(),0,0)
-        m2p4.setErrors(unc2*m2p4.E(),0,0)
+        # add cov of muons/taus with appropriate error on energy
+        #unc1 = 0.01 if abs(m1.eta())<0.9 else 0.02
+        #unc2 = 0.01 if abs(m2.eta())<0.9 else 0.02
+        #if m1.pt()>100: unc1 = 0.05
+        #if m2.pt()>100: unc2 = 0.05
+        #m1p4.setErrors(unc1*m1p4.E(),0,0)
+        #m2p4.setErrors(unc2*m2p4.E(),0,0)
 
         met = cands['met']
         metp4 = KinematicFitter.MET('met', met.et(), met.phi(), met.cov00(), met.cov01(), met.cov01(), met.cov11())
@@ -263,7 +265,10 @@ class MuMuTauTauAnalysis(AnalysisBase):
         kinfit.addParticle('th',thp4)
         kinfit.addParticle('met',metp4)
 
-        kinfit.addComposite('amm','m1','m2')
+        unc = 0.01
+        amm = cands['amm']
+        if abs(amm.eta())>1.2: unc = 0.018
+        kinfit.addComposite('amm','m1','m2',uncertainty=unc*amm.M())
         kinfit.addComposite('att','tm','th')
         kinfit.addComposite('h','m1','m2','tm','th')
 
@@ -499,35 +504,35 @@ class MuMuTauTauAnalysis(AnalysisBase):
 
         return candidate
 
-    def getGenCandidates(self):
-        if 'SUSYGluGluToHToAA_AToMuMu_AToTauTau' not in self.fileNames[0]:
-            return {}
-        gmuons = [g for g in self.gen if abs(g.pdgId())==13]
-        gtaus = [g for g in self.gen if abs(g.pdgId())==15]
-        gas = [g for g in self.gen if abs(g.pdgId())==36]
-        ghs = [g for g in self.gen if abs(g.pdgId()) in [25,35]]
+    #def getGenCandidates(self):
+    #    if 'SUSYGluGluToHToAA_AToMuMu_AToTauTau' not in self.fileNames[0]:
+    #        return {}
+    #    gmuons = [g for g in self.gen if abs(g.pdgId())==13]
+    #    gtaus = [g for g in self.gen if abs(g.pdgId())==15]
+    #    gas = [g for g in self.gen if abs(g.pdgId())==36]
+    #    ghs = [g for g in self.gen if abs(g.pdgId()) in [25,35]]
 
-        gmfromas = [g for g in gmuons if g.mother_1()==36 or g.mother_2()==36]
-        gtfromas = [g for g in gtaus if g.mother_1()==36 or g.mother_2()==36]
+    #    gmfromas = [g for g in gmuons if g.mother_1()==36 or g.mother_2()==36]
+    #    gtfromas = [g for g in gtaus if g.mother_1()==36 or g.mother_2()==36]
 
-        # clean the jets
-        candidate['cleanJets'] = self.cleanCands(self.jets,[am1,am2,atm,ath],0.4)
-        candidate['cleanJetsDR08'] = self.cleanCands(candidate['cleanJets'],[ath],0.8)
+    #    # clean the jets
+    #    candidate['cleanJets'] = self.cleanCands(self.jets,[am1,am2,atm,ath],0.4)
+    #    candidate['cleanJetsDR08'] = self.cleanCands(candidate['cleanJets'],[ath],0.8)
 
-        # match jet to tau
-        dr = 999
-        j = None
-        for jet in self.jets:
-            jt = DiCandidate(jet,ath)
-            if jt.deltaR()<dr:
-                j = jet
-                dr = jt.deltaR()
-        if j:
-            candidate['athjet'] = j
+    #    # match jet to tau
+    #    dr = 999
+    #    j = None
+    #    for jet in self.jets:
+    #        jt = DiCandidate(jet,ath)
+    #        if jt.deltaR()<dr:
+    #            j = jet
+    #            dr = jt.deltaR()
+    #    if j:
+    #        candidate['athjet'] = j
 
-        candidate.update(self.getGenCandidates())
+    #    candidate.update(self.getGenCandidates())
 
-        return candidate
+    #    return candidate
 
     def getGenCandidates(self):
         if 'SUSYGluGluToHToAA_AToMuMu_AToTauTau' not in self.fileNames[0]:
@@ -676,7 +681,7 @@ class MuMuTauTauAnalysis(AnalysisBase):
 def parse_command_line(argv):
     parser = argparse.ArgumentParser(description='Run analyzer')
 
-    parser.add_argument('--inputFiles', type=str, nargs='*', default=getTestFiles('SingleMuon' if doPacked else 'haa',version='80XMuMuTauTau{}'.format('Packed' if doPacked else '')), help='Input files')
+    parser.add_argument('--inputFiles', type=str, nargs='*', default=getTestFiles('SingleMuon' if doPacked else 'haa_125_3p6',version='80XMuMuTauTau{}'.format('Packed' if doPacked else '')), help='Input files')
     parser.add_argument('--inputFileList', type=str, default='', help='Input file list')
     parser.add_argument('--outputFile', type=str, default='muMuTauTauTree.root', help='Output file')
     parser.add_argument('--shift', type=str, default='', choices=['','ElectronEnUp','ElectronEnDown','MuonEnUp','MuonEnDown','TauEnUp','TauEnDown','JetEnUp','JetEnDown','JetResUp','JetResDown','UnclusteredEnUp','UnclusteredEnDown'], help='Energy shift')

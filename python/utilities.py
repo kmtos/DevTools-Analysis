@@ -68,6 +68,14 @@ def getTestFiles(sample,n=1,version=None):
         'hgg'           : 'GluGluHToGG_M-125_13TeV_powheg_pythia8',
     }
 
+    for h in [125,300,750]:
+        for a in ['3p6',4,5,6,7,9,11,13,15,17,19,21]:
+            if h == 125:
+                name = 'SUSYGluGluToHToAA_AToMuMu_AToTauTau_M-{a}_TuneCUETP8M1_13TeV_madgraph_pythia8'
+            else:
+                name = 'SUSYGluGluToHToAA_AToMuMu_AToTauTau_M-{h}_M-{a}_TuneCUETP8M1_13TeV_madgraph_pythia8'
+            sampleMap['haa_{h}_{a}'.format(h=h,a=a)] = name.format(h=h,a=a)
+
     if sample not in sampleMap: return []
     
     files = get_hdfs_root_files('{0}/{1}'.format(getNtupleDirectory(version=version),sampleMap[sample]))

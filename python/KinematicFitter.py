@@ -86,6 +86,13 @@ class Particle(ROOT.TLorentzVector):
         cov[1][1] = (math.sin(self.Phi())*dpt)**2
         return cov
 
+    def getChi2(self):
+        dE = self.dE
+        if not dE: return 0
+        E_fit = self.E()
+        E_reco = self.getRecoP4().E()
+        return (E_fit-E_reco)**2 / dE**2
+
     def getRecoP4(self):
         return ROOT.TLorentzVector(self.recoP4)
 
@@ -181,6 +188,8 @@ class Composite(tuple):
 
     def __init__(self, label, *particles):
         self.label = label
+        self.uncertainty = 0 # uncertainty on mass
+        self.shift = 0 # the sigma shift on the uncertainty
         self.status = -1
         self._updateP4()
         self.recoP4 = ROOT.TLorentzVector()
@@ -219,6 +228,28 @@ class Composite(tuple):
         ap4 = self[0].getRecoP4()
         bp4 = self[1].getRecoP4()
         return deltaR(ap4.Eta(),ap4.Phi(),bp4.Eta(),bp4.Phi())
+
+    def setUncertainty(self,uncertainty):
+        self.uncertainty = uncertainty
+
+    def setShift(self,shift):
+        self.shift = shift
+
+    def M(self):
+        # hackish to account for uncertainty on composite object rather than individual components
+        self._updateP4()
+        if self.uncertainty:
+            return self.p4.M()*(1+self.shift*self.uncertainty)
+        else:
+            return self.p4.M()
+
+    def getChi2(self):
+        if not self.uncertainty: return 0
+        return self.shift**2 / self.uncertainty**2
+
+    def getCosAlpha(self):
+        cosa = math.cos(self[0].Angle(self[1].Vect()))
+        return cosa
 
     def constrainEnergyFromMass(self,fixed,mass):
         valid = True
@@ -285,8 +316,9 @@ class KinematicConstraints(object):
     def addGenParticle(self,label,particle):
         self.genparticles[label] = particle
 
-    def addComposite(self,label,*plabels):
-        self.composites[label] = Composite(label,*[self.particles[p] for p in plabels])
+    def addComposite(self,label,*plabels, **kwargs):
+        self.composites[label] = Composite(label, *[self.particles[p] for p in plabels])
+        self.composites[label].setUncertainty(kwargs.pop('uncertainty',0))
 
     def getParticleStatus(self,label):
         return self.particles[label].getStatus()
@@ -340,14 +372,15 @@ class KinematicConstraints(object):
         #recoilchi2 = recoildiffvec * (covinv * recoildiffvec) # not working
         recoilchi2 = rpx * (covinv[0][0] * rpx + covinv[0][1] * rpy) + rpy * (covinv[1][0] * rpx + covinv[1][1] * rpy)
 
-        # TODO add gaussian particle chi2 = (x_fit-x_reco)**2/sigma**2
+        # add gaussian particle chi2 = (x_fit-x_reco)**2/sigma**2
         # will be used if we add in the muon pt resolution and shift within its uncertainty
-        hasUncE = [p for p in self.particles if self.particles[p].dE]
-        for p in hasUncE:
-            E_fit = self.particles[p].E()
-            E_reco = self.particles[p].getRecoP4().E()
-            dE = self.particles[p].dE
-            recoilchi2 += (E_fit-E_reco)**2 / dE**2
+        #hasUncE = [p for p in self.particles if self.particles[p].dE]
+        #for p in hasUncE:
+        #    recoilchi2 += self.particles[p].getChi2()
+
+        hasUnc = [c for c in self.composites if self.composites[c].uncertainty]
+        for c in hasUnc:
+            recoilchi2 += self.composites[c].getChi2()
 
         return recoilchi2
 
@@ -375,7 +408,7 @@ class KinematicConstraints(object):
         part = self.particles[label]
         if isinstance(part,ElectronTau) or isinstance(part,MuonTau):
             # leptonic decay of tau
-            print 'ElectronTau, MuonTau, unconstrained'
+            #print 'ElectronTau, MuonTau, unconstrained'
             return [0,1]
         elif isinstance(part,HadronicTau):
             mvis = part.getRecoP4().M()
@@ -383,9 +416,32 @@ class KinematicConstraints(object):
             #    print 'Tau visibile mass is 0'
             #if mvis>PDG.M_TAU:
             #    print 'Visible mass greater than tau mass: {0}'.format(mvis)
+            #if part.getDecayMode() in [1]:
+            #    # h+pi0 has a wider window due to resolution effects
+            #    # this is taken from the tau reco paper on the window of the tau mass
+            #    lower = 0.3
+            #    upper = 1.2*(part.getRecoP4().Pt()/100)
+            #    if upper<1.2: upper = 1.2
+            #    if upper>4.2: upper = 4.2
+            #    return [lower**2/PDG.M_TAU**2, upper**2/PDG.M_TAU**2]
+            #else:
             return [mvis**2/PDG.M_TAU**2,1]
         else:
             return [1,1]
+
+    def getAlternativeAllowedEnergyFractionRange(self,label,constraint='mass'):
+        part = self.particles[label]
+        con = [c for c in self.constraints if c[0]==constraint][0]
+        other = self.composites[con[1]] if label in self.composites[con[2]] else self.composites[con[2]]
+        this  = self.composites[con[2]] if label in self.composites[con[2]] else self.composites[con[1]]
+        mass = other.M()
+        M = part.getPDGMass()
+        E = part.getRecoP4().E()
+        P = part.getRecoP4().P()
+        B = P/E
+        cosa = this.getCosAlpha()
+        minX = M * (1/(B*cosa)**2 - 1)**0.5 / abs((mass**2 - 2*M**2)/(2*P*cosa))
+        return [minX,1]
 
     def scaleParticleEnergy(self,label,X):
         part = self.particles[label]
@@ -396,15 +452,17 @@ class KinematicConstraints(object):
                 c1 = self.composites[c[1]]
                 c2 = self.composites[c[2]]
                 mass = c[3]
-                if label in c1:
-                    valid = c1.constrainEnergyFromMass(label,c2.M()-mass) and valid
-                elif label in c2:
-                    valid = c2.constrainEnergyFromMass(label,c1.M()-mass) and valid
+                if label in c2:
+                    tmp = c2
+                    c2 = c1
+                    c1 = tmp
+                mass = mass + c2.shift # shift by the current uncertainty
+                valid = c1.constrainEnergyFromMass(label,c2.M()-mass) and valid
         return valid
 
     def scaleParticleUncertainty(self,label,unc):
-        X = 1+unc
         part = self.particles[label]
+        X = 1+(unc/part.getRecoP4().E())
         valid = part.scaleEnergy(X)
         return valid
 
@@ -493,19 +551,31 @@ class KinematicFitter(KinematicConstraints):
             print 'Can only fit 1 particle currently'
             return
 
+        #useUncertainty = False
+
         # get allowed range of first fit variable
         X_range = self.getAllowedEnergyFractionRange(self.minimizationParticles[0])
+        X_range_alt = self.getAlternativeAllowedEnergyFractionRange(self.minimizationParticles[0])
+        #print 'ranges', X_range, X_range_alt
+        X_range = X_range_alt
         if X_range[0]>X_range[1]: X_range = [X_range[1], X_range[0]]
         X = X_range[0] + (X_range[1]-X_range[0])/2 # split the difference as a test
+        X = 1
 
-        hasUncE   = [p for p in self.particles if self.particles[p].dE]
-        #hasUncEta = [p for p in self.particles if self.particles[p].dEta]
-        #hasUncPhi = [p for p in self.particles if self.particles[p].dPhi]
-        boundsE   = {p: [self.particles[p].dE*x   for x in [-5,5]] for p in hasUncE}
-        #boundsEta = {p: [self.particles[p].dEta*x for x in [-5,5]] for p in hasUncEta}
-        #boundsPhi = {p: [self.particles[p].dPhi*x for x in [-5,5]] for p in hasUncPhi}
+        # this was for scaling an individual particles uncertainty
+        #hasUncE   = [p for p in self.particles if self.particles[p].dE]
+        ##hasUncEta = [p for p in self.particles if self.particles[p].dEta]
+        ##hasUncPhi = [p for p in self.particles if self.particles[p].dPhi]
+        #boundsE   = {p: [self.particles[p].dE*x   for x in [-5,5]] for p in hasUncE}
+        ##boundsEta = {p: [self.particles[p].dEta*x for x in [-5,5]] for p in hasUncEta}
+        ##boundsPhi = {p: [self.particles[p].dPhi*x for x in [-5,5]] for p in hasUncPhi}
 
-        X_unc_range = [X_range] + [boundsE[p] for p in hasUncE]
+        #X_unc_range = [X_range] + [boundsE[p] for p in hasUncE]
+
+        # composites
+        hasUnc = [c for c in self.composites if self.composites[c].uncertainty]
+        bounds = {c: [self.composites[c].uncertainty*x for x in [-5,5]] for c in hasUnc}
+        X_unc_range = [X_range] + [bounds[c] for c in hasUnc]
 
         # quick test
         #self.fit_func(X)
@@ -525,40 +595,53 @@ class KinematicFitter(KinematicConstraints):
         def func_unc(xi):
             X = xi[0]
             shift = xi[1:]
-            hasUncE   = [p for p in self.particles if self.particles[p].dE]
+            #hasUncE   = [p for p in self.particles if self.particles[p].dE]
             #hasUncEta = [p for p in self.particles if self.particles[p].dEta]
             #hasUncPhi = [p for p in self.particles if self.particles[p].dPhi]
             #hasUnc = hasUncE + hasUncEta + hasUncPhi
-            hasUnc = hasUncE
+            #hasUnc = hasUncE
+            hasUnc = [c for c in self.composites if self.composites[c].uncertainty]
             valid = True
-            for s,p in zip(shift,hasUnc):
-                valid = self.scaleParticleUncertainty(p,s) and valid
+            #for s,p in zip(shift,hasUnc):
+            #    valid = self.scaleParticleUncertainty(p,s) and valid
+            for s,c in zip(shift,hasUnc):
+                self.composites[c].setShift(s)
             valid = self.scaleParticleEnergy(self.minimizationParticles[0],X) and valid
             chi2 = self.getChi2()
             self.fitStatus = int(valid)
-            if not valid: chi2 = 999999
+            if not valid: chi2 = 9999
             return chi2
 
         def func(X):
             valid = self.scaleParticleEnergy(self.minimizationParticles[0],X)
             chi2 = self.getChi2()
             self.fitStatus = int(valid)
-            if not valid: chi2 = 999999
+            if not valid: chi2 = 9999
             return chi2
 
+        # there is a problem with the minimization right now
+        # there are invalid regions, and the function returns 9999, and cant find the derivative to improve
         if useUncertainty:
-            x0 = [X] + [0]*len(hasUncE)
+            # individual particles
+            #x0 = [X] + [0]*len(hasUncE)
+            # composite particles
+            x0 = [X] + [0] * len(hasUnc)
             res = minimize(func_unc, x0, bounds=X_unc_range)
             self.X = res.x[0]
             self.atLowerBound = int(abs(self.X-X_range[0])<1e-3)
             self.atUpperBound = int(abs(self.X-X_range[1])<1e-3)
             self.chi2 = func_unc(res.x)
+            if res.x[0]<X_range[0] or res.x[0]>X_range[1]:
+                print 'result out of range', res.x, self.chi2, X_range
         else:
-            res = minimize_scalar(func, bounds=X_range, method='brent')
+            #res = minimize_scalar(func, bounds=X_range, method='brent')
+            res = minimize_scalar(func, bounds=X_range, method='bounded')
             self.X = res.x
             self.atLowerBound = int(abs(self.X-X_range[0])<1e-3)
             self.atUpperBound = int(abs(self.X-X_range[1])<1e-3)
             self.chi2 = func(res.x)
+            if res.x<X_range[0] or res.x>X_range[1]:
+                print 'result out of range', res.x, self.chi2, X_range
         #if not self.fitStatus:
         #    print 'Non valid fit'
         #    self.printRecoKinematics()
@@ -578,16 +661,57 @@ class KinematicFitter(KinematicConstraints):
     def getGrid(self,**kwargs):
         '''Plot grid values'''
         npoints = kwargs.pop('npoints',100)
+        useUncertainty = kwargs.pop('useUncertainty',False)
 
         X_range = self.getAllowedEnergyFractionRange(self.minimizationParticles[0])
+        X_range_alt = self.getAlternativeAllowedEnergyFractionRange(self.minimizationParticles[0])
+        X_range = X_range_alt
+
+        #hasUncE   = [p for p in self.particles if self.particles[p].dE]
+        ##hasUncEta = [p for p in self.particles if self.particles[p].dEta]
+        ##hasUncPhi = [p for p in self.particles if self.particles[p].dPhi]
+        #boundsE   = {p: [self.particles[p].dE*x   for x in [-5,5]] for p in hasUncE}
+        ##boundsEta = {p: [self.particles[p].dEta*x for x in [-5,5]] for p in hasUncEta}
+        ##boundsPhi = {p: [self.particles[p].dPhi*x for x in [-5,5]] for p in hasUncPhi}
+
+        #X_unc_range = [boundsE[p] for p in hasUncE]
+
+        # composites
+        hasUnc = [c for c in self.composites if self.composites[c].uncertainty]
+        bounds = {c: [self.composites[c].uncertainty*x for x in [-5,5]] for c in hasUnc}
+        X_unc_range = [bounds[c] for c in hasUnc]
 
         xvals = []
         chi2vals = []
         for i in range(npoints):
             X = X_range[0] + (X_range[1]-X_range[0])*i/(npoints-1)
-            valid = self.scaleParticleEnergy(self.minimizationParticles[0],X)
-            chi2 = self.getChi2()
-            if not valid: chi2 = 999999
+            if useUncertainty:
+                def func_unc(xi):
+                    shift = xi
+                    #hasUncE   = [p for p in self.particles if self.particles[p].dE]
+                    #hasUncEta = [p for p in self.particles if self.particles[p].dEta]
+                    #hasUncPhi = [p for p in self.particles if self.particles[p].dPhi]
+                    #hasUnc = hasUncE + hasUncEta + hasUncPhi
+                    #hasUnc = hasUncE
+                    hasUnc = [c for c in self.composites if self.composites[c].uncertainty]
+                    valid = True
+                    #for s,p in zip(shift,hasUnc):
+                    #    valid = self.scaleParticleUncertainty(p,s) and valid
+                    for s,c in zip(shift,hasUnc):
+                        self.composites[c].setShift(s)
+                    valid = self.scaleParticleEnergy(self.minimizationParticles[0],X) and valid
+                    chi2 = self.getChi2()
+                    self.fitStatus = int(valid)
+                    if not valid: chi2 = 9999
+                    return chi2
+
+                x0 = [0]*len(hasUnc)
+                res = minimize(func_unc, x0, bounds=X_unc_range)
+                chi2 = func_unc(res.x)
+            else:
+                valid = self.scaleParticleEnergy(self.minimizationParticles[0],X)
+                chi2 = self.getChi2()
+                if not valid: chi2 = 9999
             xvals += [X]
             chi2vals += [chi2]
 
