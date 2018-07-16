@@ -26,6 +26,7 @@ latestNtuples = {
     #'80X'                  : '2016-07-20_DevTools_80X_v1', # ICHEP 2016
     '80X'                  : '2017-11-24_DevTools_80X_v1', # Moriond 2017
     '80XPhoton'            : '2017-11-24_DevTools_80X_v1', # Moriond 2017
+    '80XHpp'               : '2018-06-19_DevTools_80X_Hpp_v1',
     #'80XMuMuTauTau'        : '2018-01-31_DevTools_MuMuTauTauSkim_80X_v1', # Moriond 2017
     '80XMuMuTauTau'        : '2018-05-01_DevTools_MuMuTauTauSkim_80X_v1', # Moriond 2017 (add hadronFlavour)
     '80XMuMuTauTauPacked'  : '2018-06-18_DevTools_MuMuTauTauSkim_80X_v2', # Add packed
