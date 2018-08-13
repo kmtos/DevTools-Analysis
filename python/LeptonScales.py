@@ -251,6 +251,8 @@ class LeptonScales(object):
             return 1.006, 0.012
 
     def __getMuonTrackingScale(self,cand):
+        # disable (https://hypernews.cern.ch/HyperNews/CMS/get/muon/1425.html)
+        return (1.,0.)
         pt  = cand.pt()
         eta = cand.eta()
         nvtx = cand.tree.nTrueVertices

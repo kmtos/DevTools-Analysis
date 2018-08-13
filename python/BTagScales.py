@@ -43,18 +43,18 @@ class BTagScales(object):
         return reader
 
     def get_sf_csv(self,wp,pt,eta,flavor=0,shift='central'):
-        return self.sf_reader_csv[wp].eval_auto_bounds(shift,flavor,pt,eta)
+        return self.sf_reader_csv[wp].eval_auto_bounds(shift,flavor,eta,pt)
 
 
 if __name__ == "__main__":
     scales = BTagScales(getCMSSWVersion())
-    print scales.get_sf_csv(1,1.2,31)
-    print scales.get_sf_csv(1,1.2,31,shift='up')
-    print scales.get_sf_csv(1,1.2,31,shift='down')
-    print scales.get_sf_csv(1,1.2,31,flavor=1)
-    print scales.get_sf_csv(1,1.2,31,flavor=1,shift='up')
-    print scales.get_sf_csv(1,1.2,31,flavor=1,shift='down')
-    print scales.get_sf_csv(1,1.2,31,flavor=2)
-    print scales.get_sf_csv(1,1.2,31,flavor=2,shift='up')
-    print scales.get_sf_csv(1,1.2,31,flavor=2,shift='down')
+    print scales.get_sf_csv(1,31,1.2)
+    print scales.get_sf_csv(1,31,1.2,shift='up')
+    print scales.get_sf_csv(1,31,1.2,shift='down')
+    print scales.get_sf_csv(1,31,1.2,flavor=1)
+    print scales.get_sf_csv(1,31,1.2,flavor=1,shift='up')
+    print scales.get_sf_csv(1,31,1.2,flavor=1,shift='down')
+    print scales.get_sf_csv(1,31,1.2,flavor=2)
+    print scales.get_sf_csv(1,31,1.2,flavor=2,shift='up')
+    print scales.get_sf_csv(1,31,1.2,flavor=2,shift='down')
     sys.exit(0)
