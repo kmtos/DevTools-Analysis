@@ -663,7 +663,7 @@ class MuMuTauTauAnalysis(AnalysisBase):
         return self.triggerEfficiency(cands,mode='data')
 
     def triggerEfficiency(self,cands,mode='ratio'):
-        candList = [cands[c] for c in ['am1','am2','atm','ath']]
+        candList = [cands[c] for c in ['am1']] #,'am2','atm','ath']]
         triggerList = ['IsoMu20_OR_IsoTkMu20'] if self.version=='76X' else ['IsoMu24_OR_IsoTkMu24']
         if mode=='data':
             return self.triggerScales.getDataEfficiency(triggerList,candList,doError=True)
@@ -681,7 +681,7 @@ class MuMuTauTauAnalysis(AnalysisBase):
 def parse_command_line(argv):
     parser = argparse.ArgumentParser(description='Run analyzer')
 
-    parser.add_argument('--inputFiles', type=str, nargs='*', default=getTestFiles('SingleMuon' if doPacked else 'haa_125_3p6',version='80XMuMuTauTau{}'.format('Packed' if doPacked else '')), help='Input files')
+    parser.add_argument('--inputFiles', type=str, nargs='*', default=getTestFiles('SingleMuon' if doPacked else 'haa_125_15',version='80XMuMuTauTau{}'.format('Packed' if doPacked else '')), help='Input files')
     parser.add_argument('--inputFileList', type=str, default='', help='Input file list')
     parser.add_argument('--outputFile', type=str, default='muMuTauTauTree.root', help='Output file')
     parser.add_argument('--shift', type=str, default='', choices=['','ElectronEnUp','ElectronEnDown','MuonEnUp','MuonEnDown','TauEnUp','TauEnDown','JetEnUp','JetEnDown','JetResUp','JetResDown','UnclusteredEnUp','UnclusteredEnDown'], help='Energy shift')

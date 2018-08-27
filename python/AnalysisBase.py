@@ -599,6 +599,7 @@ class AnalysisBase(object):
         '''Add variables relevant for all objects'''
         self.addCandVar(label,'pt','pt','F')
         self.addCandVar(label,'eta','eta','F')
+        self.tree.add(lambda cands: abs(getattr(cands[label],'eta')()), '{}_abseta'.format(label), 'F')
         self.addCandVar(label,'phi','phi','F')
         self.addCandVar(label,'energy','energy','F')
         self.addCandVar(label,'mass','mass','F')

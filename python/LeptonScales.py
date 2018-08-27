@@ -311,9 +311,9 @@ class LeptonScales(object):
                 val, err = prodWithError(idval,isoval)
             else:
                 val, err = self.__getMuonScale(leptonId,cand)
-            valTrack, errTrack = self.__getMuonTrackingScale(cand)
+            #valTrack, errTrack = self.__getMuonTrackingScale(cand)
             #val, err = prodWithError((val,err),(valTrack,errTrack))
-            val, err = prodWithError((val,err),(valTrack,0. if errTrack!=errTrack else errTrack)) # bug with error from tgraphasymm, check for NaN
+            #val, err = prodWithError((val,err),(valTrack,0. if errTrack!=errTrack else errTrack)) # bug with error from tgraphasymm, check for NaN
         elif cand.__class__.__name__=='Tau':
             lepScale = self.__getTauScale(leptonId,cand)
             energyScale = self.__getTauEnergyScale(cand)
