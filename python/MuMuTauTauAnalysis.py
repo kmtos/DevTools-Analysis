@@ -356,6 +356,7 @@ class MuMuTauTauAnalysis(AnalysisBase):
         hCand = []
         mmDeltaR = 999
         ttDeltaR = 999
+        m1pt = 0
         furthest = 0
         nperms = 0
         nvalid = 0
@@ -398,10 +399,13 @@ class MuMuTauTauAnalysis(AnalysisBase):
                 better = False
             elif amm.deltaR()==mmDeltaR and att.deltaR()>ttDeltaR:
                 better = False
+            elif amm.deltaR()==mmDeltaR and att.deltaR()==ttDeltaR and quad[0].pt()<m1pt:
+                better = False
             if better:
                 hCand = quad
                 mmDeltaR = amm.deltaR()
                 ttDeltaR = att.deltaR()
+                m1pt = quad[0].pt()
 
         #print 'number perms: {}, number valid: {}'.format(nperms,nvalid)
 
@@ -417,8 +421,8 @@ class MuMuTauTauAnalysis(AnalysisBase):
             self.report_failure('no higgs candidate, furthest {}'.format(furthestMap[furthest]))
             return candidate
 
-        am1 = hCand[0] if hCand[0].pt()>hCand[1].pt() else hCand[1]
-        am2 = hCand[1] if hCand[0].pt()>hCand[1].pt() else hCand[0]
+        am1 = hCand[0] #if hCand[0].pt()>hCand[1].pt() else hCand[1]
+        am2 = hCand[1] #if hCand[0].pt()>hCand[1].pt() else hCand[0]
         atm = hCand[2]
         ath = hCand[3]
 
