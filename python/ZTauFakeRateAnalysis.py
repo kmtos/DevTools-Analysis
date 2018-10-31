@@ -95,7 +95,6 @@ class ZTauFakeRateAnalysis(AnalysisBase):
         self.addLeptonMet('w')
         self.addLepton('t')
         self.addDetailedTau('t')
-        self.addJet('tjet')
         self.tree.add(lambda cands: self.passLoose(cands['t']), 't_passLoose', 'I')
         self.tree.add(lambda cands: self.passMedium(cands['t']), 't_passMedium', 'I')
         self.tree.add(lambda cands: self.passTight(cands['t']), 't_passTight', 'I')
@@ -118,7 +117,6 @@ class ZTauFakeRateAnalysis(AnalysisBase):
             'z2': None,
             'z' : None,
             't': None,
-            'tjet': Candidate(None),
             'w' : None,
             'met': self.pfmet,
             'cleanJets': [],
@@ -168,18 +166,6 @@ class ZTauFakeRateAnalysis(AnalysisBase):
 
         medLeps = self.getPassingCands('Medium',self.electrons,self.muons,self.taus)
         candidate['cleanJets'] = self.cleanCands(self.jets,medLeps,0.4)
-
-        # match jet to obj
-        for c in ['t']:
-            dr = 999
-            j = None
-            for jet in self.jets:
-                jt = DiCandidate(jet,candidate[c])
-                if jt.deltaR()<dr:
-                    j = jet
-                    dr = jt.deltaR()
-            if j:
-                candidate['{}jet'.format(c)] = j
 
         return candidate
 

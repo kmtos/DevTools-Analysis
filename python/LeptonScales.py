@@ -251,8 +251,6 @@ class LeptonScales(object):
             return 1.006, 0.012
 
     def __getMuonTrackingScale(self,cand):
-        # disable (https://hypernews.cern.ch/HyperNews/CMS/get/muon/1425.html)
-        return (1.,0.)
         pt  = cand.pt()
         eta = cand.eta()
         nvtx = cand.tree.nTrueVertices
@@ -311,9 +309,9 @@ class LeptonScales(object):
                 val, err = prodWithError(idval,isoval)
             else:
                 val, err = self.__getMuonScale(leptonId,cand)
-            #valTrack, errTrack = self.__getMuonTrackingScale(cand)
+            valTrack, errTrack = self.__getMuonTrackingScale(cand)
             #val, err = prodWithError((val,err),(valTrack,errTrack))
-            #val, err = prodWithError((val,err),(valTrack,0. if errTrack!=errTrack else errTrack)) # bug with error from tgraphasymm, check for NaN
+            val, err = prodWithError((val,err),(valTrack,0. if errTrack!=errTrack else errTrack)) # bug with error from tgraphasymm, check for NaN
         elif cand.__class__.__name__=='Tau':
             lepScale = self.__getTauScale(leptonId,cand)
             energyScale = self.__getTauEnergyScale(cand)

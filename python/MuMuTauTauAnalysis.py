@@ -356,7 +356,6 @@ class MuMuTauTauAnalysis(AnalysisBase):
         hCand = []
         mmDeltaR = 999
         ttDeltaR = 999
-        m1pt = 0
         furthest = 0
         nperms = 0
         nvalid = 0
@@ -399,13 +398,10 @@ class MuMuTauTauAnalysis(AnalysisBase):
                 better = False
             elif amm.deltaR()==mmDeltaR and att.deltaR()>ttDeltaR:
                 better = False
-            elif amm.deltaR()==mmDeltaR and att.deltaR()==ttDeltaR and quad[0].pt()<m1pt:
-                better = False
             if better:
                 hCand = quad
                 mmDeltaR = amm.deltaR()
                 ttDeltaR = att.deltaR()
-                m1pt = quad[0].pt()
 
         #print 'number perms: {}, number valid: {}'.format(nperms,nvalid)
 
@@ -421,8 +417,8 @@ class MuMuTauTauAnalysis(AnalysisBase):
             self.report_failure('no higgs candidate, furthest {}'.format(furthestMap[furthest]))
             return candidate
 
-        am1 = hCand[0] #if hCand[0].pt()>hCand[1].pt() else hCand[1]
-        am2 = hCand[1] #if hCand[0].pt()>hCand[1].pt() else hCand[0]
+        am1 = hCand[0] if hCand[0].pt()>hCand[1].pt() else hCand[1]
+        am2 = hCand[1] if hCand[0].pt()>hCand[1].pt() else hCand[0]
         atm = hCand[2]
         ath = hCand[3]
 
@@ -667,7 +663,7 @@ class MuMuTauTauAnalysis(AnalysisBase):
         return self.triggerEfficiency(cands,mode='data')
 
     def triggerEfficiency(self,cands,mode='ratio'):
-        candList = [cands[c] for c in ['am1']] #,'am2','atm','ath']]
+        candList = [cands[c] for c in ['am1','am2','atm','ath']]
         triggerList = ['IsoMu20_OR_IsoTkMu20'] if self.version=='76X' else ['IsoMu24_OR_IsoTkMu24']
         if mode=='data':
             return self.triggerScales.getDataEfficiency(triggerList,candList,doError=True)
@@ -685,7 +681,7 @@ class MuMuTauTauAnalysis(AnalysisBase):
 def parse_command_line(argv):
     parser = argparse.ArgumentParser(description='Run analyzer')
 
-    parser.add_argument('--inputFiles', type=str, nargs='*', default=getTestFiles('SingleMuon' if doPacked else 'haa_125_15',version='80XMuMuTauTau{}'.format('Packed' if doPacked else '')), help='Input files')
+    parser.add_argument('--inputFiles', type=str, nargs='*', default=getTestFiles('SingleMuon' if doPacked else 'haa_125_3p6',version='80XMuMuTauTau{}'.format('Packed' if doPacked else '')), help='Input files')
     parser.add_argument('--inputFileList', type=str, default='', help='Input file list')
     parser.add_argument('--outputFile', type=str, default='muMuTauTauTree.root', help='Output file')
     parser.add_argument('--shift', type=str, default='', choices=['','ElectronEnUp','ElectronEnDown','MuonEnUp','MuonEnDown','TauEnUp','TauEnDown','JetEnUp','JetEnDown','JetResUp','JetResDown','UnclusteredEnUp','UnclusteredEnDown'], help='Energy shift')

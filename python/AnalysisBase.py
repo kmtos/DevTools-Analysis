@@ -150,10 +150,6 @@ class AnalysisBase(object):
             'DYJetsToLL_M-10to50_TuneCUETP8M1_13TeV-madgraphMLM-pythia8',
             'DYJetsToLL_M-50_TuneCUETP8M1_13TeV-madgraphMLM-pythia8',
         ]
-        dyNLOsamples = [
-            'DYJetsToLL_M-10to50_TuneCUETP8M1_13TeV-amcatnloFXFX-pythia8',
-            'DYJetsToLL_M-50_TuneCUETP8M1_13TeV-amcatnloFXFX-pythia8',
-        ]
 
         qqzzsamples = [
             'ZZTo4L_13TeV_powheg_pythia8',
@@ -174,8 +170,6 @@ class AnalysisBase(object):
         self.tree.add(lambda cands: self.event.genWeight(), 'genWeight', 'F')
         if any([x in fName for x in dysamples]):
             self.tree.add(lambda cands: self.zptGenWeight.weight(self.gen), 'zPtWeight', 'F')
-        if any([x in fName for x in dyNLOsamples]):
-            self.tree.add(lambda cands: self.zptGenWeight.weightNLO(self.gen), 'zPtWeight', 'F')
         if any([x in fName for x in qqzzsamples]):
             self.tree.add(lambda cands: self.zzGenWeight.weight(self.gen), 'qqZZkfactor', 'F')
         self.tree.add(lambda cands: self.event.numGenJets(), 'numGenJets', 'I')
@@ -605,7 +599,6 @@ class AnalysisBase(object):
         '''Add variables relevant for all objects'''
         self.addCandVar(label,'pt','pt','F')
         self.addCandVar(label,'eta','eta','F')
-        self.tree.add(lambda cands: abs(getattr(cands[label],'eta')()), '{}_abseta'.format(label), 'F')
         self.addCandVar(label,'phi','phi','F')
         self.addCandVar(label,'energy','energy','F')
         self.addCandVar(label,'mass','mass','F')

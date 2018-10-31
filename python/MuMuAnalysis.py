@@ -111,7 +111,6 @@ class MuMuAnalysis(AnalysisBase):
         # get the candidates
         cand = []
         mmDeltaR = 999
-        st = 0
         for pair in itertools.permutations(muons,2):
             # trigger match
             matchTrigger = pair[0].matches_IsoMu24() or pair[0].matches_IsoTkMu24()
@@ -125,11 +124,8 @@ class MuMuAnalysis(AnalysisBase):
             # choose best
             if not cand: cand = pair
             better = True
-            newST = pair[0].pt() + pair[1].pt()
-            if newST<st:
+            if mm.deltaR()>mmDeltaR:
                 better = False
-            #if mm.deltaR()>mmDeltaR:
-            #    better = False
             if better:
                 cand = pair
                 mmDeltaR = mm.deltaR()
@@ -141,8 +137,8 @@ class MuMuAnalysis(AnalysisBase):
         m2 = cand[1] if cand[0].pt()>cand[1].pt() else cand[0]
 
         mm = DiCandidate(m1,m2)
-        #if mm.M()>30:
-        #    return candidate
+        if mm.M()>30:
+            return candidate
         #if mm.deltaR()>1.5: return candidate
 
         candidate['m1'] = m1
